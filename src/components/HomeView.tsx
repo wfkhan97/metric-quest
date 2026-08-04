@@ -1,3 +1,4 @@
+import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
 import { type Mission } from '../lib/missions';
@@ -7,9 +8,10 @@ type HomeViewProps = {
   missions: Mission[];
   progress: Progress;
   onSelectMission: (mission: Mission) => void;
+  onEditAvatar: () => void;
 };
 
-export function HomeView({ missions, progress, onSelectMission }: HomeViewProps) {
+export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: HomeViewProps) {
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];
@@ -78,6 +80,17 @@ export function HomeView({ missions, progress, onSelectMission }: HomeViewProps)
               <span>Purge a terminal to earn your first badge.</span>
             )}
           </p>
+          {progress.avatar && (
+            <div className="avatar-summary">
+              <AvatarPreview spriteId={progress.avatar.spriteId} colorId={progress.avatar.colorId} size={40} />
+              <span>
+                Badge on file: <strong>{progress.avatar.callsign}</strong>
+              </span>
+              <button type="button" className="link-button" onClick={onEditAvatar}>
+                Redo your badge
+              </button>
+            </div>
+          )}
           <button type="button" className="start-button" onClick={() => onSelectMission(ctaMission)}>
             {allComplete ? 'Replay a sector' : hasStarted ? `Resume: ${ctaMission.title}` : `Enter Sector 1: ${ctaMission.title}`}
           </button>
