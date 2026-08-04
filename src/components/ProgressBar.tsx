@@ -6,7 +6,7 @@ type ProgressBarProps = {
 
 export function ProgressBar({ label, completed, total }: ProgressBarProps) {
   const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
-  const summary = `${completed} of ${total} missions complete`;
+  const summary = `${completed} of ${total} terminals purged`;
 
   return (
     <div className="progress-bar">

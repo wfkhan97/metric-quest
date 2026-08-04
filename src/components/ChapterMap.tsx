@@ -9,7 +9,7 @@ type ChapterMapProps = {
   heading?: string;
 };
 
-export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Chapter map' }: ChapterMapProps) {
+export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Sector map' }: ChapterMapProps) {
   return (
     <nav className="chapter-map" aria-label={heading}>
       <h2>{heading}</h2>
@@ -37,7 +37,7 @@ export function ChapterMap({ missions, completedMissionIds, activeMissionId, onS
                           aria-current={isActive ? 'page' : undefined}
                         >
                           <strong>{mission.title}</strong>
-                          <small>{isCompleted ? 'Completed' : `${mission.points} points`}</small>
+                          <small>{isCompleted ? 'Purged' : `${mission.points} points`}</small>
                         </button>
                       </li>
                     );

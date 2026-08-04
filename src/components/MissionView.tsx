@@ -4,7 +4,7 @@ import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { SchemaExplorer } from './SchemaExplorer';
 import { validateResult, type QueryResult } from '../lib/grading';
-import { type Mission } from '../lib/missions';
+import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
 import { runMissionQuery } from '../lib/sqlRunner';
 
@@ -35,20 +35,20 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     const outcome = await runMissionQuery(sql);
     setIsRunning(false);
     if (!outcome.ok) {
-      setFeedback({ tone: 'error', heading: 'Query needs attention', text: outcome.message });
+      setFeedback({ tone: 'error', heading: rogueInvalidQueryLine, text: outcome.message });
       return;
     }
     setResult(outcome.result);
     const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters });
     if (!validation.correct) {
-      setFeedback({ tone: 'error', heading: 'Not the mission result yet', text: validation.message });
+      setFeedback({ tone: 'error', heading: rogueWrongResultLine, text: validation.message });
       return;
     }
     const nextProgress = completeMission(progress, mission.id, mission.points, mission.badge);
     onProgressChange(nextProgress);
     setFeedback({
       tone: 'success',
-      heading: completed ? 'Correct again' : `Mission complete: +${mission.points} points`,
+      heading: completed ? 'Terminal already restored' : `Terminal restored: +${mission.points} points`,
       text: mission.successLesson,
     });
   }
@@ -60,15 +60,15 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
       </a>
       <header className="masthead">
         <div>
-          <p className="eyebrow">Aurora Music · quarterly operating review</p>
+          <p className="eyebrow">Aurora Music mainframe · Day one, unauthorized access granted</p>
           <h1 id="page-title">Metric Quest</h1>
           <button type="button" className="link-button" onClick={onBackToHome}>
-            ← Back to onboarding
+            ← Back to sector map
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong>{progress.points} points</strong>
-          <ProgressBar label="Course progress" completed={progress.completedMissionIds.length} total={missions.length} />
+          <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
         </section>
       </header>
 
@@ -90,14 +90,14 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <div className="two-column">
             <SchemaExplorer tables={mission.visibleTables} />
             <section className="panel" aria-labelledby="rewards-title">
-              <h3 id="rewards-title">Mission reward</h3>
+              <h3 id="rewards-title">Terminal reward</h3>
               <p>
                 <strong>{mission.points} points</strong>
                 {mission.badge ? ` · ${mission.badge} badge` : ''}
               </p>
               <p>
                 {completed
-                  ? 'Completed missions can be replayed without changing your points.'
+                  ? 'Purged terminals can be replayed without changing your points.'
                   : 'Points are awarded once; hints never lock progress.'}
               </p>
             </section>
@@ -120,8 +120,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               aria-describedby="runner-note"
             />
             <p id="runner-note" className="subtle">
-              Runs locally in your browser against the supplied SQLite dataset. This Week 1 runner allows one read-only SELECT
-              query.
+              Runs locally in your browser against the real dataset behind this terminal — nothing leaves your machine. This
+              Week 1 runner allows one read-only SELECT query.
             </p>
             <div className="actions">
               <button type="button" className="primary" onClick={() => void runQuery()} disabled={isRunning}>
@@ -177,7 +177,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             </span>
           ))
         ) : (
-          <span>Complete Priority invoices or Duplicate-customer trap to earn a badge.</span>
+          <span>Purge Priority invoices or Duplicate-customer trap to earn a badge.</span>
         )}
       </footer>
     </main>
