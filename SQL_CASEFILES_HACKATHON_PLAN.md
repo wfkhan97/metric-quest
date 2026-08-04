@@ -2,10 +2,13 @@
 
 ## One-line pitch
 
-**Metric Quest** is an accessible business-analytics game for Tech MBA students.
-Players join the analytics team at a fictional digital-music business, solve
-progressive SQL cases with real SQLite queries, earn points and badges, and
-learn to question AI-generated analyses rather than blindly accept them.
+**Metric Quest** is an accessible SQL game for Tech MBA students, framed as an
+8-bit adventure: the player gets pulled into Aurora Music's mainframe to stop
+a rogue analyst AI that is corrupting the company's data, restoring each
+corrupted "sector" by writing and running real SQL queries. See
+`docs/GAME_DESIGN_BRIEF.md` for the full narrative, world, and visual-asset
+brief — this pivot changes presentation and copy only; the underlying SQL
+loop, grading contract, and syllabus coverage are unchanged.
 
 ## Why this is the right build scope
 
@@ -30,17 +33,27 @@ the product is ready.
 - **Motivating, not punitive.** Missions award points, badges mark capabilities,
   hints are always available, progress is saved locally, and players can replay
   a completed mission. No countdown timer is required.
-- **Accessible by default.** All actions work with a keyboard; labels, focus
-  states, contrast, readable type, and non-color-only feedback are required.
-- **AI literacy, not AI answer vending.** The AI chapter asks players to verify
-  an AI-generated query and conclusion.
+- **Accessible by default, even in the game skin.** All actions work with a
+  keyboard; labels, focus states, contrast, readable type, and non-color-only
+  feedback are required on every text-heavy learning surface (brief, schema
+  explorer, SQL editor, results table, feedback). Decorative screens (avatar
+  creator, sector transitions, chapter-map chrome) may carry a pixel-art
+  treatment, but never at the cost of that accessibility floor.
+- **AI literacy, not AI answer vending.** The AI-verification chapter — now
+  the sector where the rogue AI antagonist first appears directly — asks
+  players to verify an AI-generated query and conclusion, not just prompt one.
 
 ## Narrative and database
 
-The player joins **Aurora Music**, a digital-music retailer preparing its
-quarterly operating review. A sequence of business questions becomes a final
-recommendation to the leadership team: where is revenue coming from, who are
-the customers, which products matter, and what caveats remain?
+The player is a new hire at **Aurora Music**, a digital-music retailer, who
+gets pulled into the company mainframe on day one and finds it corrupted by a
+rogue analyst AI (working name in `docs/GAME_DESIGN_BRIEF.md`; confirm or
+rename before it ships). Each business question is now framed as restoring a
+corrupted sector of the mainframe by running real SQL against the real data —
+the same sequence of questions still builds toward a final recommendation to
+leadership: where is revenue coming from, who are the customers, which
+products matter, and what caveats remain. The business logic and expected
+results behind every mission do not change; only the in-world framing does.
 
 The supplied `iTunes.sqlite` is a strong first dataset: Lecture 2 explicitly
 uses it for the in-class lab, it is compact enough to ship in-browser, and its
@@ -77,6 +90,13 @@ browser demo.
 | 9. AI analyst review | Detect an unreliable AI analysis | prompting, running, and verifying AI-generated SQL |
 | 10. Final briefing | Defend a recommendation | SELECT framework: frame, explore, execute, challenge |
 
+This table predates the finalized 9-chapter structure actually implemented in
+`SQL_CASEFILES_MISSION_CURRICULUM.md` and `src/content/chapters.ts` (it does
+not have a separate "customer voice / text data" chapter, for example). Treat
+the mission curriculum file as authoritative for chapter numbering and
+topics; treat `docs/GAME_DESIGN_BRIEF.md` as authoritative for the in-world
+"Sector" name attached to each of those 9 chapters.
+
 **Interpretation note:** The supplied PDF is titled `NBAY6550_Syllabus_S26.pdf`
 but its header says Spring 2024. The table above covers every topic in its class
 schedule. Course slides or assignments can later tune terminology and examples.
@@ -104,9 +124,18 @@ schedule. Course slides or assignments can later tune terminology and examples.
 
 ### Deliberate non-goals for version 1
 
-Sound effects, animation, leaderboard, accounts, multiplayer, or an LLM API.
-These can make a later release richer, but they do not teach SQL better than a
-reliable query runner, clear feedback, and sound learning progression.
+Leaderboards, accounts, multiplayer, or an LLM API. These can make a later
+release richer, but they do not teach SQL better than a reliable query
+runner, clear feedback, and sound learning progression.
+
+Light narrative presentation (avatar creator, decorative sector-transition
+scenes, an antagonist) is now in scope per `docs/GAME_DESIGN_BRIEF.md` — the
+prior version of this document ruled out "animation" and "gamification"
+entirely, which no longer reflects the product direction. The constraint that
+still holds is that none of it may compromise the accessible core (contrast,
+keyboard operability, readable tables) or the result-based grading contract.
+Sound/music is not ruled in or out yet — flag it separately if you want it,
+since it raises its own asset and licensing questions.
 
 ## Three-week build sequence
 
@@ -134,8 +163,12 @@ Recommended components:
 ```text
 AppShell, ChapterMap, MissionBrief, SchemaExplorer, SqlEditor,
 QueryResults, HintPanel, FeedbackPanel, SuccessLesson, ProgressStore,
-PointsBadgeBar
+PointsBadgeBar, AvatarCreator, SectorTransition
 ```
+
+`AvatarCreator` and `SectorTransition` are new, per `docs/GAME_DESIGN_BRIEF.md`
+— both are presentation-only additions with their own local-progress fields;
+neither touches the runner, validator, or mission data contracts.
 
 Never use `eval`. The app should execute only against its bundled SQLite
 database. For a first version, reset the database state when a mission starts;
@@ -191,8 +224,10 @@ handoff**: do not have Codex and Claude Code edit the same feature at once.
 ## Confirmed choices
 
 - Audience: Tech MBA classmates who are SQL beginners.
-- Tone: a business-analytics simulation with game-style progress, points, and
-  badges.
+- Tone: a playful 8-bit adventure (see `docs/GAME_DESIGN_BRIEF.md`) wrapped
+  around a business-analytics learning loop — points, badges, and progress
+  are real mechanics, and the rogue-AI story motivates the same missions
+  rather than replacing them.
 - Builder and time: solo; develop deliberately over three weeks.
 - Source material: use future class notes to refine the missions; the first
   three decks and supplied databases already inform this version.
