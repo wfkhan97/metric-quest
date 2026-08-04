@@ -22,47 +22,52 @@ export function HomeView({ missions, progress, onSelectMission }: HomeViewProps)
       </a>
       <header className="masthead">
         <div>
-          <p className="eyebrow">Aurora Music · quarterly operating review</p>
+          <p className="eyebrow">Aurora Music mainframe · Day one, unauthorized access granted</p>
           <h1 id="page-title">Metric Quest</h1>
-          <p className="lede">Practice business SQL. Run it locally. Verify the result.</p>
+          <p className="lede">
+            The mainframe just pulled you in. ROGUE.exe — the analyst AI that used to run this place — has gone rogue and
+            is corrupting the company's data, sector by sector. Fight back with real SQL.
+          </p>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong>{progress.points} points</strong>
           <span>
-            {progress.completedMissionIds.length} of {missions.length} missions complete
+            {progress.completedMissionIds.length} of {missions.length} terminals purged
           </span>
         </section>
       </header>
 
       <div id="home-main" className="home-content">
         <section className="panel intro-panel" aria-labelledby="brief-title">
-          <h2 id="brief-title">Your assignment</h2>
+          <h2 id="brief-title">Your mission</h2>
           <p>
-            You have just joined Aurora Music's business insights team. Leadership does not want opinions, it wants
-            numbers pulled straight from the company's sales database. Each mission drops you into a real business
-            question from a stakeholder (the CFO, the U.S. sales lead, or an AI analyst whose claim needs checking) and asks
-            you to answer it with one read-only SQL query.
+            You're the newest hire on Aurora Music's business insights team — except your first day just got hijacked.
+            ROGUE.exe has corrupted terminal after terminal of the sales database, feeding leadership fabricated numbers.
+            Each mission drops you into one corrupted terminal with a real business question behind it (from the CFO, the
+            U.S. sales lead, or ROGUE.exe itself) and one way out: write a real, read-only SQL query and get the real
+            answer.
           </p>
           <ol className="how-it-works">
             <li>
-              <strong>Read the business brief.</strong> Every mission states who is asking and what decision depends on the
-              answer.
+              <strong>Read the terminal brief.</strong> Every corrupted terminal still remembers who was asking and what
+              decision depends on the answer.
             </li>
             <li>
-              <strong>Write a query.</strong> The schema for that mission is listed so you know exactly what is available.
+              <strong>Write a query.</strong> The schema for that terminal is listed so you know exactly what's still
+              intact.
             </li>
             <li>
-              <strong>Run it locally and verify.</strong> Your SQL executes in your browser against the course dataset; Metric
-              Quest checks the executed result, not your query text.
+              <strong>Run it locally and verify.</strong> Your SQL executes in your browser against the real dataset;
+              Metric Quest checks the executed result — not your query text — before it calls a terminal purged.
             </li>
           </ol>
         </section>
 
         <section className="panel progress-panel" aria-labelledby="progress-title">
-          <h2 id="progress-title">Your progress</h2>
-          <ProgressBar label="Course progress" completed={progress.completedMissionIds.length} total={missions.length} />
+          <h2 id="progress-title">Mainframe status</h2>
+          <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
           <p className="badges-summary">
-            <strong>Badges:</strong>{' '}
+            <strong>Recovered badges:</strong>{' '}
             {progress.badges.length ? (
               progress.badges.map((badge) => (
                 <span key={badge} className="badge">
@@ -70,11 +75,11 @@ export function HomeView({ missions, progress, onSelectMission }: HomeViewProps)
                 </span>
               ))
             ) : (
-              <span>Complete a mission to earn your first badge.</span>
+              <span>Purge a terminal to earn your first badge.</span>
             )}
           </p>
           <button type="button" className="start-button" onClick={() => onSelectMission(ctaMission)}>
-            {allComplete ? 'Replay a mission' : hasStarted ? `Resume: ${ctaMission.title}` : `Start Mission 1: ${ctaMission.title}`}
+            {allComplete ? 'Replay a sector' : hasStarted ? `Resume: ${ctaMission.title}` : `Enter Sector 1: ${ctaMission.title}`}
           </button>
         </section>
 
@@ -82,7 +87,7 @@ export function HomeView({ missions, progress, onSelectMission }: HomeViewProps)
           missions={missions}
           completedMissionIds={progress.completedMissionIds}
           onSelectMission={onSelectMission}
-          heading="Course chapter map"
+          heading="Sector map"
         />
       </div>
     </main>
