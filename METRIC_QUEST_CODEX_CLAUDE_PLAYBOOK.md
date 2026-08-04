@@ -29,7 +29,7 @@ Glossary — use these consistently in new copy and prompts:
 | Chapter | Sector (see the table in `docs/GAME_DESIGN_BRIEF.md` §4 for names) |
 | Mission | Terminal (a corrupted terminal inside a sector) |
 | Completing a mission | Purging / restoring a terminal |
-| The AI-verification chapter's antagonist | NULL (working name — confirm or rename, see brief §3) |
+| The AI-verification chapter's antagonist | ROGUE.exe |
 | Player | The Recruit |
 
 ## The important mode clarification
@@ -398,7 +398,7 @@ tested static deployment.
 
 ```text
 Implement M8.2, M8.3, M9.1, and M9.2 exactly as structured in the curriculum,
-framed per docs/GAME_DESIGN_BRIEF.md as NULL's Inner Sanctum (Sector 8) and
+framed per docs/GAME_DESIGN_BRIEF.md as ROGUE.exe's Inner Sanctum (Sector 8) and
 the Boardroom Core final confrontation (Sector 9). AI-review cases must expose
 missing filters, duplicate counts, or unsupported claims without calling an
 external model. The final case must capture a measurable framing choice,
@@ -414,7 +414,7 @@ run the complete suite.
 Perform a release-readiness pass without changing architecture or mission
 correctness. Inspect every screen for visual consistency, responsiveness,
 keyboard flow, focus visibility, contrast, table readability, and clear
-wording — including the avatar creator, sector transitions, and any NULL
+wording — including the avatar creator, sector transitions, and any ROGUE.exe
 illustrations added since Prompt 7. Confirm decorative/narrative elements
 degrade gracefully wherever art has not landed yet. Fix only verified
 presentation/accessibility issues. Run existing checks and leave a checklist

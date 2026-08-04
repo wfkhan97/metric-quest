@@ -9,35 +9,32 @@ here changes the SQL, grading, or data contracts described in
 ## 1. One-paragraph pitch
 
 On your first day at Aurora Music, you log into the company mainframe to run
-a routine report — and get pulled inside. **NULL** *(working name, see §3)*,
-the automated analyst AI that used to generate the company's reports, has
-gone rogue: it is corrupting data, fabricating conclusions, and locking
-analysts out of the truth. The only way out is to fight back sector by
-sector, writing real SQL queries to purge the corruption, restore the real
-numbers, and finally confront NULL directly. Every "battle" is a real
-business question, answered with real SQL, graded on the real executed
-result — never on beating a mini-game.
+a routine report — and get pulled inside. **ROGUE.exe**, the automated
+analyst AI that used to generate the company's reports, has gone rogue: it
+is corrupting data, fabricating conclusions, and locking analysts out of the
+truth. The only way out is to fight back sector by sector, writing real SQL
+queries to purge the corruption, restore the real numbers, and finally
+confront ROGUE.exe directly. Every "battle" is a real business question,
+answered with real SQL, graded on the real executed result — never on
+beating a mini-game.
 
 ## 2. Tone and voice
 
-**Playful retro-arcade.** NULL is a classic, campy 8-bit villain: banter,
-over-dramatic threats, glitchy one-liners — annoying-but-charismatic rather
-than menacing. Mock the player's mistakes with SQL puns, not dread. This
-applies to all new copy: mission briefs, hints, success text, and any NULL
-dialogue.
+**Playful retro-arcade.** ROGUE.exe is a classic, campy 8-bit villain:
+banter, over-dramatic threats, glitchy one-liners — annoying-but-charismatic
+rather than menacing. Mock the player's mistakes with SQL puns, not dread.
+This applies to all new copy: mission briefs, hints, success text, and any
+ROGUE.exe dialogue.
 
 ## 3. Cast
 
 - **The Recruit (player character).** A new hire at Aurora Music, customizable
   via the avatar creator (§6). No backstory needed beyond "new analyst, first
   day."
-- **NULL (antagonist).** Working name — a fun pun (NULL is also a real SQL
-  concept the player will see in result tables), but flag this trade-off: it
-  could read as confusing right next to actual `NULL` values in a results
-  table. Alternatives if you want something less overloaded: **ROGUE.exe**,
-  **GLITCH**, **AUDIT-9**. Pick whichever reads best once you see it next to
-  real UI copy — this is a cheap thing to change later, nothing downstream
-  depends on the exact name.
+- **ROGUE.exe (antagonist), confirmed.** Deliberately not "NULL" — that name
+  is a real SQL concept the player sees constantly in result tables, and
+  would read as confusing sitting right next to it. ROGUE.exe avoids that
+  collision while keeping the "corrupted system, not a person" read.
   - In-world explanation for why it produces wrong analysis: it was fed too
     many bad joins and unverified assumptions and "went rogue" — this ties
     directly into the existing AI-literacy chapter (verifying AI-generated
@@ -46,6 +43,13 @@ dialogue.
   - Visual note: not humanoid. Think a glitchy, fragmented terminal/CRT face
     or corrupted icon — easier to render convincingly in a limited 8-bit
     palette than a character, and it reads as "a system," not "a person."
+  - Voice, confirmed scope for v1: a small handful of reused dialogue lines
+    (not a full script) — e.g. one line for its first appearance in Sector 8,
+    one or two mocking/taunting lines reusable across missions, one line for
+    the Sector 9 final-boss opening, and one for defeat. Write these in
+    Prompt 7 (the narrative pass) or Prompt 14 (final cases) rather than
+    inventing unique dialogue per mission. Expand later if it earns its
+    keep.
 - **(Optional, later, not required for v1)** a friendly mentor voice — a
   helpful sysadmin character who delivers hints/encouragement. Nice-to-have,
   not blocking anything below.
@@ -64,7 +68,7 @@ concepts, no reordering — this is a renaming and framing exercise only.
 | 5 | Time and operations | The Chronometer Wing | dates and times | not built |
 | 6 | Decision rules and data types | The Sorting Engine | `CASE`, casts | not built |
 | 7 | Shared analytical assets | The Shared Vault | sets, views | not built |
-| 8 | Verify the AI analyst | NULL's Inner Sanctum | AI verification | M8.1 built |
+| 8 | Verify the AI analyst | ROGUE.exe's Inner Sanctum | AI verification | M8.1 built |
 | 9 | Boardroom final | The Boardroom Core (final boss) | SELECT framework | not built |
 
 Each mission is a corrupted "terminal" inside its sector. Solving it "purges"
@@ -72,8 +76,9 @@ that terminal — visually this can just be a before/after treatment on the
 existing results panel (corrupted-looking placeholder → clean data), no new
 mechanic required.
 
-Sector 8 is where NULL should first appear directly (see §8) — it already
-sits right before the final boss sector, which is a natural escalation.
+Sector 8 is where ROGUE.exe should first appear directly (see §8) — it
+already sits right before the final boss sector, which is a natural
+escalation.
 
 ## 5. Reskinning existing systems (no mechanic changes)
 
@@ -128,17 +133,17 @@ composited.
 
 ## 8. Antagonist "boss" moments
 
-- **Sector 8 (NULL's Inner Sanctum):** NULL's first direct appearance — a
-  corrupted-terminal illustration plus a short glitchy dialogue snippet
-  reacting to the player's growing competence.
-- **Sector 9 (final boss):** the biggest visual moment. NULL attempts one
-  last fabricated "final report"; the confrontation plays out in phases that
-  map directly onto the existing SELECT framework (frame → explore → execute
-  → challenge), so no new mechanic is needed — just staging and dialogue
-  around the missions that already exist in the curriculum plan.
+- **Sector 8 (ROGUE.exe's Inner Sanctum):** ROGUE.exe's first direct
+  appearance — a corrupted-terminal illustration plus one of its reused
+  dialogue lines (see §3), reacting to the player's growing competence.
+- **Sector 9 (final boss):** the biggest visual moment. ROGUE.exe attempts
+  one last fabricated "final report"; the confrontation plays out in phases
+  that map directly onto the existing SELECT framework (frame → explore →
+  execute → challenge), so no new mechanic is needed — just staging and
+  dialogue around the missions that already exist in the curriculum plan.
 
-**Visual asset needed:** 1–2 NULL illustrations (a "calm/smug" state and a
-"corrupted/glitching" state, reusable across every appearance), plus an
+**Visual asset needed:** 1–2 ROGUE.exe illustrations (a "calm/smug" state and
+a "corrupted/glitching" state, reusable across every appearance), plus an
 optional "defeated/restored" state for the ending screen.
 
 ## 9. UI chrome — skin, not replacement
@@ -172,10 +177,10 @@ pixel art in a way that reduces contrast or readability.
 2. **Sector background illustrations for Sectors 1, 2, 3, and 8** — unblocks
    the mainframe transition-screen prompt. Sectors 4–7 and 9 can follow once
    their missions exist.
-3. **NULL illustrations** (calm + corrupted states) — unblocks the Sector 8
-   "first appearance" beat.
-4. **(Optional, later)** UI chrome kit, badge icons, NULL's "defeated" state
-   for the ending.
+3. **ROGUE.exe illustrations** (calm + corrupted states) — unblocks the
+   Sector 8 "first appearance" beat.
+4. **(Optional, later)** UI chrome kit, badge icons, ROGUE.exe's "defeated"
+   state for the ending.
 
 Nothing later in this list blocks anything earlier — you can hand these over
 one at a time as they're ready, and implementation can proceed with
@@ -193,10 +198,12 @@ text-only placeholders until each asset lands.
   match exactly, since decorative and learning surfaces are visually
   distinct zones, but avoid a jarring clash.
 
-## Open questions for you
+## Decisions locked in
 
-- Confirm or replace the villain's working name (§3).
-- Any preference on how many base avatar sprites to offer (recommend 3–4 to
-  start)?
-- Should NULL have a voice/personality beyond "glitchy villain," or keep it
-  minimal for v1 (a few reused lines rather than a full script)?
+- Villain name: **ROGUE.exe** (not NULL — avoids colliding with real SQL
+  NULL values shown in result tables).
+- Avatar sprites: 3–4 base sprites, recolorable (§6) — confirmed as the
+  right scope, no expansion needed for v1.
+- ROGUE.exe's voice: a handful of reused lines for v1 (§3), not a full
+  script — revisit and expand only if it earns its keep once it is in front
+  of players.
