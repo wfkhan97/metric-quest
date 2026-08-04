@@ -2,6 +2,7 @@
 
 Read `docs/AI_WORKFLOW.md` and `docs/architecture.md` before editing product code.
 
+- Git workflow: never commit to `main` directly. Create a new branch at the start of every session, do the work there, then summarize what changed and ask the user to approve the merge before merging or pushing to `main`. Full detail in `docs/AI_WORKFLOW.md`.
 - Work in small, reviewable changes. Inspect the current tree and relevant source data before edits.
 - Treat `SQL Databases/` as source material: never modify it. Use an approved copy or minimized derivative for browser delivery.
 - The app is browser-only. Do not add accounts, servers, telemetry, external AI calls, or network-dependent query execution without explicit approval.
