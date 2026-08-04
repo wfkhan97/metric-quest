@@ -3,6 +3,7 @@ dist/
 coverage/
 .DS_Store
 .pnpm-store/
+.claude/worktrees/
 
 # Course database source material: only the dataset the app actually loads
 # (SQL Databases/iTunes.sqlite) is tracked. See docs/AI_WORKFLOW.md.
