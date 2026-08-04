@@ -10,7 +10,18 @@ exact reference query.
 
 The curriculum uses `SQL Databases/iTunes.sqlite`, a dataset already used in
 the Lecture 2 in-class lab. It frames the player as an analyst at **Aurora
-Music**, preparing a quarterly operating review.
+Music**.
+
+**Narrative pivot:** the "business brief" for each mission below is written
+in the original real-world voice (CFO, sales lead, etc.). Per
+`docs/GAME_DESIGN_BRIEF.md`, shipped and future missions are being rewritten
+into an 8-bit rogue-AI narrative — the player restores a corrupted "terminal"
+in a "sector," not just answering a memo. The four already-built missions
+(M1.1, M2.1, M3.1, M8.1) get that rewrite in the upcoming narrative-pass
+prompt; new missions from M1.2 onward should be *authored* in that voice
+directly rather than written here first and re-themed later. The SQL concept,
+reference solution, and expected result for every mission are unaffected —
+only the brief/hint/lesson wording changes.
 
 ## Rules of the game
 
