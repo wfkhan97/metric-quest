@@ -151,9 +151,9 @@ codebase has:
   TABLE/VIEW setup statement before the graded SELECT (`src/lib/sqlRunner.ts`);
 - a result-based validator with normalization for column case, numeric
   precision, and optional row order (`src/lib/grading.ts`);
-- 21 tested missions covering Chapters 1-8: M1.1-M1.4, M2.1-M2.3,
-  M3.1-M3.4, M4.1-M4.3, M5.1-M5.2, M6.1-M6.2, M7.1-M7.2, M8.1
-  (`src/lib/missions.ts`), each with a fixture test
+- 25 tested missions covering the full curriculum, Chapters 1-9: M1.1-M1.4,
+  M2.1-M2.3, M3.1-M3.4, M4.1-M4.3, M5.1-M5.2, M6.1-M6.2, M7.1-M7.2,
+  M8.1-M8.3, M9.1-M9.2 (`src/lib/missions.ts`), each with a fixture test
   (`src/lib/missions.test.ts`) that runs its reference solution against the
   real approved dataset, through the same executor the app uses, and checks
   it actually validates;
@@ -176,9 +176,15 @@ M8.3/M9.1). Prompt 15 (release UX review) is also done -- run by Claude
 Code this session: contrast, keyboard flow/focus visibility, 320px-desktop
 responsiveness, and the never-before-reachable campaign-completion state
 (all 25 missions done -- only possible now that Sector 9 exists) were all
-checked with no defects found, so nothing needed fixing. The next prompt to
-actually send is **Prompt 16** (Codex: final audit and deployment
-preparation), continuing the Week 3 Goal below.
+checked with no defects found, so nothing needed fixing. Prompt 16 (final
+audit and deployment preparation) is also done -- **Week 3, and the full
+three-week plan, are complete.** See Prompt 16's entry below for the audit
+findings and the two low-risk doc fixes it made. Nothing in this playbook
+is queued next; new work now comes from a genuine backlog (real
+sector-background/ROGUE.exe art from Claude Design, the Phase 2/3
+animation roadmap in `docs/GAME_DESIGN_BRIEF.md` §A8, or a real
+structured-answer mechanic for a future M8.3/M9.1-style mission) rather
+than from an unsent prompt in this file.
 
 ## Week 1: foundation and vertical slice
 
@@ -481,7 +487,7 @@ always worked). All interactive controls are plain semantic HTML
 handling that could block real keyboard activation, so this doesn't reflect
 an app-side keyboard-accessibility gap.
 
-### Prompt 16 — Codex: final audit and deployment preparation
+### Prompt 16 — Codex: final audit and deployment preparation ✅ done (run by Claude Code this session)
 
 ```text
 Audit the current project against the product plan, mission curriculum, and
@@ -495,6 +501,42 @@ instructions for a static host such as Vercel, including the actual build
 command and output directory. Do not publish anything. Report prioritized
 findings with file and line references, and fix only clear low-risk defects.
 ```
+
+Audit results, all confirmed:
+- Full syllabus coverage: 25/25 missions (M1.1-M9.2) match the curriculum's
+  chapter/concept structure one-for-one.
+- Every mission's `solutionSql` is executed against the real
+  `SQL Databases/iTunes.sqlite` and validated in
+  `src/lib/missions.test.ts` (25 fixture tests, one per mission).
+- Grading is strictly result-based (`src/lib/grading.ts` compares executed
+  tables; `src/lib/sqlRunner.ts` never accepts unexecuted SQL).
+- `src/lib/progress.test.ts` explicitly tests backward compatibility: an
+  older save missing `avatar` or `seenSectors` entirely, and a malformed
+  `avatar` value, both load safely without discarding other progress.
+- No backend/account/paid API: the only `fetch` in the codebase
+  (`src/lib/sqlRunner.ts:179`) loads the bundled same-origin
+  `iTunes.sqlite` asset, not an external service.
+
+Fixes applied (both low-risk doc corrections, no code/behavior changes):
+- `docs/architecture.md`: corrected a stale line claiming
+  `src/lib/missions.ts` "contains only M1.1, M2.1, M3.1, and M8.1" (true at
+  Week 1, false since Week 2) to reflect the full 25-mission curriculum.
+- `README.md`: added a **Deployment** section (build command `npm run
+  build`, output directory `dist/`, Vercel-specific settings, and a pointer
+  to the `docs/AI_WORKFLOW.md` course-data release gate before any public
+  deploy) and fixed the Quick Start section, which said `pnpm install` /
+  `pnpm run dev` while every other doc in the repo (`AGENTS.md`,
+  `CLAUDE.md`, `docs/AI_WORKFLOW.md`) says `npm run ...` — now consistent
+  on `npm` throughout the README.
+
+Not fixed, flagged for awareness only: the repo has a tracked
+`pnpm-lock.yaml` even though every instruction file standardizes on `npm`.
+Both package managers run the existing scripts fine once `node_modules`
+exists, so this is a documentation-consistency question, not a functional
+defect — pick one canonical package manager and remove the other's lockfile
+when convenient, but that's a call for the user, not an unprompted fix.
+
+`npm run check` (lint + test + typecheck + build) is green after all fixes.
 
 ## Handoff template
 
