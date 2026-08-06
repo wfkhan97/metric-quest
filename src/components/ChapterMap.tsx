@@ -1,3 +1,4 @@
+import { useEffect, useId, useState } from 'react';
 import { chapterNumber, chapters } from '../content/chapters';
 import { type Mission } from '../lib/missions';
 
@@ -10,16 +11,43 @@ type ChapterMapProps = {
 };
 
 export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Sector map' }: ChapterMapProps) {
+  const listId = useId();
+  const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches);
+  const [isOpen, setIsOpen] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 720px)').matches);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 720px)');
+    const updateLayout = () => {
+      setIsCompact(media.matches);
+      setIsOpen(!media.matches);
+    };
+
+    updateLayout();
+    media.addEventListener('change', updateLayout);
+    return () => media.removeEventListener('change', updateLayout);
+  }, []);
+
   return (
     <nav className="chapter-map" aria-label={heading}>
-      <h2>{heading}</h2>
-      <ol className="chapter-list">
+      <div className="chapter-map-heading">
+        <h2>{heading}</h2>
+        <button
+          type="button"
+          className="chapter-toggle"
+          aria-expanded={isOpen}
+          aria-controls={listId}
+          onClick={() => setIsOpen((open) => !open)}
+        >
+          {isOpen ? 'Hide sectors' : 'Browse sectors'}
+        </button>
+      </div>
+      <ol id={listId} className="chapter-list" hidden={isCompact && !isOpen}>
         {chapters.map((chapter) => {
           const chapterMissions = missions.filter((mission) => chapterNumber(mission) === chapter.number);
           return (
             <li key={chapter.number} className="chapter-item">
               <p className="chapter-item-title">
-                Chapter {chapter.number} · {chapter.title}
+                Sector {chapter.number} · {chapter.title}
               </p>
               {chapterMissions.length === 0 ? (
                 <p className="chapter-locked">Coming soon</p>

@@ -18,18 +18,14 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
   const hasStarted = progress.completedMissionIds.length > 0;
 
   return (
-    <main className="app-shell" aria-labelledby="page-title">
+    <main className="app-shell home-view" aria-labelledby="page-title">
       <a className="skip-link" href="#home-main">
         Skip to onboarding content
       </a>
-      <header className="masthead">
+      <header className="terminal-hud">
         <div>
-          <p className="eyebrow">Aurora Music mainframe · Day one, unauthorized access granted</p>
+          <p className="eyebrow">Aurora Music mainframe · analyst access</p>
           <h1 id="page-title">Metric Quest</h1>
-          <p className="lede">
-            The mainframe just pulled you in. ROGUE.exe — the analyst AI that used to run this place — has gone rogue and
-            is corrupting the company's data, sector by sector. Fight back with real SQL.
-          </p>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong>{progress.points} points</strong>
@@ -41,32 +37,34 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
 
       <div id="home-main" className="home-content">
         <section className="panel intro-panel" aria-labelledby="brief-title">
-          <h2 id="brief-title">Your mission</h2>
+          <h2 id="brief-title">Incident brief</h2>
           <p>
-            You're the newest hire on Aurora Music's business insights team — except your first day just got hijacked.
-            ROGUE.exe has corrupted terminal after terminal of the sales database, feeding leadership fabricated numbers.
-            Each mission drops you into one corrupted terminal with a real business question behind it (from the CFO, the
-            U.S. sales lead, or ROGUE.exe itself) and one way out: write a real, read-only SQL query and get the real
-            answer.
+            You&apos;re Aurora Music&apos;s data scientist. Leadership fast-tracked an automated analyst, ROGUE.exe, into
+            production to ship reports faster — without the verification a human analyst would have demanded. It is now
+            fabricating conclusions, corrupting data, and locking the real analysts out of the truth.
+          </p>
+          <p>
+            Logging in pulled you into the mainframe. Purge each corrupted terminal with real SQL, restore the real
+            numbers, and make it out sector by sector.
           </p>
           <ol className="how-it-works">
             <li>
-              <strong>Read the terminal brief.</strong> Every corrupted terminal still remembers who was asking and what
-              decision depends on the answer.
+              <strong>Read the terminal brief.</strong> Every corrupted terminal still holds a real business question and
+              the decision that depends on it.
             </li>
             <li>
               <strong>Write a query.</strong> The schema for that terminal is listed so you know exactly what's still
               intact.
             </li>
             <li>
-              <strong>Run it locally and verify.</strong> Your SQL executes in your browser against the real dataset;
-              Metric Quest checks the executed result — not your query text — before it calls a terminal purged.
+              <strong>Run it locally and verify.</strong> Your SQL executes against the real dataset; the mainframe checks
+              the executed result, never just the query text.
             </li>
           </ol>
         </section>
 
         <section className="panel progress-panel" aria-labelledby="progress-title">
-          <h2 id="progress-title">Mainframe status</h2>
+          <h2 id="progress-title">Status console</h2>
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
           <p className="badges-summary">
             <strong>Recovered badges:</strong>{' '}

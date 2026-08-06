@@ -54,13 +54,13 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   }
 
   return (
-    <main className="app-shell" aria-labelledby="page-title">
+    <main className="app-shell mission-view" aria-labelledby="page-title">
       <a className="skip-link" href="#mission">
         Skip to active mission
       </a>
-      <header className="masthead">
+      <header className="terminal-hud">
         <div>
-          <p className="eyebrow">Aurora Music mainframe · Day one, unauthorized access granted</p>
+          <p className="eyebrow">Aurora Music mainframe · active terminal</p>
           <h1 id="page-title">Metric Quest</h1>
           <button type="button" className="link-button" onClick={onBackToHome}>
             <span aria-hidden="true">← </span>Back to sector map
@@ -86,6 +86,15 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           </p>
           <h2 id="mission-title">{mission.title}</h2>
           <p className="brief">{mission.brief}</p>
+
+          {mission.id === 'm8-1' && (
+            <aside className="rogue-encounter" aria-label="ROGUE.exe transmission">
+              <div className="rogue-signal" role="img" aria-label="Glitching ROGUE.exe terminal icon" />
+              <p>
+                <strong>ROGUE.exe:</strong> &ldquo;Verification is such a delightfully inefficient human habit.&rdquo;
+              </p>
+            </aside>
+          )}
 
           <div className="two-column">
             <SchemaExplorer tables={mission.visibleTables} relationships={mission.relationships} />
@@ -161,7 +170,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             </section>
           )}
           {feedback && (
-            <section className={`feedback ${feedback.tone}`} aria-live="polite" role="status">
+            <section className={`feedback ${feedback.tone}${feedback.tone === 'success' ? ' mission-complete' : ''}`} aria-live="polite" role="status">
               <h3>{feedback.heading}</h3>
               <p>{feedback.text}</p>
             </section>
@@ -170,7 +179,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         </section>
       </div>
 
-      <footer className="badges" aria-label="Earned badges">
+      <footer className="badges mission-badges" aria-label="Earned badges">
         <strong>Badges:</strong>
         {progress.badges.length ? (
           progress.badges.map((badge) => (

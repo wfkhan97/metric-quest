@@ -29,16 +29,18 @@ export function SectorTransitionView({ chapterNumber, sectorTitle, avatar, onCon
 
   return (
     <main className="app-shell sector-transition" aria-labelledby="sector-transition-title">
-      <div className="sector-transition-frame">
+      <div className="sector-transition-frame phase-scanline">
         <p className="eyebrow">Sector access · Now entering</p>
         <h1 id="sector-transition-title">{sectorTitle}</h1>
-        <AvatarPreview
-          spriteId={(avatar ?? defaultAvatar).spriteId}
-          colorId={(avatar ?? defaultAvatar).colorId}
-          size={96}
-          label={`${(avatar ?? defaultAvatar).callsign} entering ${sectorTitle}`}
-        />
-        <p className="sector-transition-flavor">{flavor}</p>
+        <div className="sector-sprite phase-slide">
+          <AvatarPreview
+            spriteId={(avatar ?? defaultAvatar).spriteId}
+            colorId={(avatar ?? defaultAvatar).colorId}
+            size={96}
+            label={`${(avatar ?? defaultAvatar).callsign} entering ${sectorTitle}`}
+          />
+        </div>
+        <p className="sector-transition-flavor type-reveal">{flavor}</p>
         <div className="actions">
           <button type="button" className="primary" onClick={onContinue} ref={continueButtonRef}>
             Continue
