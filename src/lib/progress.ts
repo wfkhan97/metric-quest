@@ -12,6 +12,10 @@ export type Progress = {
    * Treat that (or a malformed value) as "no avatar yet," never as corrupt
    * progress requiring a reset — see parseAvatar below. */
   avatar?: AvatarConfig;
+  /** Optional and additive, same rule as `avatar`: chapter numbers whose
+   * sector-transition screen has already been shown once. Missing entirely
+   * on older saves means "nothing seen yet," not corrupt progress. */
+  seenSectors?: number[];
 };
 
 const storageKey = 'metric-quest-progress-v1';
@@ -33,11 +37,15 @@ export function loadProgress(): Progress {
     const parsed = JSON.parse(value) as Partial<Progress>;
     if (!Array.isArray(parsed.completedMissionIds) || !Array.isArray(parsed.badges) || typeof parsed.points !== 'number') return emptyProgress;
     const avatar = parseAvatar(parsed.avatar);
+    const seenSectors = Array.isArray(parsed.seenSectors)
+      ? parsed.seenSectors.filter((n): n is number => typeof n === 'number')
+      : undefined;
     return {
       completedMissionIds: parsed.completedMissionIds.filter((id): id is string => typeof id === 'string'),
       badges: parsed.badges.filter((badge): badge is string => typeof badge === 'string'),
       points: Math.max(0, parsed.points),
       ...(avatar ? { avatar } : {}),
+      ...(seenSectors ? { seenSectors } : {}),
     };
   } catch {
     return emptyProgress;
@@ -60,5 +68,14 @@ export function completeMission(progress: Progress, missionId: string, points: n
 
 export function setAvatar(progress: Progress, avatar: AvatarConfig): Progress {
   return { ...progress, avatar };
+}
+
+export function hasSeenSector(progress: Progress, chapterNumber: number): boolean {
+  return progress.seenSectors?.includes(chapterNumber) ?? false;
+}
+
+export function markSectorSeen(progress: Progress, chapterNumber: number): Progress {
+  if (hasSeenSector(progress, chapterNumber)) return progress;
+  return { ...progress, seenSectors: [...(progress.seenSectors ?? []), chapterNumber] };
 }
 

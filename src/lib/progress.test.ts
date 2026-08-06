@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { completeMission, loadProgress, saveProgress, setAvatar, type Progress } from './progress';
+import { completeMission, hasSeenSector, loadProgress, markSectorSeen, saveProgress, setAvatar, type Progress } from './progress';
 
 const storageKey = 'metric-quest-progress-v1';
 
@@ -76,6 +76,37 @@ describe('setAvatar', () => {
     expect(next.points).toBe(100);
     expect(next.badges).toEqual(['First badge']);
     expect(next.avatar).toEqual({ spriteId: 'sprite-analyst', colorId: 'color-teal', callsign: 'Recruit' });
+  });
+});
+
+describe('sector transition tracking', () => {
+  it('tolerates an older saved record with no seenSectors field at all', () => {
+    setStored({ completedMissionIds: [], points: 0, badges: [] });
+    const progress = loadProgress();
+    expect(progress.seenSectors).toBeUndefined();
+    expect(hasSeenSector(progress, 1)).toBe(false);
+  });
+
+  it('marks a sector seen without disturbing other progress fields', () => {
+    const progress: Progress = { completedMissionIds: ['m1.1'], points: 20, badges: [] };
+    const next = markSectorSeen(progress, 1);
+    expect(hasSeenSector(next, 1)).toBe(true);
+    expect(hasSeenSector(next, 2)).toBe(false);
+    expect(next.completedMissionIds).toEqual(['m1.1']);
+    expect(next.points).toBe(20);
+  });
+
+  it('is idempotent: marking the same sector twice does not duplicate it', () => {
+    const progress: Progress = { completedMissionIds: [], points: 0, badges: [], seenSectors: [1] };
+    const next = markSectorSeen(progress, 1);
+    expect(next).toBe(progress);
+    expect(next.seenSectors).toEqual([1]);
+  });
+
+  it('round-trips seenSectors through save and load', () => {
+    const progress: Progress = { completedMissionIds: [], points: 0, badges: [], seenSectors: [1, 2] };
+    saveProgress(progress);
+    expect(loadProgress()).toEqual(progress);
   });
 });
 

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { AvatarCreatorView } from './components/AvatarCreatorView';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
+import { SectorTransitionView } from './components/SectorTransitionView';
+import { chapterNumber, chapters } from './content/chapters';
 import { missions, type Mission } from './lib/missions';
-import { loadProgress, saveProgress, setAvatar, type AvatarConfig, type Progress } from './lib/progress';
+import { hasSeenSector, loadProgress, markSectorSeen, saveProgress, setAvatar, type AvatarConfig, type Progress } from './lib/progress';
 
-type View = 'home' | 'avatar' | 'mission';
+type View = 'home' | 'avatar' | 'sector-transition' | 'mission';
 
 export function App() {
   const [view, setView] = useState<View>('home');
@@ -24,6 +26,16 @@ export function App() {
     saveProgress(next);
   }
 
+  function enterMissionWithTransitionCheck(mission: Mission, progressSnapshot: Progress) {
+    if (!hasSeenSector(progressSnapshot, chapterNumber(mission))) {
+      setPendingMission(mission);
+      setView('sector-transition');
+      return;
+    }
+    setPendingMission(null);
+    goToMission(mission);
+  }
+
   function handleSelectMission(mission: Mission) {
     if (!progress.avatar) {
       setPendingMission(mission);
@@ -31,7 +43,7 @@ export function App() {
       setView('avatar');
       return;
     }
-    goToMission(mission);
+    enterMissionWithTransitionCheck(mission, progress);
   }
 
   function handleEditAvatar() {
@@ -41,11 +53,10 @@ export function App() {
   }
 
   function handleAvatarConfirm(avatar: AvatarConfig) {
-    handleProgressChange(setAvatar(progress, avatar));
+    const nextProgress = setAvatar(progress, avatar);
+    handleProgressChange(nextProgress);
     if (pendingMission) {
-      const mission = pendingMission;
-      setPendingMission(null);
-      goToMission(mission);
+      enterMissionWithTransitionCheck(pendingMission, nextProgress);
     } else {
       setView('home');
     }
@@ -56,6 +67,17 @@ export function App() {
     setView('home');
   }
 
+  function handleSectorTransitionContinue() {
+    if (!pendingMission) {
+      setView('home');
+      return;
+    }
+    const mission = pendingMission;
+    handleProgressChange(markSectorSeen(progress, chapterNumber(mission)));
+    setPendingMission(null);
+    goToMission(mission);
+  }
+
   if (view === 'avatar') {
     return (
       <AvatarCreatorView
@@ -63,6 +85,18 @@ export function App() {
         mode={avatarMode}
         onConfirm={handleAvatarConfirm}
         onCancel={avatarMode === 'edit' ? handleAvatarCancel : undefined}
+      />
+    );
+  }
+
+  if (view === 'sector-transition' && pendingMission) {
+    const sectorTitle = chapters.find((chapter) => chapter.number === chapterNumber(pendingMission))?.title ?? pendingMission.chapter;
+    return (
+      <SectorTransitionView
+        chapterNumber={chapterNumber(pendingMission)}
+        sectorTitle={sectorTitle}
+        avatar={progress.avatar}
+        onContinue={handleSectorTransitionContinue}
       />
     );
   }

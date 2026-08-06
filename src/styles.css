@@ -811,6 +811,101 @@ th {
   padding: 0.55rem 0.7rem;
 }
 
+/* Sector transition: same decorative retro surface and --retro-* custom
+   property names as .avatar-creator (see docs/GAME_DESIGN_BRIEF.md §A6) —
+   no sector background art exists yet, so this is the text-only fallback
+   Prompt 9 calls for, not a placeholder for a missing image. */
+.sector-transition {
+  --retro-bg: #0a1024;
+  --retro-panel: #0f1830;
+  --retro-panel-raised: #16213f;
+  --retro-teal: #1fd3c4;
+  --retro-text: #eaf6f4;
+  --retro-amber: #ffd166;
+  --retro-muted: #9fb3c8;
+}
+
+.app-shell.sector-transition {
+  align-items: center;
+  background: var(--retro-bg);
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  max-width: none;
+  min-height: 100vh;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1rem;
+}
+
+.sector-transition-frame {
+  background: var(--retro-panel);
+  border: 4px solid var(--retro-teal);
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px var(--retro-bg), 0 0 32px rgba(31, 211, 196, 0.35);
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  max-width: 34rem;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+}
+
+.sector-transition-frame .eyebrow {
+  background: var(--retro-amber);
+  border-radius: 999px;
+  color: var(--retro-bg);
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.7rem;
+}
+
+.sector-transition-frame h1 {
+  color: var(--retro-text);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: clamp(1rem, 4vw, 1.4rem);
+  line-height: 1.6;
+  margin: 0;
+  text-shadow: 2px 2px 0 var(--color-teal-600);
+}
+
+.sector-transition-frame .avatar-sprite-image-frame,
+.sector-transition-frame .avatar-sprite {
+  background: var(--retro-bg);
+  border: 3px solid var(--retro-teal);
+  border-radius: 6px;
+  padding: 0.4rem;
+}
+
+.sector-transition-flavor {
+  color: var(--retro-text);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 42ch;
+}
+
+.sector-transition-frame .actions {
+  justify-content: center;
+  margin: 0;
+}
+
+.sector-transition-frame .actions button.primary {
+  background: var(--retro-teal);
+  border-color: var(--retro-teal);
+  color: var(--retro-bg);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.7rem;
+}
+
+.sector-transition-frame .actions button.primary:hover {
+  background: #17b6a9;
+}
+
+.sector-transition-hint {
+  color: var(--retro-muted);
+  margin: 0;
+}
+
 /* Responsive: 320px through desktop */
 @media (max-width: 900px) {
   .game-layout {
