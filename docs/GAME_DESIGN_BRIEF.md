@@ -313,10 +313,40 @@ The 4 scenes:
 Generate them as 4 separate images at a consistent resolution.
 ```
 
-*(Sectors 4-7 and 9 already have missions built — reuse this same prompt
-shape for them next, pulling the visual theme from the table in §A4. None
-of Sectors 1-9 have background art yet, so every sector transition
-currently uses the text-only fallback from Prompt 9.)*
+*(Sectors 4-7 and 9 already have missions built — Step 2b below reuses this
+same prompt shape for them. None of Sectors 1-9 have background art yet, so
+every sector transition currently uses the text-only fallback from
+Prompt 9.)*
+
+### Step 2b — Remaining sector background scenes (Sectors 4, 5, 6, 7, 9)
+
+```text
+Design 5 more background illustrations for "Metric Quest," continuing the
+exact same set as before -- same wide-screen-backdrop format, same clear
+open area in the lower-middle third for a character sprite, same 8-bit/16-bit
+dark CRT-terminal palette (deep navy #0a1024, teal #1fd3c4 and amber #ffd166
+accents), same "a distinct room inside a computer mainframe" feel, not a
+literal office.
+
+The 5 scenes:
+
+1. "The Workbench Foundry" (Sector 4) -- a forge/workshop where raw data
+   gets staged and reshaped, half-finished pieces smoldering on benches.
+2. "The Chronometer Wing" (Sector 5) -- a clocktower-like wing full of
+   gears and chronometers, dials mid-scramble.
+3. "The Sorting Engine" (Sector 6) -- a mechanical facility with conveyor
+   belts splitting into branching chutes.
+4. "The Shared Vault" (Sector 7) -- a communal library where shared
+   "views" sit glowing on illuminated pedestals.
+5. "The Boardroom Core" (Sector 9, final boss) -- a grand boardroom turned
+   battle arena: an impossibly long table, chairs replaced by screens.
+   This is the climax location, so it can read a little more dramatic and
+   high-stakes than the others while staying in the same pixel-art style
+   and playful-retro tone (not horror).
+
+Generate them as 5 separate images at the same resolution as the first 4,
+so all 9 sector backgrounds are a consistent set.
+```
 
 ### Step 3 — ROGUE.exe illustrations
 
@@ -344,12 +374,21 @@ Design a small reusable pixel-art UI chrome kit for Metric Quest:
 - One panel border/frame graphic.
 - One button frame in 4 states: idle, hover, active, disabled.
 - A small icon set: a "points" icon, a "badge" icon, a "progress" icon.
+- Two small feedback-state icons for the mission results panel: a
+  "corruption detected" icon (glitchy, red/amber, shown when a query is
+  wrong) and a "signal restored" icon (clean, teal, shown when a query is
+  right). Think small status badges, not full illustrations -- roughly
+  icon-sized, meant to sit right next to a line of feedback text.
 
 Style: consistent with the sprite/background pixel art already generated.
 ```
 
-This one is a nice-to-have — CSS borders can approximate the look well
-enough if you'd rather skip it entirely for v1.
+This one is a nice-to-have — CSS borders/shapes already approximate all of
+this well enough to ship without it. The two feedback-state icons in
+particular already exist as CSS placeholders (a glitching red square and a
+pulsing teal ring) built into the results panel; sending this prompt would
+just give you a drop-in real-art replacement for those two, not a new
+feature.
 
 ---
 
