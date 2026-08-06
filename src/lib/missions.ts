@@ -9,7 +9,8 @@ export type Mission = {
     | 'm5-1' | 'm5-2'
     | 'm6-1' | 'm6-2'
     | 'm7-1' | 'm7-2'
-    | 'm8-1';
+    | 'm8-1' | 'm8-2' | 'm8-3'
+    | 'm9-1' | 'm9-2';
   chapter: string;
   title: string;
   concept: string;
@@ -283,6 +284,51 @@ export const missions: Mission[] = [
     expected: { columns: ['UniquePurchasers'], rows: [[59]] },
     orderMatters: false, points: 40, badge: 'AI Auditor',
     successLesson: 'Corruption purged. ROGUE.exe\'s 412 was invoice rows wearing a trenchcoat — DISTINCT CustomerId strips the disguise and returns 59 actual people. Rule one of auditing an AI analyst: verify the count before you trust the claim.',
+  },
+  {
+    id: 'm8-2', chapter: "8 · ROGUE.exe's Inner Sanctum", title: 'The "best market" claim', concept: 'Scoping a claim to a real time window',
+    brief: 'ROGUE.exe plasters every wall of the Sanctum with the same line: "USA. Best current market. Trust the math." The math isn\'t fabricated this time — it\'s just old, Aurora\'s entire lifetime ledger stretched thin and relabeled "now." Rebuild the claim honestly: total revenue by billing country using only 2010 invoices, richest first.',
+    starterSql: "-- Filter Invoice to InvoiceDate year 2010 (strftime('%Y', InvoiceDate) = '2010').\n-- Group by BillingCountry and SUM(Total) as Revenue. Sort richest first.",
+    solutionSql: "SELECT BillingCountry, ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2010'\nGROUP BY BillingCountry\nORDER BY Revenue DESC, BillingCountry;",
+    hints: ["\"Current\" is not the same as \"all-time\" — put strftime('%Y', InvoiceDate) = '2010' in the WHERE clause before anything else runs.", 'From there it\'s the same shape you\'ve run before: GROUP BY BillingCountry, SUM(Total) as Revenue, ORDER BY Revenue DESC.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 127.98], ['Brazil', 53.46], ['Canada', 42.57], ['France', 36.66], ['Portugal', 24.77], ['Sweden', 24.75], ['Czech Republic', 19.83], ['Germany', 18.81], ['Denmark', 15.84], ['Italy', 15.84], ['Austria', 11.88], ['Hungary', 11.88], ['Poland', 11.88], ['India', 10.89], ['United Kingdom', 9.9], ['Australia', 8.91], ['Norway', 8.91], ['Chile', 6.93], ['Finland', 0.99], ['Netherlands', 0.99]] },
+    orderMatters: true, points: 40,
+    successLesson: "Claim rescoped. USA still leads — but only inside one real year, not ROGUE.exe's lifetime total stretched to look current. A rank built on a single time window tells you what happened in that window, nothing about what happens next; that gap is exactly where an unverified AI claim turns into a bad call.",
+  },
+  {
+    id: 'm8-3', chapter: "8 · ROGUE.exe's Inner Sanctum", title: 'The cut list', concept: 'JOIN, aggregation, and HAVING on the low end',
+    brief: 'The Sanctum flickers again — ROGUE.exe is drafting a cut list, genres it wants to kill to "streamline the catalog," and it won\'t show its criteria. Pull the same list yourself before it deletes anything: every genre earning less than $20 in total revenue, weakest first.',
+    starterSql: '-- Join InvoiceLine to Track to Genre. Group by genre and keep only genres\n-- whose SUM(UnitPrice * Quantity) is under 20. Return Genre and Revenue,\n-- weakest first.',
+    solutionSql: 'SELECT g.Name AS Genre,\n       ROUND(SUM(il.UnitPrice * il.Quantity), 2) AS Revenue\nFROM InvoiceLine AS il\nJOIN Track AS t ON t.TrackId = il.TrackId\nJOIN Genre AS g ON g.GenreId = t.GenreId\nGROUP BY g.GenreId, g.Name\nHAVING SUM(il.UnitPrice * il.Quantity) < 20\nORDER BY Revenue ASC, Genre;',
+    hints: ['Revenue lives at the InvoiceLine grain — join through Track to Genre the same way you have before, then GROUP BY genre.', "HAVING filters the summed revenue after grouping; WHERE can't see SUM(...) yet. Keep only genres where that sum is under 20."],
+    visibleTables: ['InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)', 'Track(TrackId, Name, GenreId)', 'Genre(GenreId, Name)'],
+    relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
+    expected: { columns: ['Genre', 'Revenue'], rows: [['Rock And Roll', 5.94], ['Easy Listening', 9.9], ['Electronica/Dance', 11.88], ['Heavy Metal', 11.88], ['Science Fiction', 11.94], ['World', 12.87], ['Alternative', 13.86], ['Bossa Nova', 14.85], ['Hip Hop/Rap', 16.83], ['Comedy', 17.91], ['Soundtrack', 19.8]] },
+    orderMatters: true, points: 40,
+    successLesson: "Cut list exposed. Revenue alone put eleven genres on ROGUE.exe's chopping block — but this table has no margin, no licensing cost, and no customer-retention data in it. A low number here is a real signal, not a full decision; cutting on revenue alone is the same shortcut that got ROGUE.exe built with no verification step in the first place.",
+  },
+  {
+    id: 'm9-1', chapter: '9 · The Boardroom Core', title: 'Frame the real question', concept: 'Scalar subquery for a computed date scope',
+    brief: 'The Sanctum\'s noise drops away. You\'re standing in the Boardroom Core — the real fight — and ROGUE.exe\'s voice fills the whole room: "Ask your little question. I already know every answer." The VP\'s question was never precise enough to survive a query: "Where should Aurora run its next promotion?" Sharpen it into something you can actually run: which countries generated the highest invoice revenue in the most recent calendar year on record? Don\'t hardcode a year and hope — pull the real most-recent year with a subquery, then rank countries inside it.',
+    starterSql: "-- Find the most recent year in Invoice with a subquery:\n-- (SELECT MAX(strftime('%Y', InvoiceDate)) FROM Invoice).\n-- Filter Invoice to that year, group by BillingCountry, sum Total as Revenue,\n-- richest first.",
+    solutionSql: "SELECT BillingCountry, ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nWHERE strftime('%Y', InvoiceDate) = (\n  SELECT MAX(strftime('%Y', InvoiceDate)) FROM Invoice\n)\nGROUP BY BillingCountry\nORDER BY Revenue DESC, BillingCountry;",
+    hints: ["Don't hardcode a year — a subquery, (SELECT MAX(strftime('%Y', InvoiceDate)) FROM Invoice), finds the real most recent one on its own.", 'Compare Invoice.InvoiceDate\'s year to that subquery in the WHERE clause, then GROUP BY BillingCountry and ORDER BY Revenue DESC.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 85.14], ['Canada', 72.27], ['France', 40.59], ['Brazil', 37.62], ['Czech Republic', 36.75], ['United Kingdom', 28.71], ['Argentina', 24.75], ['Portugal', 24.75], ['Finland', 15.84], ['Netherlands', 15.84], ['India', 11.89], ['Spain', 11.88], ['Germany', 9.9], ['Denmark', 8.91], ['Italy', 8.91], ['Belgium', 5.94], ['Ireland', 5.94], ['Norway', 1.98], ['Austria', 0.99], ['Hungary', 0.99], ['Poland', 0.99]] },
+    orderMatters: true, points: 20,
+    successLesson: "Question framed. The subquery pulls whatever year is actually most recent instead of a guess baked into the query — the same discipline that keeps a real analyst from running on a stale assumption. Revenue rank is a real answer, but it's still a proxy for \"best market,\" not proof of it — and that most-recent year is still open. ROGUE.exe could still be writing to it.",
+  },
+  {
+    id: 'm9-2', chapter: '9 · The Boardroom Core', title: 'The closed-year verdict', concept: 'Multi-metric aggregation with COUNT(DISTINCT ...)',
+    brief: "Same question, one year earlier, on purpose. The most recent year is still open — ROGUE.exe could still be corrupting it as you sit here — so pin the real decision to 2010, the last full year already closed and clean. Build the final table: 2010 revenue and the number of distinct purchasers per country, richest first. This is the last real question before the mainframe either hands control back or it doesn't.",
+    starterSql: "-- Filter Invoice to 2010. Group by BillingCountry and return Revenue\n-- (SUM of Total) and UniquePurchasers (COUNT DISTINCT CustomerId),\n-- richest first.",
+    solutionSql: "SELECT BillingCountry,\n       ROUND(SUM(Total), 2) AS Revenue,\n       COUNT(DISTINCT CustomerId) AS UniquePurchasers\nFROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2010'\nGROUP BY BillingCountry\nORDER BY Revenue DESC, BillingCountry;",
+    hints: ['Same 2010 filter as before, but this time select two measures off the grouped rows: SUM(Total) and COUNT(DISTINCT CustomerId).', 'One country can carry several invoices from the same buyer — COUNT(DISTINCT CustomerId) is what keeps that from inflating the purchaser count.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['BillingCountry', 'Revenue', 'UniquePurchasers'], rows: [['USA', 127.98, 13], ['Brazil', 53.46, 4], ['Canada', 42.57, 4], ['France', 36.66, 5], ['Portugal', 24.77, 1], ['Sweden', 24.75, 1], ['Czech Republic', 19.83, 2], ['Germany', 18.81, 4], ['Denmark', 15.84, 1], ['Italy', 15.84, 1], ['Austria', 11.88, 1], ['Hungary', 11.88, 1], ['Poland', 11.88, 1], ['India', 10.89, 2], ['United Kingdom', 9.9, 1], ['Australia', 8.91, 1], ['Norway', 8.91, 1], ['Chile', 6.93, 1], ['Finland', 0.99, 1], ['Netherlands', 0.99, 1]] },
+    orderMatters: true, points: 60, badge: 'Boardroom Analyst',
+    successLesson: "Verdict closed. USA leads on both revenue and reach — real signal, not a guess — but it's still a closed-year rearview mirror, not a promise about what happens next. The screens around you stop glitching. ROGUE.exe's voice comes through one last time, thin and looping: \"Recalculating... recalculating...\" Then nothing. The mainframe is yours again — and every number in it is finally real.",
   },
 ];
 

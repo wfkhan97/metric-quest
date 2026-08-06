@@ -167,9 +167,13 @@ codebase has:
   accessibility/interaction polish pass (Prompt 10).
 
 Prompts 3, 4, 5, and 6 below are kept for historical record but do **not**
-need to be re-run. Prompts 7-13 are also done -- Week 2 is complete. The
-next prompt to actually send is **Prompt 14** (Codex: final cases M8.2,
-M8.3, M9.1, M9.2), which starts the Week 3 Goal below.
+need to be re-run. Prompts 7-13 are also done -- Week 2 is complete.
+Prompt 14 (final cases M8.2, M8.3, M9.1, M9.2) is also done -- run by
+Claude Code this session, adapted to keep all four as real graded-SQL
+missions rather than introducing a new reflection/multiple-choice mechanic
+(that stays future work; see the mission-by-mission curriculum note on
+M8.3/M9.1). The next prompt to actually send is **Prompt 15** (Claude Code:
+release UX review), continuing the Week 3 Goal below.
 
 ## Week 1: foundation and vertical slice
 
@@ -421,7 +425,7 @@ confrontations with the rogue AI, verify every syllabus topic, and prepare a
 tested static deployment.
 ```
 
-### Prompt 14 — Codex: final cases
+### Prompt 14 — Codex: final cases ✅ done (run by Claude Code this session)
 
 ```text
 Implement M8.2, M8.3, M9.1, and M9.2 exactly as structured in the curriculum,
@@ -434,6 +438,12 @@ the frame/explore/execute/challenge phases of the final battle described in
 the design brief. Add tests for accepted and rejected structured answers and
 run the complete suite.
 ```
+
+Delivered as four ordinary graded-SQL missions (same shape as every other
+mission in `src/lib/missions.ts`) rather than a new structured-answer/
+multiple-choice mechanic — the "AI-review" and "caveat about inference
+limits" beats live in each mission's brief/successLesson copy, not as a
+separate grading path. A new mechanic type stays explicit future work.
 
 ### Prompt 15 — Claude Code: release UX review
 
