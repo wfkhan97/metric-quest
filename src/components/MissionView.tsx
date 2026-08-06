@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
@@ -8,7 +8,10 @@ import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../li
 import { completeMission, type Progress } from '../lib/progress';
 import { runMissionQuery } from '../lib/sqlRunner';
 
-type Feedback = { tone: 'success' | 'error'; heading: string; text: string } | undefined;
+type Feedback =
+  | { tone: 'error'; heading: string; text: string }
+  | { tone: 'success'; heading: string; text: string; isNewCompletion: boolean; newBadge?: string }
+  | undefined;
 
 type MissionViewProps = {
   mission: Mission;
@@ -27,6 +30,16 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const [showSolution, setShowSolution] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const completed = progress.completedMissionIds.includes(mission.id);
+  const pointsRef = useRef(progress.points);
+  const [pointsPulsing, setPointsPulsing] = useState(false);
+
+  useEffect(() => {
+    if (progress.points === pointsRef.current) return;
+    pointsRef.current = progress.points;
+    setPointsPulsing(true);
+    const timeout = setTimeout(() => setPointsPulsing(false), 700);
+    return () => clearTimeout(timeout);
+  }, [progress.points]);
 
   async function runQuery() {
     setIsRunning(true);
@@ -44,12 +57,16 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
       setFeedback({ tone: 'error', heading: rogueWrongResultLine, text: validation.message });
       return;
     }
+    const isNewCompletion = !completed;
+    const newBadge = isNewCompletion && mission.badge && !progress.badges.includes(mission.badge) ? mission.badge : undefined;
     const nextProgress = completeMission(progress, mission.id, mission.points, mission.badge);
     onProgressChange(nextProgress);
     setFeedback({
       tone: 'success',
       heading: completed ? 'Terminal already restored' : `Terminal restored: +${mission.points} points`,
       text: mission.successLesson,
+      isNewCompletion,
+      newBadge,
     });
   }
 
@@ -67,7 +84,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
-          <strong>{progress.points} points</strong>
+          <strong className={pointsPulsing ? 'points-pulse' : undefined}>{progress.points} points</strong>
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
         </section>
       </header>
@@ -85,7 +102,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             {mission.chapter} · {mission.concept}
           </p>
           <h2 id="mission-title">{mission.title}</h2>
-          <p className="brief">{mission.brief}</p>
+          <p className="brief type-reveal">{mission.brief}</p>
 
           {mission.id === 'm8-1' && (
             <aside className="rogue-encounter" aria-label="ROGUE.exe transmission">
@@ -171,8 +188,23 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           )}
           {feedback && (
             <section className={`feedback ${feedback.tone}${feedback.tone === 'success' ? ' mission-complete' : ''}`} aria-live="polite" role="status">
-              <h3>{feedback.heading}</h3>
+              <div className="feedback-signal">
+                <span className={`feedback-icon ${feedback.tone}`} aria-hidden="true" />
+                <div>
+                  <h3>{feedback.heading}</h3>
+                  {feedback.tone === 'success' && feedback.isNewCompletion && (
+                    <span className="points-chip" aria-hidden="true">
+                      +{mission.points} pts
+                    </span>
+                  )}
+                </div>
+              </div>
               <p>{feedback.text}</p>
+              {feedback.tone === 'success' && feedback.newBadge && (
+                <p className="badge-unlock">
+                  <span aria-hidden="true">★</span> Badge unlocked: <strong>{feedback.newBadge}</strong>
+                </p>
+              )}
             </section>
           )}
           {result && <ResultTable result={result} />}
