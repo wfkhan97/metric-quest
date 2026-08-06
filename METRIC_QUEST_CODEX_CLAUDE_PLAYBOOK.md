@@ -124,25 +124,33 @@ Handoff: report changed files, checks run, decisions, and remaining risk.
 
 ## Status as of the narrative pivot
 
-Only Prompt 1 (Codex) and Prompt 2 (Claude Code) below have actually been
-run, but Prompt 1's execution went further than its own text asked for and
-already delivered the outcomes originally planned as separate Prompts 3, 5,
-and 6. Concretely, the codebase already has:
+Prompts 1-11 below have all actually been run (Prompt 1's execution went
+further than its own text asked for and already delivered the outcomes
+originally planned as separate Prompts 3, 5, and 6). Concretely, the
+codebase has:
 
-- a working browser-only `sql.js` runner with error handling and tests
-  (`src/lib/sqlRunner.ts`);
+- a working browser-only `sql.js` runner with error handling and tests,
+  including correct handling of a valid query that legitimately returns
+  zero rows (`src/lib/sqlRunner.ts`);
 - a result-based validator with normalization for column case, numeric
   precision, and optional row order (`src/lib/grading.ts`);
-- four tested vertical-slice missions: M1.1 Priority invoices, M2.1 Country
-  revenue, M3.1 Name the high-value customers, M8.1 Duplicate-customer trap
-  (`src/lib/missions.ts`);
-- versioned local progress (`src/lib/progress.ts`);
-- the accessible learner-facing shell from Prompt 2 (Home/onboarding view,
-  Mission view, chapter map, progress bar, schema explorer, SQL editor,
-  hints, feedback, results table).
+- 12 tested missions covering Chapters 1-3 and the Chapter 8 vertical slice:
+  M1.1-M1.4, M2.1-M2.3, M3.1-M3.4, M8.1 (`src/lib/missions.ts`), each with a
+  fixture test (`src/lib/missions.test.ts`) that runs its reference solution
+  against the real approved dataset and checks it actually validates;
+- versioned local progress, additive avatar and seen-sector fields
+  (`src/lib/progress.ts`);
+- the accessible learner-facing shell (Home/onboarding view, Mission view,
+  chapter map, progress bar, schema explorer, SQL editor, hints, feedback,
+  results table);
+- the rogue-AI narrative pass (Prompt 7), a real-art avatar creator (Prompt
+  8), one-time text-only sector-transition interstitials (Prompt 9), and an
+  accessibility/interaction polish pass (Prompt 10).
 
 Prompts 3, 4, 5, and 6 below are kept for historical record but do **not**
-need to be re-run. The next prompt to actually send is **Prompt 7**.
+need to be re-run. Prompts 7-11 are also done; the next prompt to actually
+send is **Prompt 12** (advanced SQL safety design — propose the plan and get
+it approved before implementing, per that prompt's own instructions).
 
 ## Week 1: foundation and vertical slice
 
@@ -240,7 +248,7 @@ hints, points, badges, and beginner-readable explanations. Do not add visual
 features. Run tests and provide a handoff.
 ```
 
-### Prompt 7 — Claude Code: rogue-AI narrative pass (send this next)
+### Prompt 7 — Claude Code: rogue-AI narrative pass ✅ done
 
 ```text
 Read docs/GAME_DESIGN_BRIEF.md and the current source tree. This is a copy and
@@ -263,7 +271,7 @@ Do not add any new screens, sprites, or illustrations in this prompt — text
 only. Run all checks and report exactly which copy changed.
 ```
 
-### Prompt 8 — Claude Code: avatar / character-creation screen
+### Prompt 8 — Claude Code: avatar / character-creation screen ✅ done
 
 ```text
 Read docs/GAME_DESIGN_BRIEF.md section 6 and the current progress/localStorage
@@ -285,7 +293,7 @@ change grading, the runner, or mission data. Run all checks and report
 whether placeholder or final art was used.
 ```
 
-### Prompt 9 — Claude Code: mainframe sector-transition screens
+### Prompt 9 — Claude Code: mainframe sector-transition screens ✅ done
 
 ```text
 Read docs/GAME_DESIGN_BRIEF.md section 7. Add a short, mostly static
@@ -303,7 +311,7 @@ runner, or mission data. Run all checks and report which sectors have real
 art versus a text fallback.
 ```
 
-### Prompt 10 — Claude Code: accessibility and interaction polish
+### Prompt 10 — Claude Code: accessibility and interaction polish ✅ done
 
 ```text
 Review the working four-mission vertical slice, now including the narrative
@@ -333,7 +341,7 @@ start.
 
 Then send these separately:
 
-### Prompt 11 — Codex: content batches
+### Prompt 11 — Codex: content batches ✅ done (run by Claude Code this session)
 
 ```text
 Read docs/GAME_DESIGN_BRIEF.md for the narrative voice and Sector names, then
