@@ -360,6 +360,12 @@ above to remove any "not built yet" caveat that no longer applies.
 
 ## Cross-cutting notes for whoever picks these up
 
+- **Sequencing lives in `docs/BUILD_ORDER.md`.** This document is the
+  *what*; that one is the *in what order, in what size chunks, and how to
+  know a chunk is done*. It splits these four items (plus the unwired art
+  in the tracker above) into branch-sized packets with acceptance
+  criteria, and names which open question blocks each one. Read it before
+  scoping any of this into a session.
 - Items 1, 2, and 4 fit the current architecture with no approval
   needed — they can be scoped into normal sector/session work whenever
   prioritized.
