@@ -23,6 +23,18 @@
   line-height: 1.5;
 }
 
+/* Self-hosted display font for decorative pixel-art surfaces only (avatar
+   creator today; sector transitions and ROGUE.exe screens later). Keeps the
+   app's zero-external-network-dependency property instead of pulling this
+   from Google Fonts at runtime. Latin subset only — this app has no i18n. */
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('./assets/fonts/PressStart2P-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -557,11 +569,157 @@ th {
   flex-shrink: 0;
 }
 
+/* Real sprite art frame (see AvatarPreview's imageUrl branch). Source art
+   isn't a perfect square, so object-fit: contain avoids stretching it. */
+.avatar-sprite-image-frame {
+  align-items: center;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.avatar-sprite-image {
+  height: 100%;
+  object-fit: contain;
+  width: 100%;
+}
+
 /* Avatar creator: a decorative surface (per docs/GAME_DESIGN_BRIEF.md §A6,
    pixel-art treatment is fine here) that still relies on the same accessible
-   panel/button/focus styling as the rest of the app. */
+   panel/button/focus styling as the rest of the app — retro colors below are
+   scoped to .avatar-creator descendants only and never touch the base
+   navy/cream/teal tokens used by text-heavy learning surfaces. These custom
+   properties are named for reuse by future decorative screens (sector
+   transitions, ROGUE.exe), not just this one. */
+.avatar-creator {
+  --retro-bg: #0a1024;
+  --retro-panel: #0f1830;
+  --retro-panel-raised: #16213f;
+  --retro-teal: #1fd3c4;
+  --retro-text: #eaf6f4;
+  --retro-amber: #ffd166;
+  --retro-muted: #9fb3c8;
+}
+
+.app-shell.avatar-creator {
+  background: var(--retro-bg);
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 3px);
+  margin: 0;
+  max-width: none;
+  min-height: 100vh;
+  padding: clamp(1.5rem, 4vw, 2.5rem) 1rem 3rem;
+}
+
+.avatar-creator-frame {
+  background: var(--retro-panel);
+  border: 4px solid var(--retro-teal);
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px var(--retro-bg), 0 0 32px rgba(31, 211, 196, 0.35);
+  margin: 0 auto;
+  max-width: 62rem;
+  padding: clamp(1.1rem, 3vw, 2rem);
+}
+
+.avatar-creator .eyebrow {
+  background: var(--retro-amber);
+  border-radius: 999px;
+  color: var(--retro-bg);
+  display: inline-block;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.7rem;
+}
+
+.avatar-creator h1 {
+  color: var(--retro-text);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: clamp(1.05rem, 3.2vw, 1.6rem);
+  line-height: 1.6;
+  text-shadow: 2px 2px 0 var(--color-teal-600);
+}
+
+.avatar-creator h2 {
+  color: var(--retro-text);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
 .avatar-creator .lede {
+  color: var(--retro-muted);
   max-width: 60ch;
+}
+
+.avatar-creator .panel,
+.avatar-creator .avatar-fieldset,
+.avatar-creator .swatch-option {
+  background: var(--retro-panel-raised);
+  border-color: var(--retro-teal);
+  box-shadow: none;
+  color: var(--retro-text);
+}
+
+.avatar-creator .swatch-option.selected {
+  background: rgba(31, 211, 196, 0.2);
+}
+
+.avatar-creator .avatar-fieldset legend {
+  color: var(--retro-amber);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.7rem;
+}
+
+.avatar-creator .avatar-sprite {
+  background: var(--retro-bg);
+}
+
+.avatar-creator .avatar-sprite-image-frame {
+  background: var(--retro-bg);
+  border: 3px solid var(--retro-teal);
+  border-radius: 6px;
+  padding: 0.4rem;
+}
+
+.avatar-creator .callsign-preview {
+  color: var(--retro-amber);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.95rem;
+}
+
+.avatar-creator .avatar-callsign-field label {
+  color: var(--retro-text);
+}
+
+.avatar-creator .avatar-callsign-field input {
+  background: var(--retro-panel-raised);
+  border-color: var(--retro-teal);
+  color: var(--retro-text);
+}
+
+.avatar-creator .subtle {
+  color: var(--retro-muted);
+}
+
+.avatar-creator .actions button {
+  background: transparent;
+  border: 2px solid var(--retro-teal);
+  color: var(--retro-text);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.68rem;
+}
+
+.avatar-creator .actions button:hover {
+  background: rgba(31, 211, 196, 0.15);
+}
+
+.avatar-creator .actions button.primary {
+  background: var(--retro-teal);
+  border-color: var(--retro-teal);
+  color: var(--retro-bg);
+}
+
+.avatar-creator .actions button.primary:hover {
+  background: #17b6a9;
 }
 
 .avatar-preview-panel {

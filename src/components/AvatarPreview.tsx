@@ -31,7 +31,11 @@ export function AvatarPreview({ spriteId, colorId, size = 96, label }: AvatarPre
   const altText = label ?? `${sprite.label} sprite, ${color.label}`;
 
   if (sprite.imageUrl) {
-    return <img src={sprite.imageUrl} width={size} height={size} alt={altText} className="avatar-sprite-image" />;
+    return (
+      <span className="avatar-sprite-image-frame" style={{ width: size, height: size }}>
+        <img src={sprite.imageUrl} alt={altText} className="avatar-sprite-image" />
+      </span>
+    );
   }
 
   const bodyPath = bodyPaths[sprite.shape];
