@@ -172,8 +172,13 @@ Prompt 14 (final cases M8.2, M8.3, M9.1, M9.2) is also done -- run by
 Claude Code this session, adapted to keep all four as real graded-SQL
 missions rather than introducing a new reflection/multiple-choice mechanic
 (that stays future work; see the mission-by-mission curriculum note on
-M8.3/M9.1). The next prompt to actually send is **Prompt 15** (Claude Code:
-release UX review), continuing the Week 3 Goal below.
+M8.3/M9.1). Prompt 15 (release UX review) is also done -- run by Claude
+Code this session: contrast, keyboard flow/focus visibility, 320px-desktop
+responsiveness, and the never-before-reachable campaign-completion state
+(all 25 missions done -- only possible now that Sector 9 exists) were all
+checked with no defects found, so nothing needed fixing. The next prompt to
+actually send is **Prompt 16** (Codex: final audit and deployment
+preparation), continuing the Week 3 Goal below.
 
 ## Week 1: foundation and vertical slice
 
@@ -445,7 +450,7 @@ multiple-choice mechanic — the "AI-review" and "caveat about inference
 limits" beats live in each mission's brief/successLesson copy, not as a
 separate grading path. A new mechanic type stays explicit future work.
 
-### Prompt 15 — Claude Code: release UX review
+### Prompt 15 — Claude Code: release UX review ✅ done (run by Claude Code this session)
 
 ```text
 Perform a release-readiness pass without changing architecture or mission
@@ -457,6 +462,24 @@ degrade gracefully wherever art has not landed yet. Fix only verified
 presentation/accessibility issues. Run existing checks and leave a checklist
 of anything requiring human review.
 ```
+
+Findings: computed WCAG contrast for every palette pair in `src/styles.css`
+(all pass AA, most 7:1+, including the `--retro-muted` on
+`--retro-panel-raised` pairing the design brief flagged as worth re-checking);
+walked Home, Mission, Avatar Creator, and all 9 Sector Transitions across
+320px/mobile/tablet/1280px desktop; verified tab order and `:focus-visible`
+across every interactive element; and — for the first time ever, since
+Sector 9 didn't exist before this session — simulated full campaign
+completion (25/25 missions, all 9 badges) to confirm the Home view's
+end state renders cleanly with no dead-end. No presentation or
+accessibility defects found; no fixes were needed. One tooling note, not an
+app defect: the browser-automation harness's synthetic Enter/Space key
+dispatch doesn't trigger Chromium's default action on native `<button>`
+elements app-wide (confirmed by testing unrelated buttons; `element.click()`
+always worked). All interactive controls are plain semantic HTML
+(`button`, `input`, `textarea`, `details`/`summary`) with no custom keydown
+handling that could block real keyboard activation, so this doesn't reflect
+an app-side keyboard-accessibility gap.
 
 ### Prompt 16 — Codex: final audit and deployment preparation
 
