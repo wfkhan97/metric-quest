@@ -1,7 +1,15 @@
 import { type QueryResult } from './grading';
 
 export type Mission = {
-  id: 'm1-1' | 'm1-2' | 'm1-3' | 'm1-4' | 'm2-1' | 'm2-2' | 'm2-3' | 'm3-1' | 'm3-2' | 'm3-3' | 'm3-4' | 'm8-1';
+  id:
+    | 'm1-1' | 'm1-2' | 'm1-3' | 'm1-4'
+    | 'm2-1' | 'm2-2' | 'm2-3'
+    | 'm3-1' | 'm3-2' | 'm3-3' | 'm3-4'
+    | 'm4-1' | 'm4-2' | 'm4-3'
+    | 'm5-1' | 'm5-2'
+    | 'm6-1' | 'm6-2'
+    | 'm7-1' | 'm7-2'
+    | 'm8-1';
   chapter: string;
   title: string;
   concept: string;
@@ -15,6 +23,12 @@ export type Mission = {
   points: number;
   badge?: string;
   successLesson: string;
+  /**
+   * Opt-in only, for the two missions (temp table, temp view) whose curriculum
+   * shape genuinely needs a setup statement before the graded SELECT. See
+   * executeTempWorkspaceQuery in sqlRunner.ts for the safety boundary.
+   */
+  allowsTempWorkspace?: boolean;
 };
 
 // ROGUE.exe's voice is intentionally limited to a small handful of reused lines (see
@@ -145,6 +159,105 @@ export const missions: Mission[] = [
     expected: { columns: ['CustomerId', 'FirstName', 'LastName'], rows: [[2, 'Leonie', 'Köhler'], [13, 'Fernanda', 'Ramos'], [15, 'Jennifer', 'Peterson'], [17, 'Jack', 'Smith'], [19, 'Tim', 'Goyer'], [34, 'João', 'Fernandes'], [36, 'Hannah', 'Schneider'], [38, 'Niklas', 'Schröder'], [40, 'Dominique', 'Lefebvre'], [51, 'Joakim', 'Johansson'], [55, 'Mark', 'Taylor'], [57, 'Luis', 'Rojas'], [59, 'Puja', 'Srivastava']] },
     orderMatters: false, points: 30,
     successLesson: 'Reactivation list restored. An INNER JOIN drops any customer with zero matching invoices — exactly the people this list needs. LEFT JOIN keeps them, turning "no match" into a visible NULL instead of a silent deletion.',
+  },
+  {
+    id: 'm4-1', chapter: '4 · The Workbench Foundry', title: 'Above-average invoices', concept: 'Scalar subquery',
+    brief: "Deep in the Workbench Foundry, a triage terminal is supposed to flag every invoice priced above the company average — but ROGUE.exe unplugged the average calculation, so nothing gets flagged. Recompute the real average as a subquery and use it to filter: return every invoice above it, richest first.",
+    starterSql: "-- Compare each Invoice.Total to the overall average Total (a subquery).\n-- Return InvoiceId, BillingCountry, and Total for every invoice above that average.",
+    solutionSql: 'SELECT InvoiceId, BillingCountry, Total\nFROM Invoice\nWHERE Total > (SELECT AVG(Total) FROM Invoice)\nORDER BY Total DESC, InvoiceId;',
+    hints: ['The overall average is its own one-value question: SELECT AVG(Total) FROM Invoice.', 'Compare Invoice.Total to that subquery with a plain WHERE — no join needed.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceId', 'BillingCountry', 'Total'], rows: [[404,'Czech Republic',25.86],[299,'USA',23.86],[96,'Hungary',21.86],[194,'Ireland',21.86],[89,'Austria',18.86],[201,'USA',18.86],[88,'Chile',17.91],[306,'Czech Republic',16.86],[313,'France',16.86],[103,'USA',15.86],[208,'Norway',15.86],[193,'Germany',14.91],[5,'USA',13.86],[12,'Germany',13.86],[19,'France',13.86],[26,'USA',13.86],[33,'Chile',13.86],[40,'Germany',13.86],[47,'Canada',13.86],[54,'United Kingdom',13.86],[61,'Canada',13.86],[68,'Brazil',13.86],[75,'Poland',13.86],[82,'USA',13.86],[110,'Canada',13.86],[117,'France',13.86],[124,'USA',13.86],[131,'India',13.86],[138,'Germany',13.86],[145,'USA',13.86],[152,'United Kingdom',13.86],[159,'Canada',13.86],[166,'Brazil',13.86],[173,'Spain',13.86],[180,'Canada',13.86],[187,'Belgium',13.86],[215,'France',13.86],[222,'USA',13.86],[229,'India',13.86],[236,'Germany',13.86],[243,'USA',13.86],[250,'Australia',13.86],[257,'Portugal',13.86],[264,'Brazil',13.86],[271,'Sweden',13.86],[278,'Canada',13.86],[285,'Denmark',13.86],[292,'Italy',13.86],[320,'USA',13.86],[327,'Brazil',13.86],[334,'France',13.86],[341,'USA',13.86],[348,'Argentina',13.86],[355,'Portugal',13.86],[362,'Canada',13.86],[369,'United Kingdom',13.86],[376,'Canada',13.86],[383,'Brazil',13.86],[390,'Netherlands',13.86],[397,'USA',13.86],[411,'Finland',13.86],[311,'USA',11.94],[298,'USA',10.91],[312,'Portugal',10.91],[102,'Canada',9.91],[206,'Netherlands',8.94],[4,'Canada',8.91],[11,'United Kingdom',8.91],[18,'Canada',8.91],[25,'Brazil',8.91],[32,'Netherlands',8.91],[39,'USA',8.91],[46,'Czech Republic',8.91],[53,'Finland',8.91],[60,'USA',8.91],[67,'Germany',8.91],[74,'France',8.91],[81,'USA',8.91],[95,'Germany',8.91],[109,'United Kingdom',8.91],[116,'Canada',8.91],[123,'Brazil',8.91],[130,'Poland',8.91],[137,'USA',8.91],[144,'Austria',8.91],[151,'Hungary',8.91],[158,'USA',8.91],[165,'Canada',8.91],[172,'France',8.91],[179,'USA',8.91],[186,'India',8.91],[200,'USA',8.91],[207,'United Kingdom',8.91],[214,'Canada',8.91],[221,'Brazil',8.91],[228,'Spain',8.91],[235,'Canada',8.91],[242,'Belgium',8.91],[249,'Ireland',8.91],[256,'USA',8.91],[263,'Norway',8.91],[270,'France',8.91],[277,'USA',8.91],[284,'India',8.91],[291,'Germany',8.91],[305,'Australia',8.91],[319,'Brazil',8.91],[326,'Sweden',8.91],[333,'Canada',8.91],[340,'Denmark',8.91],[347,'Italy',8.91],[354,'USA',8.91],[361,'Czech Republic',8.91],[368,'France',8.91],[375,'USA',8.91],[382,'Brazil',8.91],[389,'France',8.91],[396,'USA',8.91],[403,'Argentina',8.91],[410,'Portugal',8.91],[205,'Finland',7.96],[310,'USA',7.96],[87,'Sweden',6.94],[3,'Belgium',5.94],[10,'Ireland',5.94],[17,'USA',5.94],[24,'Norway',5.94],[31,'France',5.94],[38,'USA',5.94],[45,'India',5.94],[52,'Germany',5.94],[59,'USA',5.94],[66,'Australia',5.94],[73,'Portugal',5.94],[80,'Brazil',5.94],[94,'Canada',5.94],[101,'Denmark',5.94],[108,'Italy',5.94],[115,'USA',5.94],[122,'Czech Republic',5.94],[129,'France',5.94],[136,'USA',5.94],[143,'Brazil',5.94],[150,'France',5.94],[157,'USA',5.94],[164,'Argentina',5.94],[171,'Portugal',5.94],[178,'Canada',5.94],[185,'United Kingdom',5.94],[192,'Canada',5.94],[199,'Brazil',5.94],[213,'USA',5.94],[220,'Czech Republic',5.94],[227,'Finland',5.94],[234,'USA',5.94],[241,'Germany',5.94],[248,'France',5.94],[255,'USA',5.94],[262,'Chile',5.94],[269,'Germany',5.94],[276,'Canada',5.94],[283,'United Kingdom',5.94],[290,'Canada',5.94],[297,'Brazil',5.94],[304,'Poland',5.94],[318,'Austria',5.94],[325,'Hungary',5.94],[332,'USA',5.94],[339,'Canada',5.94],[346,'France',5.94],[353,'USA',5.94],[360,'India',5.94],[367,'Germany',5.94],[374,'USA',5.94],[381,'United Kingdom',5.94],[388,'Canada',5.94],[395,'Brazil',5.94],[402,'Spain',5.94],[409,'Canada',5.94]] },
+    orderMatters: true, points: 35,
+    successLesson: 'Triage restored. The subquery computes one number — the real average — before the outer WHERE ever runs, so every invoice gets compared to the same real bar instead of nothing at all.',
+  },
+  {
+    id: 'm4-2', chapter: '4 · The Workbench Foundry', title: 'Revenue leaderboard', concept: 'CTE',
+    brief: "The Workbench Foundry needs a reusable staging table of lifetime customer revenue before it can rank anyone — ROGUE.exe keeps recalculating that number differently every time it's asked, so the leaderboard never agrees with itself. Stage it once with a CTE, then join out to names and return the top ten customers by lifetime revenue.",
+    starterSql: '-- Build a CTE that sums Total per CustomerId from Invoice as LifetimeRevenue.\n-- Then join to Customer for names and return the top 10, richest first.',
+    solutionSql: "WITH CustomerRevenue AS (\n  SELECT CustomerId, SUM(Total) AS LifetimeRevenue\n  FROM Invoice\n  GROUP BY CustomerId\n)\nSELECT c.FirstName || ' ' || c.LastName AS Customer,\n       ROUND(cr.LifetimeRevenue, 2) AS LifetimeRevenue\nFROM CustomerRevenue AS cr\nJOIN Customer AS c ON c.CustomerId = cr.CustomerId\nORDER BY LifetimeRevenue DESC, Customer\nLIMIT 10;",
+    hints: ['Start with WITH CustomerRevenue AS (...) — group Invoice by CustomerId inside it.', 'Join Customer to the CTE outside it, for names; the CTE already has the math done once.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)', 'Customer(CustomerId, FirstName, LastName, Country)'],
+    expected: { columns: ['Customer', 'LifetimeRevenue'], rows: [['Helena Holý', 49.62], ['Richard Cunningham', 47.62], ['Luis Rojas', 46.62], ["Hugh O'Reilly", 45.62], ['Ladislav Kovács', 45.62], ['Frank Ralston', 43.62], ['Fynn Zimmermann', 43.62], ['Julia Barnett', 43.62], ['Astrid Gruber', 42.62], ['Victor Stevens', 42.62]] },
+    orderMatters: true, points: 35,
+    successLesson: 'Leaderboard staged. A CTE computes LifetimeRevenue exactly once, so every join and sort downstream reads the same staged number instead of ROGUE.exe recomputing (and drifting) it on the fly.',
+  },
+  {
+    id: 'm4-3', chapter: '4 · The Workbench Foundry', title: 'Analyst sandbox', concept: 'Temporary tables, multi-statement SQL',
+    brief: "The Foundry's workbench itself is corrupted — ROGUE.exe won't let you stage anything without wiping it before you can query it back. Prove the bench works: create a temporary table of every invoice over $10, then query it for country counts.",
+    starterSql: '-- Statement 1: CREATE TEMP TABLE HighValueInvoices AS a SELECT of every\n-- Invoice row with Total > 10.\n-- Statement 2: SELECT BillingCountry and a count from HighValueInvoices,\n-- grouped by country, highest count first.',
+    solutionSql: 'CREATE TEMP TABLE HighValueInvoices AS\nSELECT * FROM Invoice WHERE Total > 10;\n\nSELECT BillingCountry, COUNT(*) AS InvoiceCount\nFROM HighValueInvoices\nGROUP BY BillingCountry\nORDER BY InvoiceCount DESC, BillingCountry;',
+    hints: ['Use CREATE TEMP TABLE HighValueInvoices AS SELECT * FROM Invoice WHERE Total > 10 — that is the whole first statement.', 'The second statement just queries HighValueInvoices like any other table, with GROUP BY BillingCountry.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['BillingCountry', 'InvoiceCount'], rows: [['USA', 15], ['Canada', 8], ['Brazil', 5], ['France', 5], ['Germany', 5], ['Portugal', 3], ['United Kingdom', 3], ['Chile', 2], ['Czech Republic', 2], ['India', 2], ['Argentina', 1], ['Australia', 1], ['Austria', 1], ['Belgium', 1], ['Denmark', 1], ['Finland', 1], ['Hungary', 1], ['Ireland', 1], ['Italy', 1], ['Netherlands', 1], ['Norway', 1], ['Poland', 1], ['Spain', 1], ['Sweden', 1]] },
+    orderMatters: true, points: 40, badge: 'Workbench Builder', allowsTempWorkspace: true,
+    successLesson: "Workbench proven. The temp table exists only for this run — it is gone the moment the terminal resets — but while it is alive, it queries exactly like a real table, which is the whole point of staging work before the final analysis.",
+  },
+  {
+    id: 'm5-1', chapter: '5 · The Chronometer Wing', title: 'Sales by year', concept: 'SQLite dates, strftime',
+    brief: "The Chronometer Wing's yearly ledger is stuck on one frozen year — ROGUE.exe jammed the calendar gears so every invoice reads the same year no matter when it happened. Extract the real year from each invoice date and total revenue per year, in year order, to prove the timeline still moves.",
+    starterSql: "-- Use strftime('%Y', InvoiceDate) to get each invoice's year.\n-- Group Invoice by that year and sum Total as Revenue, ordered by year.",
+    solutionSql: "SELECT strftime('%Y', InvoiceDate) AS InvoiceYear,\n       ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nGROUP BY strftime('%Y', InvoiceDate)\nORDER BY InvoiceYear;",
+    hints: ["strftime('%Y', InvoiceDate) pulls just the year out of a full date string.", 'GROUP BY that same expression — repeat the strftime call rather than grouping by the alias.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceYear', 'Revenue'], rows: [['2007', 449.46], ['2008', 481.45], ['2009', 483.44], ['2010', 463.67], ['2011', 450.58]] },
+    orderMatters: true, points: 35,
+    successLesson: "Gears unstuck. strftime('%Y', ...) reads the real year out of every invoice date, so revenue lines up on an actual five-year timeline instead of the one jammed year ROGUE.exe was stalling on.",
+  },
+  {
+    id: 'm5-2', chapter: '5 · The Chronometer Wing', title: 'Month-end momentum', concept: 'Dates and grouping by a derived value',
+    brief: "Leadership wants the ten strongest calendar months on record, but the Chronometer Wing's month dial only ever points at one moment — ROGUE.exe froze it there to hide which months actually moved the needle. Group revenue by year-month and surface the ten highest.",
+    starterSql: "-- Use strftime('%Y-%m', InvoiceDate) as a sortable InvoiceMonth.\n-- Group Invoice by that expression, sum Total as Revenue, and show the top 10.",
+    solutionSql: "SELECT strftime('%Y-%m', InvoiceDate) AS InvoiceMonth,\n       ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nGROUP BY strftime('%Y-%m', InvoiceDate)\nORDER BY Revenue DESC, InvoiceMonth\nLIMIT 10;",
+    hints: ["strftime('%Y-%m', InvoiceDate) gives a calendar month that sorts correctly across years, unlike a bare month number.", 'GROUP BY the same strftime expression you SELECT, then ORDER BY Revenue DESC and LIMIT 10.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceMonth', 'Revenue'], rows: [['2008-01', 52.62], ['2009-04', 51.62], ['2009-06', 50.62], ['2011-11', 49.62], ['2010-08', 47.62], ['2010-09', 46.71], ['2008-02', 46.62], ['2008-03', 44.62], ['2009-05', 42.62], ['2010-10', 42.62]] },
+    orderMatters: true, points: 35, badge: 'Timekeeper',
+    successLesson: 'Dial freed. %Y-%m keeps months sortable across years instead of colliding every January — that is what let the real top-10 months surface instead of the one frozen reading ROGUE.exe was stuck on.',
+  },
+  {
+    id: 'm6-1', chapter: '6 · The Sorting Engine', title: 'Invoice tiers', concept: 'CASE',
+    brief: 'The Sorting Engine is supposed to route every invoice into Small, Core, or High value — ROGUE.exe jammed the switch so everything falls into one bin. Rebuild the routing rule with CASE, then count how many invoices land in each tier.',
+    starterSql: "-- Use CASE to label each Invoice as 'Small' (Total < 5), 'Core' (Total < 10),\n-- or 'High value' (otherwise). Then count invoices per label.",
+    solutionSql: "WITH InvoiceTiers AS (\n  SELECT CASE\n           WHEN Total < 5 THEN 'Small'\n           WHEN Total < 10 THEN 'Core'\n           ELSE 'High value'\n         END AS InvoiceTier\n  FROM Invoice\n)\nSELECT InvoiceTier, COUNT(*) AS InvoiceCount\nFROM InvoiceTiers\nGROUP BY InvoiceTier\nORDER BY CASE InvoiceTier\n           WHEN 'Small' THEN 1 WHEN 'Core' THEN 2 ELSE 3\n         END;",
+    hints: ["Write the CASE once — WHEN Total < 5 THEN 'Small' WHEN Total < 10 THEN 'Core' ELSE 'High value' END — and give it an alias.", 'Put that CASE in a CTE, then GROUP BY the label in the outer query to count each tier.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceTier', 'InvoiceCount'], rows: [['Small', 233], ['Core', 115], ['High value', 64]] },
+    orderMatters: true, points: 35,
+    successLesson: 'Switch rebuilt. CASE routes every invoice into exactly one labeled bin by testing conditions in order, top to bottom — the same three-way sort ROGUE.exe had jammed into a single lane.',
+  },
+  {
+    id: 'm6-2', chapter: '6 · The Sorting Engine', title: 'Whole-dollar product counts', concept: 'CAST',
+    brief: "Finance wants units sold per genre as a clean whole number no matter what a future import system does with decimals — but the Sorting Engine's output keeps drifting into fractions ROGUE.exe left uncast. Force it back to a real integer and report units sold by genre.",
+    starterSql: '-- Join InvoiceLine to Track to Genre. Return Genre name and total Quantity\n-- sold, CAST to an INTEGER, most units first.',
+    solutionSql: 'SELECT g.Name AS Genre,\n       CAST(SUM(il.Quantity) AS INTEGER) AS UnitsSold\nFROM InvoiceLine AS il\nJOIN Track AS t ON t.TrackId = il.TrackId\nJOIN Genre AS g ON g.GenreId = t.GenreId\nGROUP BY g.GenreId, g.Name\nORDER BY UnitsSold DESC, Genre;',
+    hints: ['Quantity lives on InvoiceLine — SUM it, then wrap the sum in CAST(... AS INTEGER).', 'Track.GenreId links to Genre.GenreId; join through Track same as any genre-revenue question.'],
+    visibleTables: ['InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)', 'Track(TrackId, Name, GenreId)', 'Genre(GenreId, Name)'],
+    expected: { columns: ['Genre', 'UnitsSold'], rows: [['Rock', 835], ['Latin', 386], ['Metal', 264], ['Alternative & Punk', 244], ['Jazz', 80], ['Blues', 61], ['TV Shows', 47], ['Classical', 41], ['R&B/Soul', 41], ['Reggae', 30], ['Drama', 29], ['Pop', 28], ['Sci Fi & Fantasy', 20], ['Soundtrack', 20], ['Hip Hop/Rap', 17], ['Bossa Nova', 15], ['Alternative', 14], ['World', 13], ['Electronica/Dance', 12], ['Heavy Metal', 12], ['Easy Listening', 10], ['Comedy', 9], ['Rock And Roll', 6], ['Science Fiction', 6]] },
+    orderMatters: true, points: 30, badge: 'Decision Designer',
+    successLesson: 'Output locked to whole units. CAST(... AS INTEGER) guarantees a clean count regardless of what a future data source hands it — no fractional units sneaking into a report that is supposed to be a headcount.',
+  },
+  {
+    id: 'm7-1', chapter: '7 · The Shared Vault', title: 'Unified customer markets', concept: 'UNION vs. UNION ALL',
+    brief: 'The Shared Vault wants one clean market list pulled from both customer home countries and invoice billing countries — but ROGUE.exe keeps every duplicate country in the combined list to pad the count. Combine the two sources with the set operator that actually removes duplicates.',
+    starterSql: '-- Combine Customer.Country and Invoice.BillingCountry into one Country column\n-- with no duplicate values, sorted alphabetically.',
+    solutionSql: 'SELECT Country FROM Customer\nUNION\nSELECT BillingCountry AS Country FROM Invoice\nORDER BY Country;',
+    hints: ['Each side of the combine needs the same number of columns — alias BillingCountry AS Country to match Customer.Country.', 'UNION removes duplicates; UNION ALL keeps every row including repeats. This ask wants no repeats.'],
+    visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['Country'], rows: [['Argentina'], ['Australia'], ['Austria'], ['Belgium'], ['Brazil'], ['Canada'], ['Chile'], ['Czech Republic'], ['Denmark'], ['Finland'], ['France'], ['Germany'], ['Hungary'], ['India'], ['Ireland'], ['Italy'], ['Netherlands'], ['Norway'], ['Poland'], ['Portugal'], ['Spain'], ['Sweden'], ['USA'], ['United Kingdom']] },
+    orderMatters: true, points: 30,
+    successLesson: 'Vault deduplicated. UNION collapses any country appearing on both sides down to one row — UNION ALL would have kept every one of ROGUE.exe\'s duplicates intact.',
+  },
+  {
+    id: 'm7-2', chapter: '7 · The Shared Vault', title: 'Reusable revenue view', concept: 'Views, reusable analysis',
+    brief: 'Other analysts keep rebuilding the same country-revenue aggregation by hand because ROGUE.exe deleted the shared version out of the Vault. Rebuild it as a view named CountryRevenue so nobody has to write that GROUP BY again, then pull its top five rows.',
+    starterSql: '-- Statement 1: CREATE TEMP VIEW CountryRevenue AS a SELECT of BillingCountry\n-- (aliased Country) and summed Total (aliased Revenue) from Invoice, grouped\n-- by country.\n-- Statement 2: SELECT Country and Revenue from CountryRevenue, top 5, richest first.',
+    solutionSql: 'CREATE TEMP VIEW CountryRevenue AS\nSELECT BillingCountry AS Country, ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nGROUP BY BillingCountry;\n\nSELECT Country, Revenue\nFROM CountryRevenue\nORDER BY Revenue DESC, Country\nLIMIT 5;',
+    hints: ['CREATE TEMP VIEW CountryRevenue AS wraps the exact same GROUP BY you have used before — Invoice grouped by BillingCountry, summed Total.', 'A view is a saved query, not saved results — query it in a second statement exactly like a table, then ORDER BY Revenue DESC and LIMIT 5.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['Country', 'Revenue'], rows: [['USA', 523.06], ['Canada', 303.96], ['France', 195.1], ['Brazil', 190.1], ['Germany', 156.48]] },
+    orderMatters: true, points: 40, badge: 'Data Product Owner', allowsTempWorkspace: true,
+    successLesson: 'View restored. CountryRevenue now exists as a saved query for this run — nobody has to rewrite the GROUP BY from scratch, which is exactly the shared asset ROGUE.exe deleted.',
   },
   {
     id: 'm8-1', chapter: "8 · ROGUE.exe's Inner Sanctum", title: 'Duplicate-customer trap', concept: 'COUNT(DISTINCT ...) and AI verification',

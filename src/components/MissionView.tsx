@@ -32,7 +32,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     setIsRunning(true);
     setFeedback(undefined);
     setResult(undefined);
-    const outcome = await runMissionQuery(sql);
+    const outcome = await runMissionQuery(sql, { allowsTempWorkspace: mission.allowsTempWorkspace });
     setIsRunning(false);
     if (!outcome.ok) {
       setFeedback({ tone: 'error', heading: rogueInvalidQueryLine, text: outcome.message });
@@ -120,8 +120,10 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               aria-describedby="runner-note"
             />
             <p id="runner-note" className="subtle">
-              Runs locally in your browser against the real dataset behind this terminal — nothing leaves your machine. This
-              Week 1 runner allows one read-only SELECT query.
+              Runs locally in your browser against the real dataset behind this terminal — nothing leaves your machine.{' '}
+              {mission.allowsTempWorkspace
+                ? 'This terminal accepts one setup statement (CREATE TEMP TABLE or CREATE TEMP VIEW) followed by one read-only SELECT to grade — or a single equivalent SELECT.'
+                : 'This runner allows one read-only SELECT query.'}
             </p>
             <div className="actions">
               <button type="button" className="primary" onClick={() => void runQuery()} disabled={isRunning}>

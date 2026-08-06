@@ -1,4 +1,4 @@
-import initSqlJs, { type Database, type SqlJsStatic } from 'sql.js';
+import initSqlJs, { type Database, type SqlJsStatic, type Statement } from 'sql.js';
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { type QueryResult, type SqlValue } from './grading';
 
@@ -10,12 +10,22 @@ export type QueryRunResult =
   | { ok: true; result: QueryResult }
   | { ok: false; message: string };
 
-export async function runMissionQuery(sql: string): Promise<QueryRunResult> {
+export type QueryRunOptions = {
+  /**
+   * Opt-in only, for the handful of missions (temp tables, views) whose
+   * curriculum shape genuinely needs a setup statement before the graded
+   * SELECT — see executeTempWorkspaceQuery. Every other mission keeps the
+   * single-read-only-SELECT default.
+   */
+  allowsTempWorkspace?: boolean;
+};
+
+export async function runMissionQuery(sql: string, options: QueryRunOptions = {}): Promise<QueryRunResult> {
   try {
     const [SQL, databaseBytes] = await Promise.all([loadSql(), loadDatabaseBytes()]);
     const database = new SQL.Database(databaseBytes);
     try {
-      return executeReadOnlyQuery(database, sql);
+      return options.allowsTempWorkspace ? executeTempWorkspaceQuery(database, sql) : executeReadOnlyQuery(database, sql);
     } finally {
       database.close();
     }
@@ -58,6 +68,106 @@ export function executeReadOnlyQuery(database: Database, sql: string): QueryRunR
   } finally {
     statement.free();
   }
+}
+
+// Narrow, auditable exception to the single-SELECT default: at most one
+// CREATE TEMP TABLE/VIEW <name> AS SELECT ... setup statement, followed by
+// exactly one read-only statement that gets graded (same "grade the last
+// result table" contract as executeReadOnlyQuery). A one-statement
+// submission is still accepted and graded directly, since an equivalent
+// query that skips the temp object entirely is just as valid under this
+// project's result-based grading contract. Uses database.iterateStatements
+// (SQLite's own parser) to split statements, rather than a hand-rolled
+// semicolon split that a string literal could fool. Every run still gets a
+// fresh in-memory database that is closed afterward (see runMissionQuery),
+// so a created temp table/view never survives past that one Run click.
+const setupStatementPattern = /^CREATE\s+TEMP(?:ORARY)?\s+(?:TABLE|VIEW)\s+[A-Za-z_][A-Za-z0-9_]*\s+AS\s+(SELECT\b[\s\S]*)$/i;
+
+export function executeTempWorkspaceQuery(database: Database, sql: string): QueryRunResult {
+  if (!sql.trim()) {
+    return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+  }
+
+  // Statements must be prepared one at a time, in execution order: preparing
+  // "SELECT * FROM T" fails outright if the temp table T from the statement
+  // before it has not actually run yet (SQLite resolves names at prepare
+  // time, not just at step time). So collecting every statement up front
+  // (e.g. via [...iterateStatements(sql)]) breaks as soon as a later
+  // statement depends on an earlier one's side effect. iterator.next()
+  // prepares only the next statement; iterator.getRemainingSQL() reports
+  // how much raw (unprepared) text is left, which is enough to know whether
+  // more statements follow without preparing them early.
+  const iterator = database.iterateStatements(sql);
+  const prepared: Statement[] = [];
+
+  try {
+    let first;
+    try {
+      first = iterator.next();
+    } catch (error) {
+      return { ok: false, message: humaniseSqlError(error) };
+    }
+    if (first.done) {
+      return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+    }
+    prepared.push(first.value);
+
+    const hasMore = iterator.getRemainingSQL().trim().length > 0;
+    let finalStatement = first.value;
+
+    if (hasMore) {
+      const setupError = setupStatementSafetyError(first.value.getSQL());
+      if (setupError) return { ok: false, message: setupError };
+      first.value.step();
+
+      let second;
+      try {
+        second = iterator.next();
+      } catch (error) {
+        return { ok: false, message: humaniseSqlError(error) };
+      }
+      if (second.done) {
+        return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+      }
+      prepared.push(second.value);
+      finalStatement = second.value;
+
+      if (iterator.getRemainingSQL().trim().length > 0) {
+        return { ok: false, message: 'This mission accepts at most two statements: one setup statement, then one SELECT to grade.' };
+      }
+    }
+
+    const finalError = readOnlySafetyError(finalStatement.getSQL());
+    if (finalError) return { ok: false, message: finalError };
+
+    const columns = finalStatement.getColumnNames();
+    if (columns.length === 0) {
+      return { ok: false, message: 'Your query did not return a result table. Start with SELECT.' };
+    }
+
+    const rows: SqlValue[][] = [];
+    while (finalStatement.step()) {
+      rows.push(finalStatement.get().map(toSerializableValue));
+    }
+
+    return { ok: true, result: { columns, rows } };
+  } catch (error) {
+    return { ok: false, message: humaniseSqlError(error) };
+  } finally {
+    for (const statement of prepared) statement.free();
+  }
+}
+
+function setupStatementSafetyError(statementSql: string): string | undefined {
+  const withoutComments = statementSql.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '').trim();
+  const match = setupStatementPattern.exec(withoutComments);
+  if (!match) {
+    return 'This mission allows one setup statement shaped like CREATE TEMP TABLE <name> AS SELECT ... (or CREATE TEMP VIEW), followed by one SELECT to grade.';
+  }
+  if (/\b(?:INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|REPLACE|VACUUM|ATTACH|DETACH|PRAGMA)\b/i.test(match[1])) {
+    return 'The setup statement can only contain a read-only SELECT after AS.';
+  }
+  return undefined;
 }
 
 function loadSql(): Promise<SqlJsStatic> {
