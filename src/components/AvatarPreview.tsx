@@ -28,7 +28,9 @@ const bodyPaths: Record<SpriteShape, string> = {
 export function AvatarPreview({ spriteId, colorId, size = 96, label }: AvatarPreviewProps) {
   const sprite = getSpriteOption(spriteId);
   const color = getColorOption(colorId);
-  const altText = label ?? `${sprite.label} sprite, ${color.label}`;
+  // Color has no visible effect on real sprite art (see avatarOptions.ts), so
+  // omit it from the default label instead of naming an inert setting.
+  const altText = label ?? (sprite.imageUrl ? `${sprite.label} sprite` : `${sprite.label} sprite, ${color.label}`);
 
   if (sprite.imageUrl) {
     return (

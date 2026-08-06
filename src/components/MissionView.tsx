@@ -63,7 +63,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <p className="eyebrow">Aurora Music mainframe · Day one, unauthorized access granted</p>
           <h1 id="page-title">Metric Quest</h1>
           <button type="button" className="link-button" onClick={onBackToHome}>
-            ← Back to sector map
+            <span aria-hidden="true">← </span>Back to sector map
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
@@ -132,7 +132,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 onClick={() => setHintCount((count) => Math.min(count + 1, mission.hints.length))}
                 disabled={hintCount === mission.hints.length}
               >
-                Show hint{hintCount ? ` ${hintCount + 1}` : ''}
+                {hintCount === mission.hints.length ? 'All hints shown' : `Show hint${hintCount ? ` ${hintCount + 1}` : ''}`}
               </button>
               <button type="button" onClick={() => setShowSolution((shown) => !shown)}>
                 {showSolution ? 'Hide example' : 'Reveal example query'}
@@ -173,7 +173,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         {progress.badges.length ? (
           progress.badges.map((badge) => (
             <span key={badge} className="badge">
-              ★ {badge}
+              <span aria-hidden="true">★ </span>
+              {badge}
             </span>
           ))
         ) : (

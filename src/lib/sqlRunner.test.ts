@@ -14,6 +14,16 @@ describe('executeReadOnlyQuery', () => {
     database.close();
   });
 
+  it('returns an empty (not an error) result table when a valid SELECT matches zero rows', () => {
+    const database = new SQL.Database();
+    database.run('CREATE TABLE Invoice (InvoiceId INTEGER, Total REAL); INSERT INTO Invoice VALUES (1, 12.5);');
+    expect(executeReadOnlyQuery(database, "SELECT InvoiceId, Total FROM Invoice WHERE InvoiceId = 999;")).toEqual({
+      ok: true,
+      result: { columns: ['InvoiceId', 'Total'], rows: [] },
+    });
+    database.close();
+  });
+
   it('returns beginner-readable feedback for syntax errors', () => {
     const database = new SQL.Database();
     expect(executeReadOnlyQuery(database, 'SELECT FROM')).toMatchObject({ ok: false, message: expect.stringContaining('SQLite could not read that syntax') });

@@ -73,7 +73,8 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
             {progress.badges.length ? (
               progress.badges.map((badge) => (
                 <span key={badge} className="badge">
-                  ★ {badge}
+                  <span aria-hidden="true">★ </span>
+                  {badge}
                 </span>
               ))
             ) : (

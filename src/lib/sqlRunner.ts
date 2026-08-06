@@ -31,23 +31,32 @@ export function executeReadOnlyQuery(database: Database, sql: string): QueryRunR
     return { ok: false, message: safetyError };
   }
 
+  // database.exec() omits a result set entirely when a SELECT matches zero
+  // rows, which would misreport a correct-but-empty query as invalid SQL.
+  // prepare()/step() exposes column names up front regardless of row count.
+  let statement;
   try {
-    const queryResults = database.exec(sql);
-    const result = queryResults.at(-1);
+    statement = database.prepare(sql);
+  } catch (error) {
+    return { ok: false, message: humaniseSqlError(error) };
+  }
 
-    if (!result) {
+  try {
+    const columns = statement.getColumnNames();
+    if (columns.length === 0) {
       return { ok: false, message: 'Your query did not return a result table. Start with SELECT.' };
     }
 
-    return {
-      ok: true,
-      result: {
-        columns: result.columns,
-        rows: result.values.map((row) => row.map(toSerializableValue)),
-      },
-    };
+    const rows: SqlValue[][] = [];
+    while (statement.step()) {
+      rows.push(statement.get().map(toSerializableValue));
+    }
+
+    return { ok: true, result: { columns, rows } };
   } catch (error) {
     return { ok: false, message: humaniseSqlError(error) };
+  } finally {
+    statement.free();
   }
 }
 

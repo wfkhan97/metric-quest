@@ -10,6 +10,7 @@ export function ResultTable({ result }: ResultTableProps) {
       <h3 id="results-title">
         Query results <span>{result.rows.length} rows</span>
       </h3>
+      {result.rows.length === 0 && <p className="subtle">No rows returned — the query ran, but nothing matched.</p>}
       <div className="table-wrap">
         <table>
           <thead>
