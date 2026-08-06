@@ -1,6 +1,8 @@
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
+import iconBadge from '../assets/ui/icon-badge.png';
+import iconPoints from '../assets/ui/icon-points.png';
 import { type Mission } from '../lib/missions';
 import { type Progress } from '../lib/progress';
 
@@ -28,7 +30,10 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
           <h1 id="page-title">Metric Quest</h1>
         </div>
         <section className="scoreboard" aria-label="Your progress">
-          <strong>{progress.points} points</strong>
+          <strong>
+            <img className="icon-inline" src={iconPoints} alt="" aria-hidden="true" />
+            {progress.points} points
+          </strong>
           <span>
             {progress.completedMissionIds.length} of {missions.length} terminals purged
           </span>
@@ -71,7 +76,7 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
             {progress.badges.length ? (
               progress.badges.map((badge) => (
                 <span key={badge} className="badge">
-                  <span aria-hidden="true">★ </span>
+                  <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" />
                   {badge}
                 </span>
               ))

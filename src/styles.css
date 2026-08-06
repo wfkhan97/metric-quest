@@ -711,10 +711,20 @@ h3 {
 }
 
 .feedback-icon.success {
-  background: radial-gradient(circle, rgba(136, 240, 173, 0.32), transparent 70%);
-  border: 2px solid var(--retro-success);
-  border-radius: 50%;
   animation: signal-pulse 1.6s ease-in-out infinite;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+/* Small pixel-art UI icons (points, badge, progress) dropped into otherwise
+   text-driven surfaces — decorative only, sized to the surrounding text. */
+.icon-inline {
+  block-size: 1rem;
+  display: inline-block;
+  image-rendering: pixelated;
+  inline-size: 1rem;
+  margin-inline-end: 0.3rem;
+  vertical-align: -0.2em;
 }
 
 @keyframes signal-pulse {

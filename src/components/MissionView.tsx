@@ -3,6 +3,9 @@ import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { SchemaExplorer } from './SchemaExplorer';
+import iconBadge from '../assets/ui/icon-badge.png';
+import iconPoints from '../assets/ui/icon-points.png';
+import iconRestored from '../assets/ui/icon-restored.png';
 import { chapterNumber } from '../content/chapters';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
@@ -98,7 +101,10 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
-          <strong className={pointsPulsing ? 'points-pulse' : undefined}>{progress.points} points</strong>
+          <strong className={pointsPulsing ? 'points-pulse' : undefined}>
+            <img className="icon-inline" src={iconPoints} alt="" aria-hidden="true" />
+            {progress.points} points
+          </strong>
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
         </section>
       </header>
@@ -210,7 +216,11 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 <p className="milestone-banner">{feedback.campaignNowComplete ? 'Campaign complete — mainframe restored' : 'Sector cleared'}</p>
               )}
               <div className="feedback-signal">
-                <span className={`feedback-icon ${feedback.tone}`} aria-hidden="true" />
+                {feedback.tone === 'success' ? (
+                  <img className="feedback-icon success" src={iconRestored} alt="" aria-hidden="true" />
+                ) : (
+                  <span className="feedback-icon error" aria-hidden="true" />
+                )}
                 <div>
                   <h3>{feedback.heading}</h3>
                   {feedback.tone === 'success' && feedback.isNewCompletion && (
@@ -223,7 +233,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               <p>{feedback.text}</p>
               {feedback.tone === 'success' && feedback.newBadge && (
                 <p className="badge-unlock">
-                  <span aria-hidden="true">★</span> Badge unlocked: <strong>{feedback.newBadge}</strong>
+                  <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" /> Badge unlocked: <strong>{feedback.newBadge}</strong>
                 </p>
               )}
             </section>
@@ -237,7 +247,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         {progress.badges.length ? (
           progress.badges.map((badge) => (
             <span key={badge} className="badge">
-              <span aria-hidden="true">★ </span>
+              <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" />
               {badge}
             </span>
           ))
