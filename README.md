@@ -7,8 +7,8 @@ This is a presentation layer over a real SQL curriculum, not a re-skinned quiz: 
 ## Quick start
 
 ```bash
-pnpm install
-pnpm run dev
+npm install
+npm run dev
 ```
 
 The app is a static React + TypeScript site. It runs entirely in the browser via `sql.js`; there is no backend, and no query text, results, or progress ever leaves the browser (progress is saved to `localStorage`).
@@ -25,6 +25,25 @@ npm run check       # lint + test + typecheck + build
 ```
 
 Run `npm run check` before handing off any change.
+
+## Deployment
+
+Metric Quest is a fully static site with no server-side component: `npm run build` produces `dist/`, and that directory is the entire deployable artifact.
+
+```bash
+npm run build   # runs typecheck, then vite build
+# deployable output: dist/
+```
+
+To deploy to Vercel:
+
+1. Import the repository into a new Vercel project.
+2. Framework preset: **Vite**. Build command: `npm run build`. Output directory: `dist`. Install command: leave the default (Vercel detects `pnpm-lock.yaml` and uses `pnpm install` automatically).
+3. No environment variables are required — the app has no backend, no accounts, and calls no external API at runtime.
+
+Any static host that can serve a prebuilt `dist/` directory (Netlify, GitHub Pages, Cloudflare Pages, S3 + CloudFront, etc.) works the same way: run `npm run build` and publish `dist/`.
+
+Before making any deployment public, resolve the course-data release gate in [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md): the bundled `SQL Databases/iTunes.sqlite` (~1.1 MB, shipped as a build asset and loaded client-side) must be an explicitly approved licensed/reviewed copy or minimized derivative before it goes out publicly — that decision is not made by this build step and must be recorded in the release handoff.
 
 ## Project structure
 

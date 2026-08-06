@@ -23,6 +23,6 @@ The browser stores completed mission IDs, earned points, badges, and a schema ve
 
 ## Current foundation
 
-`src/lib/grading.ts` compares executed tables with normalized column labels, numeric precision, values, and optional row order. `src/lib/sqlRunner.ts` owns browser-local loading and read-only execution. `src/lib/missions.ts` contains only M1.1, M2.1, M3.1, and M8.1; `src/lib/progress.ts` owns versioned local progress.
+`src/lib/grading.ts` compares executed tables with normalized column labels, numeric precision, values, and optional row order. `src/lib/sqlRunner.ts` owns browser-local loading and read-only execution. `src/lib/missions.ts` contains the full 25-mission curriculum (M1.1-M9.2, all 9 sectors); `src/lib/progress.ts` owns versioned local progress.
 
 `src/App.tsx` is a thin router between `HomeView` (onboarding), `AvatarCreatorView` (one-time/re-editable avatar setup), `SectorTransitionView` (one-time-per-sector interstitial), and `MissionView` (the active mission), all under `src/components/`. Shared presentational pieces (`ChapterMap`, `ProgressBar`, `SchemaExplorer`, `ResultTable`) live alongside them. `src/content/chapters.ts` holds the static curriculum outline (all 9 chapter titles) so the chapter map can show "coming soon" for chapters without a mission yet. The UI layer only calls the exported functions of `grading.ts`, `sqlRunner.ts`, `missions.ts`, and `progress.ts` — it does not reimplement or bypass any of that logic.
