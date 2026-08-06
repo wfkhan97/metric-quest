@@ -88,7 +88,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <p className="brief">{mission.brief}</p>
 
           <div className="two-column">
-            <SchemaExplorer tables={mission.visibleTables} />
+            <SchemaExplorer tables={mission.visibleTables} relationships={mission.relationships} />
             <section className="panel" aria-labelledby="rewards-title">
               <h3 id="rewards-title">Terminal reward</h3>
               <p>

@@ -385,6 +385,28 @@ h1 {
   padding-left: 1.1rem;
 }
 
+.schema-relationships {
+  border-top: 1px solid var(--color-border);
+  margin-top: 0.9rem;
+  padding-top: 0.75rem;
+}
+
+.schema-relationships h4 {
+  color: var(--color-slate);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+}
+
+.schema-relationships ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
 .sql-editor-panel {
   margin: 1.25rem 0;
 }

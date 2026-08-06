@@ -18,6 +18,14 @@ export type Mission = {
   solutionSql: string;
   hints: string[];
   visibleTables: string[];
+  /**
+   * Optional and additive: a compact "how these tables connect" aid for
+   * multi-table missions, e.g. "InvoiceLine.TrackId -> Track.TrackId".
+   * Rendered by SchemaExplorer under the visible tables. Missions that
+   * touch only one table, or whose visibleTables are unrelated to each
+   * other, omit this.
+   */
+  relationships?: string[];
   expected: QueryResult;
   orderMatters: boolean;
   points: number;
@@ -123,6 +131,7 @@ export const missions: Mission[] = [
     solutionSql: "SELECT c.FirstName || ' ' || c.LastName AS Customer, i.InvoiceId, i.Total\nFROM Customer AS c\nJOIN Invoice AS i ON c.CustomerId = i.CustomerId\nWHERE i.BillingCountry = 'USA'\nORDER BY i.Total DESC, i.InvoiceId\nLIMIT 5;",
     hints: ['Two terminals, one wire: Invoice.CustomerId points at Customer.CustomerId.', 'JOIN Customer to Invoice first, then filter to USA and sort by Total DESC before limiting to five.'],
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    relationships: ['Customer.CustomerId → Invoice.CustomerId'],
     expected: { columns: ['Customer', 'InvoiceId', 'Total'], rows: [['Richard Cunningham', 299, 23.86], ['Victor Stevens', 201, 18.86], ['Frank Ralston', 103, 15.86], ['John Gordon', 5, 13.86], ['Tim Goyer', 26, 13.86]] },
     orderMatters: true, points: 30,
     successLesson: 'Relay reconnected. The CustomerId foreign key is the wire ROGUE.exe cut — joining on it turns anonymous invoice rows back into a named follow-up list the sales lead can actually use.',
@@ -134,6 +143,7 @@ export const missions: Mission[] = [
     solutionSql: 'SELECT t.Name,\n       il.Quantity,\n       ROUND(il.UnitPrice * il.Quantity, 2) AS LineAmount\nFROM InvoiceLine AS il\nJOIN Track AS t ON t.TrackId = il.TrackId\nWHERE il.InvoiceId = 299\nORDER BY t.Name;',
     hints: ['InvoiceLine is the missing wire — it links an InvoiceId to a TrackId and a Quantity.', 'A line amount is UnitPrice * Quantity; alias it something readable like LineAmount.'],
     visibleTables: ['InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)', 'Track(TrackId, Name)'],
+    relationships: ['InvoiceLine.TrackId → Track.TrackId'],
     expected: { columns: ['Name', 'Quantity', 'LineAmount'], rows: [['"?"', 1, 1.99], ['Acrobat', 1, 0.99], ['Catch-22', 1, 1.99], ['Company Man', 1, 1.99], ['Crossroads, Pt. 1', 1, 1.99], ['Dancing Barefoot', 1, 0.99], ['Enter 77', 1, 1.99], ['Even Better Than The Real Thing', 1, 0.99], ['Exposé', 1, 1.99], ['House of the Rising Sun', 1, 1.99], ['Lost Survival Guide', 1, 1.99], ['Orientation', 1, 1.99], ['Peace On Earth', 1, 0.99], ['Seven Minutes to Midnight', 1, 1.99]] },
     orderMatters: false, points: 30,
     successLesson: 'Line items restored. InvoiceLine is the join table connecting a specific invoice to the specific tracks bought on it — without it, an invoice is just a total with no receipt behind it.',
@@ -145,6 +155,7 @@ export const missions: Mission[] = [
     solutionSql: 'SELECT g.Name AS Genre,\n       ROUND(SUM(il.UnitPrice * il.Quantity), 2) AS Revenue\nFROM InvoiceLine AS il\nJOIN Track AS t ON t.TrackId = il.TrackId\nJOIN Genre AS g ON g.GenreId = t.GenreId\nGROUP BY g.GenreId, g.Name\nORDER BY Revenue DESC, Genre;',
     hints: ['The money lives on InvoiceLine (UnitPrice * Quantity), not on Track — Track only tells you what something is, not what it sold for.', 'Track.GenreId links to Genre.GenreId; join through Track to get from a sale to its genre.'],
     visibleTables: ['InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)', 'Track(TrackId, Name, GenreId)', 'Genre(GenreId, Name)'],
+    relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
     expected: { columns: ['Genre', 'Revenue'], rows: [['Rock', 826.65], ['Latin', 382.14], ['Metal', 261.36], ['Alternative & Punk', 241.56], ['TV Shows', 93.53], ['Jazz', 79.2], ['Blues', 60.39], ['Drama', 57.71], ['Classical', 40.59], ['R&B/Soul', 40.59], ['Sci Fi & Fantasy', 39.8], ['Reggae', 29.7], ['Pop', 27.72], ['Soundtrack', 19.8], ['Comedy', 17.91], ['Hip Hop/Rap', 16.83], ['Bossa Nova', 14.85], ['Alternative', 13.86], ['World', 12.87], ['Science Fiction', 11.94], ['Electronica/Dance', 11.88], ['Heavy Metal', 11.88], ['Easy Listening', 9.9], ['Rock And Roll', 5.94]] },
     orderMatters: true, points: 35, badge: 'Relationship Builder',
     successLesson: 'Genre scorecard rebuilt. Revenue only exists at the InvoiceLine grain — joining through Track to Genre attaches every real sale to its genre without inventing numbers Track never had.',
@@ -156,6 +167,7 @@ export const missions: Mission[] = [
     solutionSql: "SELECT c.CustomerId, c.FirstName, c.LastName\nFROM Customer AS c\nLEFT JOIN Invoice AS i ON i.CustomerId = c.CustomerId\n                    AND strftime('%Y', i.InvoiceDate) = '2011'\nWHERE i.InvoiceId IS NULL\nORDER BY c.CustomerId;",
     hints: ['LEFT JOIN FROM Customer keeps every customer row even when Invoice has nothing to match.', "Put the 2011 filter inside the JOIN condition, not a separate WHERE — then check WHERE i.InvoiceId IS NULL to find the customers with no match."],
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    relationships: ['Customer.CustomerId → Invoice.CustomerId'],
     expected: { columns: ['CustomerId', 'FirstName', 'LastName'], rows: [[2, 'Leonie', 'Köhler'], [13, 'Fernanda', 'Ramos'], [15, 'Jennifer', 'Peterson'], [17, 'Jack', 'Smith'], [19, 'Tim', 'Goyer'], [34, 'João', 'Fernandes'], [36, 'Hannah', 'Schneider'], [38, 'Niklas', 'Schröder'], [40, 'Dominique', 'Lefebvre'], [51, 'Joakim', 'Johansson'], [55, 'Mark', 'Taylor'], [57, 'Luis', 'Rojas'], [59, 'Puja', 'Srivastava']] },
     orderMatters: false, points: 30,
     successLesson: 'Reactivation list restored. An INNER JOIN drops any customer with zero matching invoices — exactly the people this list needs. LEFT JOIN keeps them, turning "no match" into a visible NULL instead of a silent deletion.',
@@ -178,6 +190,7 @@ export const missions: Mission[] = [
     solutionSql: "WITH CustomerRevenue AS (\n  SELECT CustomerId, SUM(Total) AS LifetimeRevenue\n  FROM Invoice\n  GROUP BY CustomerId\n)\nSELECT c.FirstName || ' ' || c.LastName AS Customer,\n       ROUND(cr.LifetimeRevenue, 2) AS LifetimeRevenue\nFROM CustomerRevenue AS cr\nJOIN Customer AS c ON c.CustomerId = cr.CustomerId\nORDER BY LifetimeRevenue DESC, Customer\nLIMIT 10;",
     hints: ['Start with WITH CustomerRevenue AS (...) — group Invoice by CustomerId inside it.', 'Join Customer to the CTE outside it, for names; the CTE already has the math done once.'],
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)', 'Customer(CustomerId, FirstName, LastName, Country)'],
+    relationships: ['Customer.CustomerId → Invoice.CustomerId (joined outside the CTE, after LifetimeRevenue is staged)'],
     expected: { columns: ['Customer', 'LifetimeRevenue'], rows: [['Helena Holý', 49.62], ['Richard Cunningham', 47.62], ['Luis Rojas', 46.62], ["Hugh O'Reilly", 45.62], ['Ladislav Kovács', 45.62], ['Frank Ralston', 43.62], ['Fynn Zimmermann', 43.62], ['Julia Barnett', 43.62], ['Astrid Gruber', 42.62], ['Victor Stevens', 42.62]] },
     orderMatters: true, points: 35,
     successLesson: 'Leaderboard staged. A CTE computes LifetimeRevenue exactly once, so every join and sort downstream reads the same staged number instead of ROGUE.exe recomputing (and drifting) it on the fly.',
@@ -233,6 +246,7 @@ export const missions: Mission[] = [
     solutionSql: 'SELECT g.Name AS Genre,\n       CAST(SUM(il.Quantity) AS INTEGER) AS UnitsSold\nFROM InvoiceLine AS il\nJOIN Track AS t ON t.TrackId = il.TrackId\nJOIN Genre AS g ON g.GenreId = t.GenreId\nGROUP BY g.GenreId, g.Name\nORDER BY UnitsSold DESC, Genre;',
     hints: ['Quantity lives on InvoiceLine — SUM it, then wrap the sum in CAST(... AS INTEGER).', 'Track.GenreId links to Genre.GenreId; join through Track same as any genre-revenue question.'],
     visibleTables: ['InvoiceLine(InvoiceLineId, InvoiceId, TrackId, UnitPrice, Quantity)', 'Track(TrackId, Name, GenreId)', 'Genre(GenreId, Name)'],
+    relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
     expected: { columns: ['Genre', 'UnitsSold'], rows: [['Rock', 835], ['Latin', 386], ['Metal', 264], ['Alternative & Punk', 244], ['Jazz', 80], ['Blues', 61], ['TV Shows', 47], ['Classical', 41], ['R&B/Soul', 41], ['Reggae', 30], ['Drama', 29], ['Pop', 28], ['Sci Fi & Fantasy', 20], ['Soundtrack', 20], ['Hip Hop/Rap', 17], ['Bossa Nova', 15], ['Alternative', 14], ['World', 13], ['Electronica/Dance', 12], ['Heavy Metal', 12], ['Easy Listening', 10], ['Comedy', 9], ['Rock And Roll', 6], ['Science Fiction', 6]] },
     orderMatters: true, points: 30, badge: 'Decision Designer',
     successLesson: 'Output locked to whole units. CAST(... AS INTEGER) guarantees a clean count regardless of what a future data source hands it — no fractional units sneaking into a report that is supposed to be a headcount.',

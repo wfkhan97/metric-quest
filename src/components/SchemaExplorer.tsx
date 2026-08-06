@@ -1,10 +1,11 @@
 type SchemaExplorerProps = {
   tables: string[];
+  relationships?: string[];
 };
 
 const tablePattern = /^(\w+)\((.*)\)$/;
 
-export function SchemaExplorer({ tables }: SchemaExplorerProps) {
+export function SchemaExplorer({ tables, relationships }: SchemaExplorerProps) {
   return (
     <section className="panel schema-explorer" aria-labelledby="schema-title">
       <h3 id="schema-title">Visible schema</h3>
@@ -40,6 +41,18 @@ export function SchemaExplorer({ tables }: SchemaExplorerProps) {
           );
         })}
       </div>
+      {relationships && relationships.length > 0 && (
+        <div className="schema-relationships">
+          <h4>How these tables connect</h4>
+          <ul>
+            {relationships.map((relationship) => (
+              <li key={relationship}>
+                <code>{relationship}</code>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
