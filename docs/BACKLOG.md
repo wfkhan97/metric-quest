@@ -300,12 +300,13 @@ reusable pattern for between-sector story beats elsewhere in the game.
 
 ### Non-goals
 - Shipping v1 doesn't require waiting on any new art — if a beat needs an
-  image that hasn't landed yet (e.g. a Sector background), it falls back
-  to the existing text-only/placeholder treatment already used for
-  sectors without art. As of this writing none of the 9 sectors have
-  background art and ROGUE.exe's illustrations haven't been generated
-  either (§A6/§B) — check the tracker below for current status before
-  assuming that's still true.
+  image that hasn't landed yet, it falls back to the existing
+  text-only/placeholder treatment already used for sectors without art.
+  **Update (2026-08-06): that caveat no longer applies** — all 9 sector
+  backgrounds and both ROGUE.exe states have been generated and verified
+  (see the asset tracker below), though none are wired into the app yet.
+  Phase 2 (multi-panel slideshow) is no longer blocked on missing art; it's
+  now blocked only on someone actually building it.
 - Not building Phase 2's multi-panel slideshow format now — this item
   should be structured so Phase 2 is a clean upgrade (swap in more
   panels/art) rather than a rewrite, but only Phase 1 is in scope to ship.
@@ -347,11 +348,11 @@ above to remove any "not built yet" caveat that no longer applies.
 
 | Asset | Needed for | Status | Link / path |
 | --- | --- | --- | --- |
-| Sector backgrounds, Sectors 1-3 & 8 | Item 4 (Phase 2 cutscenes); general sector polish | Not yet generated — prompt ready in `GAME_DESIGN_BRIEF.md` §B Step 2 | — |
-| Sector backgrounds, Sectors 4-7 & 9 | Item 4 (Phase 2 cutscenes); general sector polish | Not yet generated — prompt ready in §B Step 2b | — |
-| ROGUE.exe illustrations (calm + corrupted) | Item 4 (opening/Sector 8 cutscene beats) | Not yet generated — prompt ready in §B Step 3 | — |
-| Avatar sprite set | Not a backlog item here, but shared dependency | Status unclear — check `GAME_DESIGN_BRIEF.md` §B Step 1a/1b before assuming built | — |
-| UI chrome kit (panels, buttons, status icons) | Optional polish for items 1 and 2's panels | Not yet generated — prompt ready in §B Step 4; CSS placeholders work fine without it | — |
+| Sector backgrounds, Sectors 1-3 & 8 | Item 4 (Phase 2 cutscenes); general sector polish | **Generated and verified (2026-08-06)** — high quality, matches brief, open lower-middle third confirmed. Sector 8 leans slightly more organic/body-horror (pulsing red veins) than the brief's "campy, not horror" target — minor touch-up recommended before shipping, not a re-do. Not yet copied into `src/assets/` or wired into `SectorTransitionView`. | Claude Design project `pixel_art/sector-backgrounds.dc.html`; local export at `~/Downloads/metric-quest-design-system_8_6/project/pixel_art/assets/backgrounds/` |
+| Sector backgrounds, Sectors 4-7 & 9 | Item 4 (Phase 2 cutscenes); general sector polish | **Generated and verified (2026-08-06)** — high quality. Sector 9 (Boardroom Core) is a standout, exact match to brief. Not yet wired in. | Same project file/export as above |
+| ROGUE.exe illustrations (calm + corrupted) | Item 4 (opening/Sector 8 cutscene beats) | **Generated and verified (2026-08-06)** — excellent, both states clearly distinct, correctly non-humanoid, on-tone (campy/charismatic, not scary). Not yet wired in (still using the CSS glitch-icon placeholder in `MissionView`'s m8-1 aside). | Claude Design project `pixel_art/rogue-exe.dc.html`; local export at `.../pixel_art/assets/characters/rogue-exe-{calm,corrupted}.png` |
+| Avatar sprite set | Not a backlog item here, but shared dependency | Built and shipped — 12 real sprites in `src/assets/avatars/`, wired into `avatarOptions.ts`. Exceeds the original 3-4-base-sprite ask. | `src/lib/avatarOptions.ts` |
+| UI chrome kit (panels, buttons, status icons) | Optional polish for items 1 and 2's panels | **Partially generated and wired in (2026-08-06).** 7 of 10 assets ready: panel frame, all 4 button states, points/badge/progress icons, "signal restored" feedback icon. Points/badge/progress/restored icons are now live in `HomeView`/`MissionView`/`ProgressBar` (`src/assets/ui/`). Buttons + panel-frame verified good art but not yet wired into interactive elements — idle/hover are nearly indistinguishable and the soft edge-glow won't survive CSS border-image slicing for responsive sizing; needs a touch-up export. `icon-corruption.png` is illegible (reads as static, not "corruption") — needs regeneration; CSS glitch placeholder still used for the error feedback icon. | Claude Design project `pixel_art/ui-chrome-kit.dc.html`; landed assets in `src/assets/ui/` |
 | "Good AI" mentor/tutor character sprite | Item 3 | Not yet requested — no Claude Design prompt drafted yet | — |
 | Glossary concept diagrams (join Venn diagram, grouping/filtering visuals, etc.) | Item 1 | Building as CSS/SVG in-house for v1; polished Claude Design versions are an optional later upgrade, not requested | — |
 
