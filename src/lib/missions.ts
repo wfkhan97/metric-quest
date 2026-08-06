@@ -50,7 +50,7 @@ export const missions: Mission[] = [
   {
     id: 'm1-1', chapter: '1 · The Ledger Vaults', title: 'Priority invoices', concept: 'Filter, sort, and limit',
     brief: 'ROGUE.exe has buried the U.S. invoice ledger under fake noise, and the vault terminal is flashing red. Purge the corruption: surface the five highest-value invoices billed to the United States, largest total first. Return the invoice ID, invoice date, and total — nothing else gets past the filter.',
-    starterSql: "SELECT InvoiceId, InvoiceDate, Total\nFROM Invoice\nWHERE BillingCountry = 'USA'\nORDER BY Total DESC, InvoiceId\nLIMIT 5;",
+    starterSql: '-- Return InvoiceId, InvoiceDate, and Total from Invoice for the five\n-- highest-value invoices billed to the United States. Largest total first.',
     solutionSql: "SELECT InvoiceId, InvoiceDate, Total\nFROM Invoice\nWHERE BillingCountry = 'USA'\nORDER BY Total DESC, InvoiceId\nLIMIT 5;",
     hints: ['The vault only has one table to search here: Invoice. Country, date, and total all live in its columns.', 'Clear the noise with WHERE first, then ORDER BY Total DESC and LIMIT 5 to surface the biggest five.'],
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
@@ -94,7 +94,7 @@ export const missions: Mission[] = [
   {
     id: 'm2-1', chapter: '2 · The Scoreboard Core', title: 'Country revenue', concept: 'SUM, GROUP BY, aliases',
     brief: 'The Scoreboard Core is spitting out country totals that don\'t add up — ROGUE.exe has been quietly double-counting invoice lines to inflate the numbers. Rebuild the CFO\'s real scorecard: total revenue by billing country, highest to lowest, using each invoice\'s total exactly once. No joins to the invoice-line table — that\'s where the corruption lives.',
-    starterSql: 'SELECT BillingCountry, ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nGROUP BY BillingCountry\nORDER BY Revenue DESC, BillingCountry;',
+    starterSql: '-- Group Invoice by BillingCountry and SUM(Total) as Revenue, using each\n-- invoice row exactly once. Sort highest revenue first.',
     solutionSql: 'SELECT BillingCountry, ROUND(SUM(Total), 2) AS Revenue\nFROM Invoice\nGROUP BY BillingCountry\nORDER BY Revenue DESC, BillingCountry;',
     hints: ['Invoice.Total is already a finished purchase amount — one row, one sale. No need to touch invoice lines.', 'GROUP BY BillingCountry, SUM the totals, and alias the result (e.g. Revenue) before you ORDER BY it DESC.'],
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
@@ -127,7 +127,7 @@ export const missions: Mission[] = [
   {
     id: 'm3-1', chapter: '3 · The Relay Archives', title: 'Name the high-value customers', concept: 'INNER JOIN and foreign keys',
     brief: 'The Relay Archives can still list invoice IDs, but ROGUE.exe has severed the wire that used to attach a customer\'s name to each one. Reconnect the relay: for the five largest U.S. invoices, return the customer\'s full name alongside the invoice ID and total.',
-    starterSql: "SELECT c.FirstName || ' ' || c.LastName AS Customer, i.InvoiceId, i.Total\nFROM Customer AS c\nJOIN Invoice AS i ON c.CustomerId = i.CustomerId\nWHERE i.BillingCountry = 'USA'\nORDER BY i.Total DESC, i.InvoiceId\nLIMIT 5;",
+    starterSql: "-- Join Customer to Invoice on CustomerId. For the five largest U.S.\n-- invoices, return the customer's full name, InvoiceId, and Total.",
     solutionSql: "SELECT c.FirstName || ' ' || c.LastName AS Customer, i.InvoiceId, i.Total\nFROM Customer AS c\nJOIN Invoice AS i ON c.CustomerId = i.CustomerId\nWHERE i.BillingCountry = 'USA'\nORDER BY i.Total DESC, i.InvoiceId\nLIMIT 5;",
     hints: ['Two terminals, one wire: Invoice.CustomerId points at Customer.CustomerId.', 'JOIN Customer to Invoice first, then filter to USA and sort by Total DESC before limiting to five.'],
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
@@ -276,7 +276,7 @@ export const missions: Mission[] = [
   {
     id: 'm8-1', chapter: "8 · ROGUE.exe's Inner Sanctum", title: 'Duplicate-customer trap', concept: 'COUNT(DISTINCT ...) and AI verification',
     brief: 'The terminal flickers, and for the first time ROGUE.exe answers back: "412 customers. Trust the machine." It\'s lying — that number came from joining Customer to Invoice and counting every row, which counts a repeat buyer once per purchase. Call the bluff: return the real number of unique customers who have made at least one purchase.',
-    starterSql: 'SELECT COUNT(DISTINCT CustomerId) AS UniquePurchasers\nFROM Invoice;',
+    starterSql: '-- Return the real number of unique purchasers from Invoice using\n-- COUNT(DISTINCT CustomerId).',
     solutionSql: 'SELECT COUNT(DISTINCT CustomerId) AS UniquePurchasers\nFROM Invoice;',
     hints: ['A join between Customer and Invoice repeats a row for every invoice a customer has — that\'s where the inflated 412 comes from.', 'COUNT(DISTINCT CustomerId) collapses repeat buyers back down to one each. Run it straight off Invoice.'],
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
