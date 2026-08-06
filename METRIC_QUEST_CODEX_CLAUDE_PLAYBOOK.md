@@ -124,7 +124,7 @@ Handoff: report changed files, checks run, decisions, and remaining risk.
 
 ## Status as of the narrative pivot
 
-Prompts 1-12 below have all actually been run (Prompt 1's execution went
+Prompts 1-13 below have all actually been run (Prompt 1's execution went
 further than its own text asked for and already delivered the outcomes
 originally planned as separate Prompts 3, 5, and 6). Concretely, the
 codebase has:
@@ -152,9 +152,9 @@ codebase has:
   accessibility/interaction polish pass (Prompt 10).
 
 Prompts 3, 4, 5, and 6 below are kept for historical record but do **not**
-need to be re-run. Prompts 7-12 are also done; the next prompt to actually
-send is **Prompt 13** (advanced learning UX for the joins/CTE/date/CASE/
-cast/set/view missions just added).
+need to be re-run. Prompts 7-13 are also done -- Week 2 is complete. The
+next prompt to actually send is **Prompt 14** (Codex: final cases M8.2,
+M8.3, M9.1, M9.2), which starts the Week 3 Goal below.
 
 ## Week 1: foundation and vertical slice
 
@@ -382,7 +382,7 @@ exercise, and add tests for both accepted workflows and blocked unsafe writes.
 Run all checks and report the security boundary.
 ```
 
-### Prompt 13 — Claude Code: advanced learning UX
+### Prompt 13 — Claude Code: advanced learning UX ✅ done (run by Claude Code this session)
 
 ```text
 Read the new mission definitions and improve the learner experience for joins,
