@@ -19,8 +19,23 @@ This pivot changes **presentation and copy only**. It does not change:
 - the grading contract (compare executed result tables, never SQL text);
 - the syllabus coverage or mission data (same 9 chapters, same reference
   queries and expected results);
-- the accessibility floor (contrast, keyboard operability, visible focus,
-  readable tables) on any text-heavy learning surface.
+- the functional accessibility floor (keyboard operability, visible focus,
+  readable/navigable tables, feedback that never relies on color alone) on
+  any text-heavy learning surface.
+
+**Second pivot, 2026-08-06 (read `docs/GAME_DESIGN_BRIEF.md` §A6-A8
+before touching layout or CSS):** the terminal/CRT look that was previously
+confined to decorative screens (avatar creator, sector transitions) is now
+the whole app's visual system, including the brief, schema explorer, SQL
+editor, results table, and feedback. The old rule that those surfaces must
+keep the specific navy/cream/teal palette is retired — contrast is no
+longer pinned to that palette, though it should still be checked and kept
+high as the new palette rolls out (the retro palette already measures well
+above WCAG AA on the screens that use it today). The functional floor above
+(keyboard, focus, table readability, non-color feedback) is unaffected and
+still applies everywhere. This pivot also adds a page-level no-scroll
+layout requirement and a phased animation/cutscene plan — see
+`docs/GAME_DESIGN_BRIEF.md` §A7-A8 for both.
 
 Glossary — use these consistently in new copy and prompts:
 
