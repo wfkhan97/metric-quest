@@ -3,6 +3,7 @@ import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { SchemaExplorer } from './SchemaExplorer';
+import { chapterNumber } from '../content/chapters';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
@@ -10,7 +11,15 @@ import { runMissionQuery } from '../lib/sqlRunner';
 
 type Feedback =
   | { tone: 'error'; heading: string; text: string }
-  | { tone: 'success'; heading: string; text: string; isNewCompletion: boolean; newBadge?: string }
+  | {
+      tone: 'success';
+      heading: string;
+      text: string;
+      isNewCompletion: boolean;
+      newBadge?: string;
+      sectorNowComplete: boolean;
+      campaignNowComplete: boolean;
+    }
   | undefined;
 
 type MissionViewProps = {
@@ -61,12 +70,17 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     const newBadge = isNewCompletion && mission.badge && !progress.badges.includes(mission.badge) ? mission.badge : undefined;
     const nextProgress = completeMission(progress, mission.id, mission.points, mission.badge);
     onProgressChange(nextProgress);
+    const sectorMissions = missions.filter((candidate) => chapterNumber(candidate) === chapterNumber(mission));
+    const sectorNowComplete = isNewCompletion && sectorMissions.every((candidate) => nextProgress.completedMissionIds.includes(candidate.id));
+    const campaignNowComplete = isNewCompletion && missions.every((candidate) => nextProgress.completedMissionIds.includes(candidate.id));
     setFeedback({
       tone: 'success',
       heading: completed ? 'Terminal already restored' : `Terminal restored: +${mission.points} points`,
       text: mission.successLesson,
       isNewCompletion,
       newBadge,
+      sectorNowComplete,
+      campaignNowComplete,
     });
   }
 
@@ -152,7 +166,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 : 'This runner allows one read-only SELECT query.'}
             </p>
             <div className="actions">
-              <button type="button" className="primary" onClick={() => void runQuery()} disabled={isRunning}>
+              <button type="button" className={isRunning ? 'primary running' : 'primary'} onClick={() => void runQuery()} disabled={isRunning}>
                 {isRunning ? 'Running query…' : 'Run query'}
               </button>
               <button
@@ -187,7 +201,14 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             </section>
           )}
           {feedback && (
-            <section className={`feedback ${feedback.tone}${feedback.tone === 'success' ? ' mission-complete' : ''}`} aria-live="polite" role="status">
+            <section
+              className={`feedback ${feedback.tone}${feedback.tone === 'success' && feedback.isNewCompletion ? ' mission-complete' : ''}`}
+              aria-live="polite"
+              role="status"
+            >
+              {feedback.tone === 'success' && feedback.isNewCompletion && (feedback.campaignNowComplete || feedback.sectorNowComplete) && (
+                <p className="milestone-banner">{feedback.campaignNowComplete ? 'Campaign complete — mainframe restored' : 'Sector cleared'}</p>
+              )}
               <div className="feedback-signal">
                 <span className={`feedback-icon ${feedback.tone}`} aria-hidden="true" />
                 <div>

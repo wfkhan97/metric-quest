@@ -351,6 +351,15 @@ h3 {
   color: var(--retro-bg);
 }
 
+.actions button.running {
+  animation: button-pulse 1s ease-in-out infinite;
+}
+
+@keyframes button-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(31, 211, 196, 0); }
+  50% { box-shadow: 0 0 14px rgba(31, 211, 196, 0.85); }
+}
+
 .actions button:disabled {
   border-color: var(--retro-muted);
   color: var(--retro-muted);
@@ -731,6 +740,19 @@ h3 {
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.milestone-banner {
+  animation: points-chip-in 550ms ease-out both;
+  background: var(--retro-amber);
+  color: var(--retro-bg);
+  display: inline-block;
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  margin-block-end: 0.6rem;
+  padding: 0.35rem 0.55rem;
+  text-transform: uppercase;
+}
+
 .badge-unlock {
   align-items: center;
   animation: points-chip-in 650ms ease-out both;
@@ -798,6 +820,15 @@ th {
 
 td {
   color: var(--retro-text);
+}
+
+@keyframes row-materialize {
+  from { opacity: 0; transform: translateY(0.3rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+tbody tr {
+  animation: row-materialize 260ms ease-out both;
 }
 
 .badges {
