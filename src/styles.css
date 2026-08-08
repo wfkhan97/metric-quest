@@ -737,7 +737,7 @@ h3 {
 }
 
 .feedback-icon.success {
-  animation: signal-pulse 1.6s ease-in-out infinite;
+  animation: signal-pulse 1.6s ease-in-out infinite forwards;
   image-rendering: pixelated;
   object-fit: contain;
 }
@@ -803,7 +803,7 @@ h3 {
 }
 
 .badge-unlock span {
-  animation: signal-pulse 1.6s ease-in-out infinite;
+  animation: signal-pulse 1.6s ease-in-out infinite forwards;
   font-size: 1.1rem;
 }
 
@@ -1259,6 +1259,214 @@ tbody tr {
   margin-block-end: 0;
   overflow: auto;
   padding: 0.65rem;
+}
+
+/* Glossary visuals (P1.2). Decorative and supplementary — every entry's text
+   already stands alone, so the SVG is aria-hidden and the figcaption carries
+   the same point in words. Animation is CSS-keyframe only; each keyframe's
+   100% state is the fully "resolved" picture, since that's what freezes in
+   place once the global prefers-reduced-motion rule collapses every
+   animation to a single non-looping pass (see the media query below). */
+.glossary-visual {
+  margin: 0 0 0.75rem;
+}
+
+.glossary-visual-svg {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+}
+
+.glossary-visual figcaption {
+  color: var(--retro-muted);
+  font-size: 0.76rem;
+  margin-block-start: 0.3rem;
+}
+
+.viz-label {
+  fill: var(--retro-muted);
+  font-size: 9px;
+}
+
+.viz-label-strong {
+  fill: var(--retro-teal);
+  font-weight: 700;
+}
+
+.viz-divider {
+  stroke: var(--retro-border);
+  stroke-width: 1;
+}
+
+/* Filter, sort, limit */
+.viz-fsl-track {
+  fill: var(--retro-panel-raised);
+}
+
+.viz-fsl-bar {
+  fill: var(--retro-muted);
+}
+
+.viz-fsl-kept .viz-fsl-bar {
+  animation: viz-fsl-keep 6s ease-in-out infinite forwards;
+}
+
+.viz-fsl-limited .viz-fsl-bar {
+  animation: viz-fsl-limit 6s ease-in-out infinite forwards;
+}
+
+.viz-fsl-filtered .viz-fsl-bar {
+  animation: viz-fsl-filter 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-fsl-keep {
+  0%, 15% { fill: var(--retro-muted); }
+  35%, 100% { fill: var(--retro-success); }
+}
+
+@keyframes viz-fsl-limit {
+  0%, 15% { fill: var(--retro-muted); }
+  35%, 65% { fill: var(--retro-success); }
+  85%, 100% { fill: var(--retro-muted); opacity: 0.3; }
+}
+
+@keyframes viz-fsl-filter {
+  0%, 15% { fill: var(--retro-muted); }
+  25%, 34% { fill: var(--retro-danger); }
+  55%, 100% { fill: var(--retro-danger); opacity: 0.25; }
+}
+
+/* WHERE vs HAVING */
+.viz-wh-row {
+  fill: var(--retro-teal);
+}
+
+.viz-wh-row-removed {
+  animation: viz-wh-row-out 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-wh-row-out {
+  0%, 15% { fill: var(--retro-danger); opacity: 1; }
+  40%, 100% { fill: var(--retro-danger); opacity: 0.2; }
+}
+
+.viz-wh-bucket {
+  fill: var(--retro-teal);
+}
+
+.viz-wh-bucket-removed {
+  animation: viz-wh-bucket-out 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-wh-bucket-out {
+  0%, 55% { fill: var(--retro-danger); opacity: 1; }
+  80%, 100% { fill: var(--retro-danger); opacity: 0.2; }
+}
+
+/* Joins */
+.viz-join-node {
+  fill: var(--retro-panel-raised);
+  stroke: var(--retro-border);
+}
+
+.viz-join-node-text {
+  fill: var(--retro-text);
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+.viz-join-line {
+  stroke: var(--retro-success);
+  stroke-width: 2;
+  animation: viz-join-line-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-line-in {
+  0%, 10% { opacity: 0; }
+  30%, 100% { opacity: 1; }
+}
+
+.viz-join-dropped {
+  animation: viz-join-drop 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-drop {
+  0%, 40% { opacity: 1; }
+  60%, 100% { opacity: 0.15; }
+}
+
+.viz-join-null {
+  fill: var(--retro-danger);
+  font-size: 9px;
+  opacity: 0;
+  animation: viz-join-null-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-null-in {
+  0%, 40% { opacity: 0; }
+  60%, 100% { opacity: 1; }
+}
+
+/* GROUP BY */
+.viz-group-a {
+  fill: var(--retro-teal);
+}
+
+.viz-group-b {
+  fill: var(--retro-amber);
+}
+
+.viz-group-c {
+  fill: var(--retro-success);
+}
+
+.viz-group-source {
+  animation: viz-group-source-out 6s ease-in-out infinite forwards;
+}
+
+.viz-group-buckets {
+  animation: viz-group-buckets-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-group-source-out {
+  0%, 30% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+@keyframes viz-group-buckets-in {
+  0%, 30% { opacity: 0; }
+  55%, 100% { opacity: 1; }
+}
+
+/* UNION vs UNION ALL */
+.viz-union-row rect {
+  fill: var(--retro-panel-raised);
+  stroke: var(--retro-border);
+}
+
+.viz-union-row text {
+  fill: var(--retro-text);
+  font-size: 9px;
+}
+
+.viz-union-row-dedup {
+  animation: viz-union-dedup 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-union-dedup {
+  0%, 45% { opacity: 1; }
+  70%, 100% { opacity: 0.15; }
+}
+
+.viz-union-row-kept rect {
+  animation: viz-union-keep 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-union-keep {
+  0%, 45% { stroke: var(--retro-border); stroke-width: 1; }
+  70%, 100% { stroke: var(--retro-success); stroke-width: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

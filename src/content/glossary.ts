@@ -49,6 +49,7 @@ export const glossary: GlossaryEntry[] = [
       sql: "SELECT InvoiceId, BillingCountry, Total\nFROM Invoice\nWHERE BillingCountry = 'USA'\nORDER BY Total DESC\nLIMIT 3;",
     },
     conceptTags: ['Filter, sort, and limit'],
+    visualId: 'filter-sort-limit',
   },
   {
     id: 'distinct',
@@ -114,6 +115,7 @@ export const glossary: GlossaryEntry[] = [
       'Multi-metric aggregation with COUNT(DISTINCT ...)',
       'Scoping a claim to a real time window',
     ],
+    visualId: 'group-by-aggregation',
   },
   {
     id: 'where-vs-having',
@@ -129,6 +131,7 @@ export const glossary: GlossaryEntry[] = [
       sql: "SELECT BillingCountry, SUM(Total) AS Revenue\nFROM Invoice\nWHERE BillingCountry != 'USA'\nGROUP BY BillingCountry\nHAVING SUM(Total) > 150\nORDER BY Revenue DESC;",
     },
     conceptTags: ['HAVING vs. WHERE', 'JOIN, aggregation, and HAVING on the low end'],
+    visualId: 'where-vs-having',
   },
   {
     id: 'count-variants',
@@ -163,6 +166,7 @@ export const glossary: GlossaryEntry[] = [
       sql: 'SELECT c.CustomerId, c.FirstName, c.LastName\nFROM Customer c\nLEFT JOIN Invoice i ON i.CustomerId = c.CustomerId\nWHERE i.InvoiceId IS NULL;',
     },
     conceptTags: ['INNER JOIN and foreign keys', 'LEFT JOIN and NULL checks', 'JOIN, aggregation, and HAVING on the low end'],
+    visualId: 'joins',
   },
   {
     id: 'multi-table-joins',
@@ -268,6 +272,7 @@ export const glossary: GlossaryEntry[] = [
       sql: "SELECT BillingCountry AS Country FROM Invoice WHERE BillingCountry = 'USA'\nUNION\nSELECT Country FROM Customer WHERE Country = 'USA';\n-- UNION collapses this to one 'USA' row even though both sides matched.",
     },
     conceptTags: ['UNION vs. UNION ALL'],
+    visualId: 'union-vs-union-all',
   },
   {
     id: 'views',

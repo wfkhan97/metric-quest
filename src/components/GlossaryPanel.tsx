@@ -1,6 +1,21 @@
 import { useEffect, useRef } from 'react';
 import { chapters } from '../content/chapters';
 import { glossary, type GlossaryEntry } from '../content/glossary';
+import {
+  FilterSortLimitDiagram,
+  GroupByDiagram,
+  JoinDiagram,
+  UnionDiagram,
+  WhereVsHavingDiagram,
+} from './GlossaryVisuals';
+
+const glossaryVisuals: Record<string, typeof FilterSortLimitDiagram> = {
+  'filter-sort-limit': FilterSortLimitDiagram,
+  'where-vs-having': WhereVsHavingDiagram,
+  joins: JoinDiagram,
+  'group-by-aggregation': GroupByDiagram,
+  'union-vs-union-all': UnionDiagram,
+};
 
 type GlossaryPanelProps = {
   onClose: () => void;
@@ -79,25 +94,29 @@ export function GlossaryPanel({ onClose }: GlossaryPanelProps) {
                 <h3 id={`glossary-sector-${chapter.number}`}>
                   Sector {chapter.number} · {chapter.title}
                 </h3>
-                {groupedEntries.get(chapter.number)!.map((entry) => (
-                  <details key={entry.id} className="glossary-entry">
-                    <summary>
-                      <strong>{entry.title}</strong> — {entry.summary}
-                    </summary>
-                    {entry.explanation.map((paragraph, index) => (
-                      <p key={index}>{paragraph}</p>
-                    ))}
-                    <div className="glossary-example">
-                      <p className="subtle">{entry.example.description}</p>
-                      <pre>
-                        <code>{entry.example.sql}</code>
-                      </pre>
-                    </div>
-                    {entry.sectors.length > 1 && (
-                      <p className="subtle">Also comes up in Sector {entry.sectors.slice(1).join(', Sector ')}.</p>
-                    )}
-                  </details>
-                ))}
+                {groupedEntries.get(chapter.number)!.map((entry) => {
+                  const Visual = entry.visualId ? glossaryVisuals[entry.visualId] : undefined;
+                  return (
+                    <details key={entry.id} className="glossary-entry">
+                      <summary>
+                        <strong>{entry.title}</strong> — {entry.summary}
+                      </summary>
+                      {entry.explanation.map((paragraph, index) => (
+                        <p key={index}>{paragraph}</p>
+                      ))}
+                      {Visual && <Visual caption={entry.summary} />}
+                      <div className="glossary-example">
+                        <p className="subtle">{entry.example.description}</p>
+                        <pre>
+                          <code>{entry.example.sql}</code>
+                        </pre>
+                      </div>
+                      {entry.sectors.length > 1 && (
+                        <p className="subtle">Also comes up in Sector {entry.sectors.slice(1).join(', Sector ')}.</p>
+                      )}
+                    </details>
+                  );
+                })}
               </section>
             ))}
         </div>
