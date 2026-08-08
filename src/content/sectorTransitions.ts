@@ -1,7 +1,7 @@
 // One-time flavor line per sector, shown by SectorTransitionView the first time a
-// player enters that sector. Visual themes pulled from docs/GAME_DESIGN_BRIEF.md §A4;
-// no background art exists yet for any sector, so every sector uses this text-only
-// treatment (see Prompt 9 in METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md).
+// player enters that sector. Visual themes pulled from docs/GAME_DESIGN_BRIEF.md §A4.
+// Background art lives in sectorBackgrounds.ts; this stays a separate module since
+// copy and art are sourced/updated independently.
 export const sectorFlavor: Record<number, string> = {
   1: 'Rows of invoice ledgers glow in the dark, half of them flickering with fake totals ROGUE.exe slipped in to bury the real numbers. Sort the noise from the signal and the vault comes back online.',
   2: "A dashboard the size of a wall used to show the CFO real numbers — now the dials spin on inflated totals from ROGUE.exe's double-counting. Rebuild the scorecard and the dials settle.",

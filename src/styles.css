@@ -1020,9 +1020,15 @@ tbody tr {
   padding: 0.5rem 0.6rem;
 }
 
-/* Existing static Recruit art becomes lively without changing assets. */
+/* Sector background art (when present) is composed with a clear lower-middle
+   third; the frame is bottom-anchored to sit in that open zone rather than
+   the viewport's true center. The frame itself stays fully opaque so text
+   contrast never depends on what the art behind it looks like. */
 .sector-transition {
-  align-items: center;
+  align-items: end;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   display: grid;
   justify-items: center;
   padding: clamp(0.75rem, 2.5vw, 1.5rem);
@@ -1035,6 +1041,7 @@ tbody tr {
   display: grid;
   gap: clamp(0.65rem, 1.5vw, 1rem);
   justify-items: center;
+  margin-block-end: clamp(0.5rem, 6vh, 3.5rem);
   max-inline-size: 38rem;
   padding: clamp(1rem, 3vw, 2rem);
   text-align: center;
