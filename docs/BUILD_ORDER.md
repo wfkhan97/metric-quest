@@ -258,12 +258,20 @@ signatures end-to-end, then one packet per remaining sector's signatures.
 That gets the mechanism reviewed early and turns the long tail into
 repeatable content work.
 
-**Blocked on:** three of item 2's open questions — how many signatures
-per concept count as v1, which attempt number triggers the diagnostic,
-and whether it replaces or supplements the generic feedback.
+**Blocked on:** Nothing — the three open questions were resolved
+2026-08-08 (recorded in `docs/BACKLOG.md`): a short, high-confidence
+signature list rather than exhaustive coverage; the 2nd wrong attempt
+triggers the diagnostic; it always supplements the generic feedback,
+never replaces it.
 
-**Depends on:** P1.1 if the explanations link into glossary entries.
-Can ship without the links if Wave 1 slips.
+**Status:** the classifier-plumbing-plus-one-sector split landed
+2026-08-08 — Sector 2 (`m2-1`/`m2-2`/`m2-3`), 4 signatures, linked into
+Wave 1's glossary entries. The remaining sectors are still open,
+repeatable content-work packets, one per sector, per the suggested split
+above.
+
+**Depends on:** P1.1 if the explanations link into glossary entries —
+landed and used.
 
 ---
 

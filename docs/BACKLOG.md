@@ -149,16 +149,24 @@ scoped as its own item, phased behind the same approval gate as item 3.
   pass per sector/concept, reusing whichever missions already exist.
 
 ### Open questions still to resolve before build
-- How many mistake signatures per concept are "enough" for v1 — a
-  short list per sector (3-5 common ones) or exhaustive coverage?
-- Attempt threshold: surface the diagnostic on the 2nd wrong attempt,
-  3rd, or configurable per mission difficulty?
-- Should the diagnostic ever *replace* the generic wrong-answer feedback,
-  or always appear alongside it as a "need a hint?" affordance the player
-  opts into (keeping the base feedback loop unchanged for players who
-  don't want it)?
+- ~~How many mistake signatures per concept are "enough" for v1~~ —
+  **Resolved 2026-08-08:** short list, not exhaustive. P2.2 shipped 4
+  high-confidence signatures across Sector 2's 3 missions (2 for m2-1, 1
+  each for m2-2/m2-3) rather than forcing 2+ per mission — a second m2-3
+  candidate (an unnecessary-but-harmless join) was tested against the real
+  dataset and dropped because it never actually produces a wrong result,
+  so it could never fire.
+- ~~Attempt threshold~~ — **Resolved 2026-08-08:** 2nd wrong attempt.
+  Landed in P2.2.
+- ~~Replace or supplement~~ — **Resolved 2026-08-08:** always supplements
+  the generic wrong-answer feedback, never replaces it; grading.ts stays
+  the sole verdict. Landed in P2.2.
 - Does this want its own visual treatment (e.g. a distinct panel from the
   results panel) or should it slot into the existing feedback area?
+  **Resolved during the packet** (per BUILD_ORDER.md's allowance for
+  non-blocking questions): slots into the existing `.feedback.error`
+  section as a nested `.diagnostic` block, not a separate panel — reads as
+  "more detail on the miss," not a second, competing verdict.
 
 ---
 
