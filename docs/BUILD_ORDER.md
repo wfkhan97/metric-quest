@@ -224,13 +224,17 @@ unless explicitly re-triggered; skip works and is discoverable; a sector
 with no authored beat transitions exactly as it does today; and the beat
 data structure could carry multi-panel Phase 2 content without a rewrite.
 
-**Blocked on:** three of item 4's open questions —
-- Opening cutscene before or after the avatar creator?
-- Is skip available on first viewing or only on replay?
-- Any audio intended? (The game has no audio system today — confirm
-  before scoping sound rather than inventing one.)
+**Blocked on:** Nothing — the three open questions were resolved
+2026-08-08 (recorded in `docs/BACKLOG.md`): opening plays before the
+avatar creator; unskippable on first viewing, skippable via a "Replay
+opening" control on Home; audio scoped in by product direction, but
+shipped as an unwired `audioSrc?` field only — no capability here to
+generate or source a real sound file, and no playback machinery was
+built around a field that's always undefined. A fourth open question
+(whether every sector transition gets an authored beat) is still open
+and blocks writing the Sector 8→9 beat specifically, not this packet.
 
-**Depends on:** P0.1 and P0.2 (the beats want the real art).
+**Depends on:** P0.1 and P0.2 (the beats want the real art) — both landed.
 
 ---
 

@@ -1115,6 +1115,17 @@ tbody tr {
   margin: 0;
 }
 
+/* Opening/between-sector cutscenes (P2.1) reuse the sector-transition frame
+   chrome wholesale — only the multi-paragraph layout is new. */
+.cutscene-copy {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cutscene-copy .sector-transition-flavor {
+  max-inline-size: none;
+}
+
 /* Phase 1 only: CSS effects applied to the existing static art and terminal
    surfaces. No new sprite sheets or slideshow infrastructure are introduced. */
 @keyframes crt-flicker {

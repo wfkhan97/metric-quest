@@ -13,9 +13,11 @@ type HomeViewProps = {
   progress: Progress;
   onSelectMission: (mission: Mission) => void;
   onEditAvatar: () => void;
+  /** Undefined until the opening cutscene has been seen once — nothing to replay yet. */
+  onReplayOpening?: () => void;
 };
 
-export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: HomeViewProps) {
+export function HomeView({ missions, progress, onSelectMission, onEditAvatar, onReplayOpening }: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
@@ -114,6 +116,11 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
           <button type="button" className="start-button" onClick={() => onSelectMission(ctaMission)}>
             {allComplete ? 'Replay a sector' : hasStarted ? `Resume: ${ctaMission.title}` : `Enter Sector 1: ${ctaMission.title}`}
           </button>
+          {onReplayOpening && (
+            <button type="button" className="link-button" onClick={onReplayOpening}>
+              Replay opening
+            </button>
+          )}
         </section>
 
         <ChapterMap

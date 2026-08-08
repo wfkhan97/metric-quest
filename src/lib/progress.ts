@@ -16,6 +16,9 @@ export type Progress = {
    * sector-transition screen has already been shown once. Missing entirely
    * on older saves means "nothing seen yet," not corrupt progress. */
   seenSectors?: number[];
+  /** Optional and additive, same rule as `avatar`: whether the opening
+   * cutscene has played once. Missing means "not seen yet," not corrupt. */
+  seenOpening?: boolean;
 };
 
 const storageKey = 'metric-quest-progress-v1';
@@ -40,12 +43,14 @@ export function loadProgress(): Progress {
     const seenSectors = Array.isArray(parsed.seenSectors)
       ? parsed.seenSectors.filter((n): n is number => typeof n === 'number')
       : undefined;
+    const seenOpening = typeof parsed.seenOpening === 'boolean' ? parsed.seenOpening : undefined;
     return {
       completedMissionIds: parsed.completedMissionIds.filter((id): id is string => typeof id === 'string'),
       badges: parsed.badges.filter((badge): badge is string => typeof badge === 'string'),
       points: Math.max(0, parsed.points),
       ...(avatar ? { avatar } : {}),
       ...(seenSectors ? { seenSectors } : {}),
+      ...(seenOpening ? { seenOpening } : {}),
     };
   } catch {
     return emptyProgress;
@@ -77,5 +82,14 @@ export function hasSeenSector(progress: Progress, chapterNumber: number): boolea
 export function markSectorSeen(progress: Progress, chapterNumber: number): Progress {
   if (hasSeenSector(progress, chapterNumber)) return progress;
   return { ...progress, seenSectors: [...(progress.seenSectors ?? []), chapterNumber] };
+}
+
+export function hasSeenOpening(progress: Progress): boolean {
+  return progress.seenOpening ?? false;
+}
+
+export function markOpeningSeen(progress: Progress): Progress {
+  if (hasSeenOpening(progress)) return progress;
+  return { ...progress, seenOpening: true };
 }
 
