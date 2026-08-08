@@ -10,6 +10,7 @@ import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
 import { chapterNumber } from '../content/chapters';
 import { findGlossaryEntryForConcept } from '../content/glossary';
+import { classifyAttempt, type MistakeSignature } from '../lib/diagnostics';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
@@ -50,6 +51,12 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const completed = progress.completedMissionIds.includes(mission.id);
   const pointsRef = useRef(progress.points);
   const [pointsPulsing, setPointsPulsing] = useState(false);
+  // Counts wrong-but-executed attempts on this mission visit only (resets on
+  // remount, e.g. leaving and coming back — same lifetime as hintCount).
+  // Never incremented by an invalid-SQL attempt, since classification needs
+  // an executed result to read.
+  const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
+  const [diagnostic, setDiagnostic] = useState<MistakeSignature | undefined>(undefined);
 
   function openGlossary(entryId: string | undefined, trigger: HTMLButtonElement) {
     setGlossaryEntryId(entryId);
@@ -71,6 +78,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     setIsRunning(true);
     setFeedback(undefined);
     setResult(undefined);
+    setDiagnostic(undefined);
     const outcome = await runMissionQuery(sql, { allowsTempWorkspace: mission.allowsTempWorkspace });
     setIsRunning(false);
     if (!outcome.ok) {
@@ -81,6 +89,11 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters });
     if (!validation.correct) {
       setFeedback({ tone: 'error', heading: rogueWrongResultLine, text: validation.message });
+      const nextWrongAttemptCount = wrongAttemptCount + 1;
+      setWrongAttemptCount(nextWrongAttemptCount);
+      if (nextWrongAttemptCount >= 2) {
+        setDiagnostic(classifyAttempt(mission.id, sql, outcome.result));
+      }
       return;
     }
     const isNewCompletion = !completed;
@@ -261,6 +274,21 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 </div>
               </div>
               <p>{feedback.text}</p>
+              {feedback.tone === 'error' && diagnostic && (
+                <div className="diagnostic">
+                  <p className="diagnostic-label">Likely cause: {diagnostic.label}</p>
+                  <p>{diagnostic.explanation}</p>
+                  {diagnostic.glossaryEntryId && (
+                    <button
+                      type="button"
+                      className="link-button"
+                      onClick={(event) => openGlossary(diagnostic.glossaryEntryId, event.currentTarget)}
+                    >
+                      See glossary entry
+                    </button>
+                  )}
+                </div>
+              )}
               {feedback.tone === 'success' && feedback.newBadge && (
                 <p className="badge-unlock">
                   <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" /> Badge unlocked: <strong>{feedback.newBadge}</strong>
