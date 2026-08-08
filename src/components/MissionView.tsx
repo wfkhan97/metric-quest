@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ChapterMap } from './ChapterMap';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
+import { RogueSprite } from './RogueSprite';
 import { SchemaExplorer } from './SchemaExplorer';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
@@ -126,7 +127,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
 
           {mission.id === 'm8-1' && (
             <aside className="rogue-encounter" aria-label="ROGUE.exe transmission">
-              <div className="rogue-signal" role="img" aria-label="Glitching ROGUE.exe terminal icon" />
+              <RogueSprite state="corrupted" />
               <p>
                 <strong>ROGUE.exe:</strong> &ldquo;Verification is such a delightfully inefficient human habit.&rdquo;
               </p>

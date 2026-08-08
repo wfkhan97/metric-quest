@@ -855,8 +855,6 @@ tbody tr {
   gap: 0.15rem;
 }
 
-/* ROGUE.exe has no art asset yet. This is intentionally a CSS terminal-icon
-   placeholder, structured so real external-design art can replace only it. */
 .rogue-encounter {
   align-items: center;
   background: rgba(255, 138, 128, 0.08);
@@ -875,30 +873,14 @@ tbody tr {
   color: var(--retro-danger);
 }
 
-.rogue-signal {
+.rogue-sprite {
   background: var(--retro-panel-raised);
-  border: 2px solid var(--retro-danger);
   block-size: 3.1rem;
+  border: 2px solid var(--retro-danger);
   flex: 0 0 3.1rem;
-  position: relative;
-}
-
-.rogue-signal::before,
-.rogue-signal::after {
-  background: var(--retro-danger);
-  box-shadow: 1.2rem 0 0 var(--retro-danger);
-  content: '';
-  block-size: 0.35rem;
-  inline-size: 0.35rem;
-  left: 0.65rem;
-  position: absolute;
-  top: 0.85rem;
-}
-
-.rogue-signal::after {
-  box-shadow: 0.45rem 0 0 var(--retro-danger), 0.9rem 0 0 var(--retro-danger);
-  left: 0.75rem;
-  top: 1.8rem;
+  image-rendering: pixelated;
+  inline-size: 3.1rem;
+  object-fit: cover;
 }
 
 /* Avatar creator stays a fixed viewport too: its actual choices live in the
@@ -1155,7 +1137,6 @@ tbody tr {
   animation: terminal-restored 800ms ease-out both;
 }
 
-.rogue-signal,
 .rogue-encounter {
   animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
 }
