@@ -15,8 +15,8 @@ export type GlossaryEntry = {
   example: GlossaryExample;
   /**
    * Raw `mission.concept` strings (src/lib/missions.ts) this entry answers.
-   * Not wired to anything yet — reserved for the P1.3 deep-link packet so
-   * that work is a lookup, not a data-model change.
+   * Used by findGlossaryEntryForConcept below to deep-link a mission's
+   * concept tag straight to the matching entry (P1.3).
    */
   conceptTags: string[];
   /**
@@ -285,3 +285,13 @@ export const glossary: GlossaryEntry[] = [
     conceptTags: ['Views, reusable analysis'],
   },
 ];
+
+/**
+ * Resolves a mission's concept tag (`mission.concept` in src/lib/missions.ts)
+ * to the glossary entry that explains it, for the mission-brief deep link
+ * (P1.3). Returns undefined for an unmapped tag rather than throwing — the
+ * caller falls back to opening the glossary index instead of erroring.
+ */
+export function findGlossaryEntryForConcept(conceptTag: string): GlossaryEntry | undefined {
+  return glossary.find((entry) => entry.conceptTags.includes(conceptTag));
+}
