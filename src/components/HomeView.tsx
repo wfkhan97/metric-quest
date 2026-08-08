@@ -1,5 +1,7 @@
+import { useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
+import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
@@ -14,6 +16,8 @@ type HomeViewProps = {
 };
 
 export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: HomeViewProps) {
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];
@@ -28,6 +32,9 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
         <div>
           <p className="eyebrow">Aurora Music mainframe · analyst access</p>
           <h1 id="page-title">Metric Quest</h1>
+          <button type="button" className="link-button" onClick={() => setIsGlossaryOpen(true)} ref={glossaryButtonRef}>
+            Concept glossary
+          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong>
@@ -39,6 +46,15 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
           </span>
         </section>
       </header>
+
+      {isGlossaryOpen && (
+        <GlossaryPanel
+          onClose={() => {
+            setIsGlossaryOpen(false);
+            glossaryButtonRef.current?.focus();
+          }}
+        />
+      )}
 
       <div id="home-main" className="home-content">
         <section className="panel intro-panel" aria-labelledby="brief-title">

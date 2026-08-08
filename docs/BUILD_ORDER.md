@@ -164,14 +164,12 @@ instead of arriving tangled with a pile of SVG.
 opens and closes from every mission via both mouse and keyboard, focus
 is trapped and restored correctly, and `npm run check` passes.
 
-**Blocked on:** two of item 1's open questions —
-- Does every mission concept tag get its own entry, or do related
-  concepts (`WHERE` vs `HAVING`) share a comparison entry?
-- Does opening the glossary overlay the mission or leave it?
-
-Both change the data model, so both must be answered before this starts.
-The third open question (documentation voice vs. in-world voice) can be
-answered during the packet, since it changes copy but not structure.
+**Blocked on:** Nothing — both data-model questions were resolved
+2026-08-08 (recorded in `docs/BACKLOG.md`): closely related concepts share
+a comparison entry, and the glossary overlays the mission rather than
+leaving it. The third open question (documentation voice vs. in-world
+voice) is answered during the packet, since it changes copy but not
+structure.
 
 ---
 

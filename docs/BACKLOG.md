@@ -78,11 +78,13 @@ or "what does `HAVING` do differently from `WHERE`" in the game's own voice.
   — the glossary panel itself may scroll if the list is long.
 
 ### Open questions still to resolve before build
-- Exact entry list and count — does every mission's concept tag need its
-  own entry, or do closely related concepts (e.g. `WHERE` vs `HAVING`)
-  share one entry with a comparison?
-- Should glossary entries be reachable from within an active mission
-  (e.g. as an overlay) or does opening it pause/leave the mission view?
+- ~~Exact entry list and count~~ — **Resolved 2026-08-08:** closely related
+  concepts (e.g. `WHERE` vs `HAVING`) share one entry with a comparison,
+  rather than a strict one-entry-per-mission-concept-tag model. Landed in
+  P1.1 as 16 entries covering all 25 missions' concept tags.
+- ~~Overlay vs. leave the mission~~ — **Resolved 2026-08-08:** the glossary
+  opens as an overlay on top of the active mission (or Home); closing it
+  returns exactly where the player was. Landed in P1.1 as `GlossaryPanel`.
 - Copy voice: should glossary entries go through the same design-brief
   tone pass as mission copy (in-world, playful-retro), or is a more
   neutral "documentation" voice acceptable given this is reference

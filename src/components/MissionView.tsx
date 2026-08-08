@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChapterMap } from './ChapterMap';
+import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { RogueSprite } from './RogueSprite';
@@ -42,9 +43,11 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const [hintCount, setHintCount] = useState(0);
   const [showSolution, setShowSolution] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const completed = progress.completedMissionIds.includes(mission.id);
   const pointsRef = useRef(progress.points);
   const [pointsPulsing, setPointsPulsing] = useState(false);
+  const glossaryButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (progress.points === pointsRef.current) return;
@@ -100,6 +103,9 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <button type="button" className="link-button" onClick={onBackToHome}>
             <span aria-hidden="true">← </span>Back to sector map
           </button>
+          <button type="button" className="link-button" onClick={() => setIsGlossaryOpen(true)} ref={glossaryButtonRef}>
+            Concept glossary
+          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong className={pointsPulsing ? 'points-pulse' : undefined}>
@@ -109,6 +115,15 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
         </section>
       </header>
+
+      {isGlossaryOpen && (
+        <GlossaryPanel
+          onClose={() => {
+            setIsGlossaryOpen(false);
+            glossaryButtonRef.current?.focus();
+          }}
+        />
+      )}
 
       <div className="game-layout">
         <ChapterMap

@@ -1185,6 +1185,82 @@ tbody tr {
   animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
 }
 
+/* Glossary overlay (P1.1). Opens on top of Home/Mission rather than
+   navigating away, per the resolved open question in docs/BACKLOG.md.
+   Only the body scrolls internally — the backdrop and panel frame stay
+   fixed to the viewport, consistent with §A7's "no page-level scroll". */
+.glossary-backdrop {
+  align-items: center;
+  background: rgba(4, 7, 18, 0.78);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  position: fixed;
+  z-index: 30;
+}
+
+.glossary-panel {
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-teal);
+  box-shadow: 0 0 0 3px var(--retro-bg), 0 0 32px rgba(31, 211, 196, 0.3);
+  block-size: min(38rem, 90vh);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  inline-size: min(46rem, 100%);
+}
+
+.glossary-header {
+  align-items: center;
+  border-block-end: 1px solid var(--retro-border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: clamp(0.65rem, 1.6vw, 1rem);
+}
+
+.glossary-body {
+  overflow: auto;
+  padding: clamp(0.65rem, 1.6vw, 1rem);
+}
+
+.glossary-body h3 {
+  color: var(--retro-amber);
+  font-size: 0.85rem;
+  margin-block: 1rem 0.5rem;
+}
+
+.glossary-body section:first-child h3 {
+  margin-block-start: 0;
+}
+
+.glossary-entry {
+  border: 1px solid var(--retro-border);
+  margin-block-end: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.glossary-entry summary {
+  cursor: pointer;
+  padding-block: 0.15rem;
+}
+
+.glossary-entry summary strong {
+  color: var(--retro-teal);
+}
+
+.glossary-entry p {
+  margin-block: 0.5rem;
+}
+
+.glossary-example pre {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  margin-block-end: 0;
+  overflow: auto;
+  padding: 0.65rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
