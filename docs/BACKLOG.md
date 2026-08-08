@@ -331,13 +331,21 @@ reusable pattern for between-sector story beats elsewhere in the game.
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
   just the Sector 8→9 case plus the opening) for v1, with the rest as
-  incremental follow-ups?
-- Should the opening cutscene run before or after the avatar creator in
-  the onboarding sequence?
-- How is "skip" surfaced — a visible skip button/key from the start, or
-  only available on replay (first viewing is unskippable)?
-- Any voice/audio component intended, or purely visual + text (current
-  game appears to have no audio system — confirm before scoping sound)?
+  incremental follow-ups? **Still open** — P2.1 (2026-08-08) built the
+  general between-sector beat mechanism but only authored the opening;
+  `sectorBeats` in `src/content/beats.ts` is empty, so this question still
+  needs an answer before Sector 8→9 (or any other) beat gets written.
+- ~~Should the opening cutscene run before or after the avatar creator~~ —
+  **Resolved 2026-08-08:** before. Landed in P2.1.
+- ~~How is "skip" surfaced~~ — **Resolved 2026-08-08:** unskippable on
+  first viewing (no skip control, Escape does nothing); skippable on
+  replay via a new "Replay opening" control on Home. Landed in P2.1.
+- ~~Any voice/audio component intended~~ — **Resolved 2026-08-08:** yes,
+  per product direction, but there is no audio asset pipeline and no
+  capability to generate or source a real sound file here. `BeatPanel`
+  carries an unwired `audioSrc?` field so a future audio asset is a
+  `CutsceneView` change, not a data-model one — no playback machinery was
+  built around a field that's always undefined today. See the P2.1 handoff.
 
 ---
 
