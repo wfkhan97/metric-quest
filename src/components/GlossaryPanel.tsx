@@ -19,6 +19,8 @@ const glossaryVisuals: Record<string, typeof FilterSortLimitDiagram> = {
 
 type GlossaryPanelProps = {
   onClose: () => void;
+  /** Entry id to auto-expand and scroll into view on open (P1.3 deep link). */
+  initialEntryId?: string;
 };
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
@@ -37,7 +39,7 @@ function groupBySector(entries: GlossaryEntry[]): Map<number, GlossaryEntry[]> {
   return groups;
 }
 
-export function GlossaryPanel({ onClose }: GlossaryPanelProps) {
+export function GlossaryPanel({ onClose, initialEntryId }: GlossaryPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const groupedEntries = groupBySector(glossary);
@@ -45,6 +47,14 @@ export function GlossaryPanel({ onClose }: GlossaryPanelProps) {
   useEffect(() => {
     closeButtonRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    if (!initialEntryId || !panelRef.current) return;
+    const details = panelRef.current.querySelector<HTMLDetailsElement>(`[data-entry-id="${initialEntryId}"]`);
+    if (!details) return;
+    details.open = true;
+    details.scrollIntoView({ block: 'start' });
+  }, [initialEntryId]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -97,7 +107,7 @@ export function GlossaryPanel({ onClose }: GlossaryPanelProps) {
                 {groupedEntries.get(chapter.number)!.map((entry) => {
                   const Visual = entry.visualId ? glossaryVisuals[entry.visualId] : undefined;
                   return (
-                    <details key={entry.id} className="glossary-entry">
+                    <details key={entry.id} className="glossary-entry" data-entry-id={entry.id}>
                       <summary>
                         <strong>{entry.title}</strong> — {entry.summary}
                       </summary>

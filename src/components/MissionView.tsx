@@ -9,6 +9,7 @@ import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
 import { chapterNumber } from '../content/chapters';
+import { findGlossaryEntryForConcept } from '../content/glossary';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
@@ -44,10 +45,19 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const [showSolution, setShowSolution] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const [glossaryEntryId, setGlossaryEntryId] = useState<string | undefined>(undefined);
+  const glossaryTriggerRef = useRef<HTMLButtonElement | null>(null);
   const completed = progress.completedMissionIds.includes(mission.id);
   const pointsRef = useRef(progress.points);
   const [pointsPulsing, setPointsPulsing] = useState(false);
-  const glossaryButtonRef = useRef<HTMLButtonElement>(null);
+
+  function openGlossary(entryId: string | undefined, trigger: HTMLButtonElement) {
+    setGlossaryEntryId(entryId);
+    glossaryTriggerRef.current = trigger;
+    setIsGlossaryOpen(true);
+  }
+
+  const conceptEntryId = findGlossaryEntryForConcept(mission.concept)?.id;
 
   useEffect(() => {
     if (progress.points === pointsRef.current) return;
@@ -103,7 +113,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <button type="button" className="link-button" onClick={onBackToHome}>
             <span aria-hidden="true">← </span>Back to sector map
           </button>
-          <button type="button" className="link-button" onClick={() => setIsGlossaryOpen(true)} ref={glossaryButtonRef}>
+          <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
             Concept glossary
           </button>
         </div>
@@ -118,9 +128,10 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
 
       {isGlossaryOpen && (
         <GlossaryPanel
+          initialEntryId={glossaryEntryId}
           onClose={() => {
             setIsGlossaryOpen(false);
-            glossaryButtonRef.current?.focus();
+            glossaryTriggerRef.current?.focus();
           }}
         />
       )}
@@ -135,7 +146,10 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
 
         <section id="mission" className="mission-workspace" aria-labelledby="mission-title">
           <p className="eyebrow">
-            {mission.chapter} · {mission.concept}
+            {mission.chapter} ·{' '}
+            <button type="button" className="concept-tag-link" onClick={(event) => openGlossary(conceptEntryId, event.currentTarget)}>
+              {mission.concept}
+            </button>
           </p>
           <h2 id="mission-title">{mission.title}</h2>
           <p className="brief type-reveal">{mission.brief}</p>

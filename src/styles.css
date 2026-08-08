@@ -170,6 +170,22 @@ pre,
   text-transform: uppercase;
 }
 
+/* Deep-links a mission's concept tag into its glossary entry (P1.3). Kept
+   inline within .eyebrow's text flow rather than styled as a button. */
+.concept-tag-link {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.concept-tag-link:hover {
+  color: var(--retro-text);
+}
+
 h1 {
   font-family: 'Press Start 2P', ui-monospace, monospace;
   font-size: clamp(0.95rem, 2.25vw, 1.55rem);
