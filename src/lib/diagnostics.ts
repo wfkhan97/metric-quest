@@ -246,6 +246,41 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
     },
   ],
+  'm5-1': [
+    {
+      id: 'm5-1-missing-strftime',
+      label: 'Missing strftime on InvoiceDate',
+      explanation:
+        "InvoiceDate is a full date, not just a year — strftime('%Y', InvoiceDate) is what pulls the year back out of it. Grouping by the raw InvoiceDate instead gives one row per exact date, not one row per year.",
+      glossaryEntryId: 'dates-strftime',
+      matches: (sql) => !hasKeyword(sql, /strftime/i),
+    },
+    {
+      id: 'm5-1-missing-group-by',
+      label: 'Missing GROUP BY',
+      explanation:
+        "strftime('%Y', InvoiceDate) needs GROUP BY that same expression to produce one summed row per year. Without it, SQLite folds every invoice into a single row instead of a real five-year breakdown.",
+      glossaryEntryId: 'group-by-aggregation',
+      matches: (sql) => hasKeyword(sql, /strftime/i) && !hasKeyword(sql, noGroupBy),
+    },
+  ],
+  'm5-2': [
+    {
+      id: 'm5-2-plain-month',
+      label: 'Grouped by month without year',
+      explanation:
+        "strftime('%m', InvoiceDate) gives just the month number, which collides January 2008 with January 2009, January 2010, and every other January into one bucket. strftime('%Y-%m', InvoiceDate) keeps months from different years separate so they can be ranked correctly.",
+      glossaryEntryId: 'dates-strftime',
+      matches: (sql) => hasKeyword(sql, /strftime/i) && !hasKeyword(sql, /%Y-%m/),
+    },
+    {
+      id: 'm5-2-missing-limit',
+      label: 'Missing LIMIT 10',
+      explanation:
+        'Ranking the months is only half the job — LIMIT 10 is what cuts the sorted list down to just the ten strongest months instead of returning every month on record.',
+      matches: (sql) => !hasKeyword(sql, hasLimit),
+    },
+  ],
 };
 
 /**

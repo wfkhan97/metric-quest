@@ -36,8 +36,8 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   between-sector beat has been authored yet (see the still-open question
   below).
 - P2.2 — mistake-aware diagnostic. Classifier plumbing plus signatures for
-  **Sector 1, Sector 2, Sector 3, and Sector 4** (`src/lib/diagnostics.ts`).
-  Sectors 5-9 are NOT done — each is its own follow-up packet, same shape:
+  **Sectors 1 through 5** (`src/lib/diagnostics.ts`).
+  Sectors 6-9 are NOT done — each is its own follow-up packet, same shape:
   pull the mission definitions from `src/lib/missions.ts`, design 1-2
   signatures per mission, **verify every one against
   `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI before writing it
@@ -46,7 +46,7 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   then wire + verify in the browser.
 
 **Still open / outstanding:**
-- P2.2 Sectors 5, 6, 7, 8, 9 — repeatable content packets, not blocked.
+- P2.2 Sectors 6, 7, 8, 9 — repeatable content packets, not blocked.
 - P0.4 — blocked on a design request; deferred, not declined.
 - BACKLOG.md item 4's "does every sector transition get an authored beat"
   question — still open, blocks writing the Sector 8→9 beat specifically.
