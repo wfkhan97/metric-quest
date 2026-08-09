@@ -16,6 +16,68 @@ approval, per the git workflow in `docs/AI_WORKFLOW.md`.
 
 ---
 
+## Session status (2026-08-09) — read this first
+
+Everything below is now built, merged, and pushed to **`claude/game-feel-polish`**
+on origin (`git log origin/claude/game-feel-polish` — HEAD is the "Add Sector 1
+... diagnostic signatures" commit). That branch is **not yet merged to `main`**
+— it needs the user's explicit approval first, per `docs/AI_WORKFLOW.md`. There
+is no other unmerged work anywhere: every `claude/*` feature branch used this
+session is fully merged into `game-feel-polish` (safe to ignore/delete).
+
+**Done this session, in order:**
+- Wave 0 (P0.1, P0.2, P0.3) — sector backgrounds, ROGUE.exe sprites, UI chrome
+  buttons/panel frame. P0.4 (icon-corruption.png regen) explicitly **deferred
+  by the user**, still open, still blocked on a design request nobody has made.
+- Wave 1 (P1.1, P1.2, P1.3) — glossary data model + panel, 5 animated
+  diagrams, deep-link from a mission's concept tag into its entry.
+- P2.1 — opening cutscene + reusable between-sector beat mechanism.
+  `sectorBeats` in `src/content/beats.ts` is wired but **empty** — no
+  between-sector beat has been authored yet (see the still-open question
+  below).
+- P2.2 — mistake-aware diagnostic. Classifier plumbing plus signatures for
+  **Sector 1 and Sector 2 and Sector 3** (`src/lib/diagnostics.ts`). Sectors
+  4-9 are NOT done — each is its own follow-up packet, same shape: pull the
+  mission definitions from `src/lib/missions.ts`, design 1-2 signatures per
+  mission, **verify every one against `SQL Databases/iTunes.sqlite` with the
+  `sqlite3` CLI before writing it down** (this caught real dead-signature
+  candidates twice already — see the diagnostics.ts file comment and the
+  P2.2/Sector-1 commit messages), then wire + verify in the browser.
+
+**Still open / outstanding:**
+- P2.2 Sectors 4, 5, 6, 7, 8, 9 — repeatable content packets, not blocked.
+- P0.4 — blocked on a design request; deferred, not declined.
+- BACKLOG.md item 4's "does every sector transition get an authored beat"
+  question — still open, blocks writing the Sector 8→9 beat specifically.
+- Wave 3 (AI tutor, P3.1) — not a build packet, just a pending product
+  decision. Don't prototype it.
+- **A full end-to-end playthrough smoke test was in progress and got cut off
+  by a context-window warning, not by finding a bug.** Confirmed clean so
+  far this session: cutscene → avatar creator → sector transition → mission
+  flow (multiple times), the glossary from both Home and Mission headers and
+  via concept-tag deep-links, 5 animated diagrams under simulated
+  reduced-motion, and diagnostic signatures in Sectors 1/2/3 (spot-checked
+  live, not just unit-tested). **Not yet spot-checked live this session:**
+  the campaign-complete banner (finishing `m9-2`, the last mission), the
+  sector-cleared milestone banner, and the `m8-1` ROGUE.exe encounter
+  (untouched by recent merges but worth a look since it's downstream of
+  several of them). Every mission's `solutionSql` IS already covered by an
+  automated test (`src/lib/missions.test.ts`, part of `npm run check`) that
+  passed throughout this session — that's not the risk. The risk is UI/state
+  bugs a unit test wouldn't catch, e.g. progress/points/badges not
+  accumulating right over a long real session, or a visual regression from
+  a merge. If a fresh session picks this up, running that playthrough before
+  (or instead of) starting new work is the highest-value next step, since
+  the user is about to do their own UAT pass.
+
+**How to continue:** read `AGENTS.md`, `docs/AI_WORKFLOW.md`, and
+`docs/GAME_DESIGN_BRIEF.md` first (standard project instruction, not new).
+Then either finish the interrupted playthrough smoke test on
+`claude/game-feel-polish`, or pick the next P2.2 sector packet the same way
+the last three were done — both are unblocked, no new questions needed.
+
+---
+
 ## The ordering principle
 
 Three things determine order:
