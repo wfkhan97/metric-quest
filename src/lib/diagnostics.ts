@@ -24,6 +24,10 @@ const noDistinct = /\bdistinct\b/i;
 const anyJoin = /\bjoin\b/i;
 const leftJoin = /\bleft\s+join\b/i;
 const isNullCheck = /\bis\s+null\b/i;
+const hasDesc = /\bdesc\b/i;
+const hasOrderBy = /\border\s+by\b/i;
+const hasLimit = /\blimit\b/i;
+const hasLike = /\blike\b/i;
 
 /**
  * A short, high-confidence list per mission rather than an exhaustive one —
@@ -35,6 +39,65 @@ const isNullCheck = /\bis\s+null\b/i;
  * reason — see the P2.2 handoff).
  */
 const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = {
+  'm1-1': [
+    {
+      id: 'm1-1-missing-where',
+      label: 'Missing the USA filter',
+      explanation:
+        "This mission asks for the five highest-value invoices billed to the United States specifically — without a WHERE BillingCountry = 'USA' filter, the top 5 by Total pulls from every country instead.",
+      matches: (sql) => !hasKeyword(sql, /\busa\b/i),
+    },
+    {
+      id: 'm1-1-missing-limit',
+      label: 'Missing LIMIT',
+      explanation:
+        'Sorting the invoices is only half the job — LIMIT 5 is what cuts the sorted list down to just the top five instead of returning every matching invoice.',
+      matches: (sql) => !hasKeyword(sql, hasLimit),
+    },
+    {
+      id: 'm1-1-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        "\"Highest-value first\" needs ORDER BY Total DESC — without DESC, SQL sorts ascending by default, so the smallest invoices come out on top instead of the largest.",
+      glossaryEntryId: 'filter-sort-limit',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm1-2': [
+    {
+      id: 'm1-2-missing-distinct',
+      label: 'Missing DISTINCT',
+      explanation:
+        'Without DISTINCT, every invoice row comes back with its own BillingCountry — including every repeat. DISTINCT is what collapses those down to one row per country.',
+      glossaryEntryId: 'distinct',
+      matches: (sql) => !hasKeyword(sql, noDistinct),
+    },
+  ],
+  'm1-3': [
+    {
+      id: 'm1-3-missing-wildcards',
+      label: 'Missing the % wildcards',
+      explanation:
+        "LIKE '%love%' matches \"love\" anywhere inside a longer title — the % on each side stands for \"anything, any length.\" Without both wildcards, LIKE only matches a title that's exactly the word \"love\" and nothing else.",
+      matches: (sql) => hasKeyword(sql, hasLike) && !hasKeyword(sql, /%love%/i),
+    },
+  ],
+  'm1-4': [
+    {
+      id: 'm1-4-missing-where',
+      label: 'Missing the price filter',
+      explanation:
+        'This mission only wants tracks priced above $0.99 — without a WHERE UnitPrice > 0.99 filter, every track in the catalog gets included, not just the higher-priced ones.',
+      matches: (sql) => !hasKeyword(sql, /0\.99/),
+    },
+    {
+      id: 'm1-4-integer-division',
+      label: 'Integer division on the minute conversion',
+      explanation:
+        "Milliseconds / 60000 does whole-number division when both sides are integers, silently dropping the fractional part before it ever reaches the price calculation. Writing it as 60000.0 forces SQL to keep the decimal.",
+      matches: (sql) => hasKeyword(sql, /60000/) && !hasKeyword(sql, /60000\.0/),
+    },
+  ],
   'm2-1': [
     {
       id: 'm2-1-joined-invoice-line',
