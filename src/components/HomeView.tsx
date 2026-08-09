@@ -1,6 +1,10 @@
+import { useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
+import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
+import iconBadge from '../assets/ui/icon-badge.png';
+import iconPoints from '../assets/ui/icon-points.png';
 import { type Mission } from '../lib/missions';
 import { type Progress } from '../lib/progress';
 
@@ -9,9 +13,13 @@ type HomeViewProps = {
   progress: Progress;
   onSelectMission: (mission: Mission) => void;
   onEditAvatar: () => void;
+  /** Undefined until the opening cutscene has been seen once — nothing to replay yet. */
+  onReplayOpening?: () => void;
 };
 
-export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: HomeViewProps) {
+export function HomeView({ missions, progress, onSelectMission, onEditAvatar, onReplayOpening }: HomeViewProps) {
+  const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];
@@ -26,14 +34,29 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
         <div>
           <p className="eyebrow">Aurora Music mainframe · analyst access</p>
           <h1 id="page-title">Metric Quest</h1>
+          <button type="button" className="link-button" onClick={() => setIsGlossaryOpen(true)} ref={glossaryButtonRef}>
+            Concept glossary
+          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
-          <strong>{progress.points} points</strong>
+          <strong>
+            <img className="icon-inline" src={iconPoints} alt="" aria-hidden="true" />
+            {progress.points} points
+          </strong>
           <span>
             {progress.completedMissionIds.length} of {missions.length} terminals purged
           </span>
         </section>
       </header>
+
+      {isGlossaryOpen && (
+        <GlossaryPanel
+          onClose={() => {
+            setIsGlossaryOpen(false);
+            glossaryButtonRef.current?.focus();
+          }}
+        />
+      )}
 
       <div id="home-main" className="home-content">
         <section className="panel intro-panel" aria-labelledby="brief-title">
@@ -71,7 +94,7 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
             {progress.badges.length ? (
               progress.badges.map((badge) => (
                 <span key={badge} className="badge">
-                  <span aria-hidden="true">★ </span>
+                  <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" />
                   {badge}
                 </span>
               ))
@@ -93,6 +116,11 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar }: 
           <button type="button" className="start-button" onClick={() => onSelectMission(ctaMission)}>
             {allComplete ? 'Replay a sector' : hasStarted ? `Resume: ${ctaMission.title}` : `Enter Sector 1: ${ctaMission.title}`}
           </button>
+          {onReplayOpening && (
+            <button type="button" className="link-button" onClick={onReplayOpening}>
+              Replay opening
+            </button>
+          )}
         </section>
 
         <ChapterMap

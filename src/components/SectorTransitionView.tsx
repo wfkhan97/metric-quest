@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { AvatarPreview } from './AvatarPreview';
 import { defaultAvatar } from '../lib/avatarOptions';
+import { sectorBackgrounds } from '../content/sectorBackgrounds';
 import { sectorFlavor } from '../content/sectorTransitions';
 import { type AvatarConfig } from '../lib/progress';
 
@@ -14,6 +15,7 @@ type SectorTransitionViewProps = {
 export function SectorTransitionView({ chapterNumber, sectorTitle, avatar, onContinue }: SectorTransitionViewProps) {
   const continueButtonRef = useRef<HTMLButtonElement>(null);
   const flavor = sectorFlavor[chapterNumber] ?? 'The terminal ahead is corrupted. Time to purge it.';
+  const background = sectorBackgrounds[chapterNumber];
 
   useEffect(() => {
     continueButtonRef.current?.focus();
@@ -28,7 +30,11 @@ export function SectorTransitionView({ chapterNumber, sectorTitle, avatar, onCon
   }, [onContinue]);
 
   return (
-    <main className="app-shell sector-transition" aria-labelledby="sector-transition-title">
+    <main
+      className="app-shell sector-transition"
+      aria-labelledby="sector-transition-title"
+      style={background ? { backgroundImage: `url(${background})` } : undefined}
+    >
       <div className="sector-transition-frame phase-scanline">
         <p className="eyebrow">Sector access · Now entering</p>
         <h1 id="sector-transition-title">{sectorTitle}</h1>

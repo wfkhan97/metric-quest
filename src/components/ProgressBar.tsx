@@ -1,3 +1,5 @@
+import iconProgress from '../assets/ui/icon-progress.png';
+
 type ProgressBarProps = {
   label: string;
   completed: number;
@@ -11,7 +13,10 @@ export function ProgressBar({ label, completed, total }: ProgressBarProps) {
   return (
     <div className="progress-bar">
       <div className="progress-bar-heading">
-        <span>{label}</span>
+        <span>
+          <img className="icon-inline" src={iconProgress} alt="" aria-hidden="true" />
+          {label}
+        </span>
         <span>{summary}</span>
       </div>
       <div

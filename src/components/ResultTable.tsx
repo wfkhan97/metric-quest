@@ -24,7 +24,7 @@ export function ResultTable({ result }: ResultTableProps) {
           </thead>
           <tbody>
             {result.rows.map((row, index) => (
-              <tr key={`${index}-${row.join('|')}`}>
+              <tr key={`${index}-${row.join('|')}`} style={{ animationDelay: `${Math.min(index, 14) * 30}ms` }}>
                 {row.map((value, valueIndex) => (
                   <td key={`${index}-${valueIndex}`}>{value ?? <em>NULL</em>}</td>
                 ))}

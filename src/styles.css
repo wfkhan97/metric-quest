@@ -170,6 +170,22 @@ pre,
   text-transform: uppercase;
 }
 
+/* Deep-links a mission's concept tag into its glossary entry (P1.3). Kept
+   inline within .eyebrow's text flow rather than styled as a button. */
+.concept-tag-link {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.concept-tag-link:hover {
+  color: var(--retro-text);
+}
+
 h1 {
   font-family: 'Press Start 2P', ui-monospace, monospace;
   font-size: clamp(0.95rem, 2.25vw, 1.55rem);
@@ -324,13 +340,25 @@ h3 {
   margin: 0;
 }
 
+/* Pixel-art button chrome (P0.3, Path B — see docs/BACKLOG.md asset tracker).
+   idle and hover use the same source art (they read as near-identical at
+   button size); hover/press/disabled differentiate with brightness, motion,
+   and — for press/disabled — a distinct source image, so no state depends on
+   color alone. */
 .start-button,
 .actions button {
-  background: var(--retro-panel-raised);
-  border: 2px solid var(--retro-teal);
+  border-color: transparent;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  border-image-slice: 29% 8% 20% 8% fill;
+  border-image-source: url('./assets/ui/button-idle.png');
+  border-image-width: 10px 8px 8px 8px;
+  border-style: solid;
+  border-width: 10px 8px 8px 8px;
   color: var(--retro-text);
   font-weight: 800;
   padding: 0.6rem 0.8rem;
+  transition: filter 120ms ease, transform 120ms ease;
 }
 
 .start-button {
@@ -340,15 +368,38 @@ h3 {
   line-height: 1.7;
 }
 
-.start-button:hover,
-.actions button:hover:not(:disabled) {
-  background: rgba(31, 211, 196, 0.2);
+.actions button.primary:not(:focus-visible),
+.start-button:not(:focus-visible) {
+  box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.3), 0 0 16px rgba(31, 211, 196, 0.35);
 }
 
-.actions button.primary,
-.start-button:active {
-  background: var(--retro-teal);
+.start-button:hover:not(:disabled),
+.actions button:hover:not(:disabled) {
+  filter: brightness(1.3);
+  transform: translateY(-2px);
+}
+
+.start-button:active:not(:disabled),
+.actions button:active:not(:disabled) {
+  border-image-source: url('./assets/ui/button-active.png');
   color: var(--retro-bg);
+  filter: none;
+  transform: translateY(1px);
+}
+
+.start-button:disabled,
+.actions button:disabled {
+  border-image-source: url('./assets/ui/button-disabled.png');
+  color: var(--retro-muted);
+}
+
+.actions button.running {
+  animation: button-pulse 1s ease-in-out infinite;
+}
+
+@keyframes button-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(31, 211, 196, 0); }
+  50% { box-shadow: 0 0 14px rgba(31, 211, 196, 0.85); }
 }
 
 .actions button:disabled {
@@ -658,6 +709,153 @@ h3 {
   color: var(--retro-danger);
 }
 
+/* Decorative echo of the feedback tone, aria-hidden since the heading/body
+   text already carries the meaning — never the only signal of right/wrong. */
+.feedback-signal {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  margin-block-end: 0.35rem;
+}
+
+.feedback-signal h3 {
+  margin: 0;
+}
+
+.feedback-icon {
+  block-size: 2.2rem;
+  flex: 0 0 2.2rem;
+  position: relative;
+}
+
+.feedback-icon.error {
+  background: var(--retro-panel-raised);
+  border: 2px solid var(--retro-danger);
+  animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
+}
+
+.feedback-icon.error::before,
+.feedback-icon.error::after {
+  background: var(--retro-danger);
+  box-shadow: 0.8rem 0 0 var(--retro-danger);
+  content: '';
+  block-size: 0.26rem;
+  inline-size: 0.26rem;
+  left: 0.5rem;
+  position: absolute;
+  top: 0.6rem;
+}
+
+.feedback-icon.error::after {
+  box-shadow: 0.32rem 0 0 var(--retro-danger), 0.64rem 0 0 var(--retro-danger);
+  left: 0.58rem;
+  top: 1.32rem;
+}
+
+.feedback-icon.success {
+  animation: signal-pulse 1.6s ease-in-out infinite forwards;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+/* Small pixel-art UI icons (points, badge, progress) dropped into otherwise
+   text-driven surfaces — decorative only, sized to the surrounding text. */
+.icon-inline {
+  block-size: 1rem;
+  display: inline-block;
+  image-rendering: pixelated;
+  inline-size: 1rem;
+  margin-inline-end: 0.3rem;
+  vertical-align: -0.2em;
+}
+
+@keyframes signal-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(136, 240, 173, 0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 16px rgba(136, 240, 173, 0.75); transform: scale(1.08); }
+}
+
+.points-chip {
+  animation: points-chip-in 550ms ease-out both;
+  background: rgba(255, 209, 102, 0.16);
+  border: 1px solid var(--retro-amber);
+  color: var(--retro-amber);
+  display: inline-block;
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.62rem;
+  margin-block-start: 0.35rem;
+  padding: 0.2rem 0.5rem;
+}
+
+@keyframes points-chip-in {
+  0% { opacity: 0; transform: translateY(0.3rem) scale(0.85); }
+  60% { opacity: 1; transform: translateY(-0.1rem) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.milestone-banner {
+  animation: points-chip-in 550ms ease-out both;
+  background: var(--retro-amber);
+  color: var(--retro-bg);
+  display: inline-block;
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.04em;
+  margin-block-end: 0.6rem;
+  padding: 0.35rem 0.55rem;
+  text-transform: uppercase;
+}
+
+/* Mistake-aware diagnostic (P2.2). Additive to the generic error feedback
+   above it, never a replacement — grading.ts alone decides right/wrong.
+   Styled as a distinct sub-block within .feedback.error rather than its own
+   panel, so it reads as "more detail on the miss you just got," not a
+   second, competing verdict. */
+.diagnostic {
+  background: rgba(255, 209, 102, 0.08);
+  border: 1px solid var(--retro-amber);
+  margin-block-start: 0.6rem;
+  padding: 0.55rem 0.7rem;
+}
+
+.diagnostic-label {
+  color: var(--retro-amber);
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+}
+
+.diagnostic p:last-of-type {
+  margin-block-end: 0;
+}
+
+.badge-unlock {
+  align-items: center;
+  animation: points-chip-in 650ms ease-out both;
+  background: rgba(255, 209, 102, 0.1);
+  border: 1px solid var(--retro-amber);
+  color: var(--retro-amber);
+  display: flex;
+  font-weight: 800;
+  gap: 0.4rem;
+  margin-block-start: 0.6rem;
+  padding: 0.45rem 0.6rem;
+}
+
+.badge-unlock span {
+  animation: signal-pulse 1.6s ease-in-out infinite forwards;
+  font-size: 1.1rem;
+}
+
+@keyframes points-pulse {
+  0% { text-shadow: none; transform: scale(1); }
+  40% { text-shadow: 0 0 12px rgba(255, 209, 102, 0.85); transform: scale(1.16); }
+  100% { text-shadow: none; transform: scale(1); }
+}
+
+.points-pulse {
+  animation: points-pulse 700ms ease-out;
+  display: inline-block;
+}
+
 .results h3 {
   color: var(--retro-amber);
 }
@@ -698,6 +896,15 @@ td {
   color: var(--retro-text);
 }
 
+@keyframes row-materialize {
+  from { opacity: 0; transform: translateY(0.3rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+tbody tr {
+  animation: row-materialize 260ms ease-out both;
+}
+
 .badges {
   align-items: center;
   display: flex;
@@ -712,8 +919,6 @@ td {
   gap: 0.15rem;
 }
 
-/* ROGUE.exe has no art asset yet. This is intentionally a CSS terminal-icon
-   placeholder, structured so real external-design art can replace only it. */
 .rogue-encounter {
   align-items: center;
   background: rgba(255, 138, 128, 0.08);
@@ -732,30 +937,14 @@ td {
   color: var(--retro-danger);
 }
 
-.rogue-signal {
+.rogue-sprite {
   background: var(--retro-panel-raised);
-  border: 2px solid var(--retro-danger);
   block-size: 3.1rem;
+  border: 2px solid var(--retro-danger);
   flex: 0 0 3.1rem;
-  position: relative;
-}
-
-.rogue-signal::before,
-.rogue-signal::after {
-  background: var(--retro-danger);
-  box-shadow: 1.2rem 0 0 var(--retro-danger);
-  content: '';
-  block-size: 0.35rem;
-  inline-size: 0.35rem;
-  left: 0.65rem;
-  position: absolute;
-  top: 0.85rem;
-}
-
-.rogue-signal::after {
-  box-shadow: 0.45rem 0 0 var(--retro-danger), 0.9rem 0 0 var(--retro-danger);
-  left: 0.75rem;
-  top: 1.8rem;
+  image-rendering: pixelated;
+  inline-size: 3.1rem;
+  object-fit: cover;
 }
 
 /* Avatar creator stays a fixed viewport too: its actual choices live in the
@@ -895,21 +1084,39 @@ td {
   padding: 0.5rem 0.6rem;
 }
 
-/* Existing static Recruit art becomes lively without changing assets. */
+/* Sector background art (when present) is composed with a clear lower-middle
+   third; the frame is bottom-anchored to sit in that open zone rather than
+   the viewport's true center. The frame itself stays fully opaque so text
+   contrast never depends on what the art behind it looks like. */
 .sector-transition {
-  align-items: center;
+  align-items: end;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   display: grid;
   justify-items: center;
   padding: clamp(0.75rem, 2.5vw, 1.5rem);
 }
 
+/* Pixel-art panel frame (P0.3, Path B). The ambient glow stays a CSS
+   box-shadow rather than baked into the sprite — the exported art's own glow
+   bloom doesn't survive border-image slicing at arbitrary frame sizes, so it
+   was cropped out at the source and rebuilt here where it can scale cleanly. */
 .sector-transition-frame {
   background: var(--retro-panel);
-  border: 3px solid var(--retro-teal);
+  border-color: transparent;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  border-image-slice: 12% 6% fill;
+  border-image-source: url('./assets/ui/panel-frame.png');
+  border-image-width: 22px 14px;
+  border-style: solid;
+  border-width: 22px 14px;
   box-shadow: 0 0 0 3px var(--retro-bg), 0 0 28px rgba(31, 211, 196, 0.28);
   display: grid;
   gap: clamp(0.65rem, 1.5vw, 1rem);
   justify-items: center;
+  margin-block-end: clamp(0.5rem, 6vh, 3.5rem);
   max-inline-size: 38rem;
   padding: clamp(1rem, 3vw, 2rem);
   text-align: center;
@@ -944,6 +1151,17 @@ td {
 
 .sector-transition-hint {
   margin: 0;
+}
+
+/* Opening/between-sector cutscenes (P2.1) reuse the sector-transition frame
+   chrome wholesale — only the multi-paragraph layout is new. */
+.cutscene-copy {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cutscene-copy .sector-transition-flavor {
+  max-inline-size: none;
 }
 
 /* Phase 1 only: CSS effects applied to the existing static art and terminal
@@ -1012,9 +1230,292 @@ td {
   animation: terminal-restored 800ms ease-out both;
 }
 
-.rogue-signal,
 .rogue-encounter {
   animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
+}
+
+/* Glossary overlay (P1.1). Opens on top of Home/Mission rather than
+   navigating away, per the resolved open question in docs/BACKLOG.md.
+   Only the body scrolls internally — the backdrop and panel frame stay
+   fixed to the viewport, consistent with §A7's "no page-level scroll". */
+.glossary-backdrop {
+  align-items: center;
+  background: rgba(4, 7, 18, 0.78);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  padding: clamp(0.75rem, 3vw, 2rem);
+  position: fixed;
+  z-index: 30;
+}
+
+.glossary-panel {
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-teal);
+  box-shadow: 0 0 0 3px var(--retro-bg), 0 0 32px rgba(31, 211, 196, 0.3);
+  block-size: min(38rem, 90vh);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  inline-size: min(46rem, 100%);
+}
+
+.glossary-header {
+  align-items: center;
+  border-block-end: 1px solid var(--retro-border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: space-between;
+  padding: clamp(0.65rem, 1.6vw, 1rem);
+}
+
+.glossary-body {
+  overflow: auto;
+  padding: clamp(0.65rem, 1.6vw, 1rem);
+}
+
+.glossary-body h3 {
+  color: var(--retro-amber);
+  font-size: 0.85rem;
+  margin-block: 1rem 0.5rem;
+}
+
+.glossary-body section:first-child h3 {
+  margin-block-start: 0;
+}
+
+.glossary-entry {
+  border: 1px solid var(--retro-border);
+  margin-block-end: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.glossary-entry summary {
+  cursor: pointer;
+  padding-block: 0.15rem;
+}
+
+.glossary-entry summary strong {
+  color: var(--retro-teal);
+}
+
+.glossary-entry p {
+  margin-block: 0.5rem;
+}
+
+.glossary-example pre {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  margin-block-end: 0;
+  overflow: auto;
+  padding: 0.65rem;
+}
+
+/* Glossary visuals (P1.2). Decorative and supplementary — every entry's text
+   already stands alone, so the SVG is aria-hidden and the figcaption carries
+   the same point in words. Animation is CSS-keyframe only; each keyframe's
+   100% state is the fully "resolved" picture, since that's what freezes in
+   place once the global prefers-reduced-motion rule collapses every
+   animation to a single non-looping pass (see the media query below). */
+.glossary-visual {
+  margin: 0 0 0.75rem;
+}
+
+.glossary-visual-svg {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 22rem;
+}
+
+.glossary-visual figcaption {
+  color: var(--retro-muted);
+  font-size: 0.76rem;
+  margin-block-start: 0.3rem;
+}
+
+.viz-label {
+  fill: var(--retro-muted);
+  font-size: 9px;
+}
+
+.viz-label-strong {
+  fill: var(--retro-teal);
+  font-weight: 700;
+}
+
+.viz-divider {
+  stroke: var(--retro-border);
+  stroke-width: 1;
+}
+
+/* Filter, sort, limit */
+.viz-fsl-track {
+  fill: var(--retro-panel-raised);
+}
+
+.viz-fsl-bar {
+  fill: var(--retro-muted);
+}
+
+.viz-fsl-kept .viz-fsl-bar {
+  animation: viz-fsl-keep 6s ease-in-out infinite forwards;
+}
+
+.viz-fsl-limited .viz-fsl-bar {
+  animation: viz-fsl-limit 6s ease-in-out infinite forwards;
+}
+
+.viz-fsl-filtered .viz-fsl-bar {
+  animation: viz-fsl-filter 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-fsl-keep {
+  0%, 15% { fill: var(--retro-muted); }
+  35%, 100% { fill: var(--retro-success); }
+}
+
+@keyframes viz-fsl-limit {
+  0%, 15% { fill: var(--retro-muted); }
+  35%, 65% { fill: var(--retro-success); }
+  85%, 100% { fill: var(--retro-muted); opacity: 0.3; }
+}
+
+@keyframes viz-fsl-filter {
+  0%, 15% { fill: var(--retro-muted); }
+  25%, 34% { fill: var(--retro-danger); }
+  55%, 100% { fill: var(--retro-danger); opacity: 0.25; }
+}
+
+/* WHERE vs HAVING */
+.viz-wh-row {
+  fill: var(--retro-teal);
+}
+
+.viz-wh-row-removed {
+  animation: viz-wh-row-out 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-wh-row-out {
+  0%, 15% { fill: var(--retro-danger); opacity: 1; }
+  40%, 100% { fill: var(--retro-danger); opacity: 0.2; }
+}
+
+.viz-wh-bucket {
+  fill: var(--retro-teal);
+}
+
+.viz-wh-bucket-removed {
+  animation: viz-wh-bucket-out 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-wh-bucket-out {
+  0%, 55% { fill: var(--retro-danger); opacity: 1; }
+  80%, 100% { fill: var(--retro-danger); opacity: 0.2; }
+}
+
+/* Joins */
+.viz-join-node {
+  fill: var(--retro-panel-raised);
+  stroke: var(--retro-border);
+}
+
+.viz-join-node-text {
+  fill: var(--retro-text);
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+.viz-join-line {
+  stroke: var(--retro-success);
+  stroke-width: 2;
+  animation: viz-join-line-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-line-in {
+  0%, 10% { opacity: 0; }
+  30%, 100% { opacity: 1; }
+}
+
+.viz-join-dropped {
+  animation: viz-join-drop 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-drop {
+  0%, 40% { opacity: 1; }
+  60%, 100% { opacity: 0.15; }
+}
+
+.viz-join-null {
+  fill: var(--retro-danger);
+  font-size: 9px;
+  opacity: 0;
+  animation: viz-join-null-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-join-null-in {
+  0%, 40% { opacity: 0; }
+  60%, 100% { opacity: 1; }
+}
+
+/* GROUP BY */
+.viz-group-a {
+  fill: var(--retro-teal);
+}
+
+.viz-group-b {
+  fill: var(--retro-amber);
+}
+
+.viz-group-c {
+  fill: var(--retro-success);
+}
+
+.viz-group-source {
+  animation: viz-group-source-out 6s ease-in-out infinite forwards;
+}
+
+.viz-group-buckets {
+  animation: viz-group-buckets-in 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-group-source-out {
+  0%, 30% { opacity: 1; }
+  55%, 100% { opacity: 0; }
+}
+
+@keyframes viz-group-buckets-in {
+  0%, 30% { opacity: 0; }
+  55%, 100% { opacity: 1; }
+}
+
+/* UNION vs UNION ALL */
+.viz-union-row rect {
+  fill: var(--retro-panel-raised);
+  stroke: var(--retro-border);
+}
+
+.viz-union-row text {
+  fill: var(--retro-text);
+  font-size: 9px;
+}
+
+.viz-union-row-dedup {
+  animation: viz-union-dedup 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-union-dedup {
+  0%, 45% { opacity: 1; }
+  70%, 100% { opacity: 0.15; }
+}
+
+.viz-union-row-kept rect {
+  animation: viz-union-keep 6s ease-in-out infinite forwards;
+}
+
+@keyframes viz-union-keep {
+  0%, 45% { stroke: var(--retro-border); stroke-width: 1; }
+  70%, 100% { stroke: var(--retro-success); stroke-width: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {
