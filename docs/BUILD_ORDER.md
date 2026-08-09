@@ -35,27 +35,27 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   `sectorBeats` in `src/content/beats.ts` is wired but **empty** — no
   between-sector beat has been authored yet (see the still-open question
   below).
-- P2.2 — mistake-aware diagnostic. Classifier plumbing plus signatures for
-  **Sectors 1 through 8** (`src/lib/diagnostics.ts`). Two more dead-signature
-  candidates were caught and dropped this round: `m6-2`'s CAST mistake
-  (`Quantity` is already an INTEGER column, so a missing CAST doesn't
-  change the executed result) and `m7-1`'s "forgot to combine in the
-  Invoice side" mistake (`Customer.Country` alone already covers all 24
-  countries, so dropping the Invoice side of the UNION doesn't actually
-  produce a wrong result either). Sector 8's `m8-3` also flips the usual
-  ORDER BY trap: this mission wants ascending ("weakest first"), so the
-  diagnostic there flags DESC as the mistake, not its absence — worth
-  remembering when a Sector 9 mission's sort direction isn't the default
-  "highest/most first" framing. Sector 9 is NOT done — same shape:
-  pull the mission definitions from `src/lib/missions.ts`, design 1-2
-  signatures per mission, **verify every one against
-  `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI before writing it
-  down** (this caught real dead-signature candidates twice already — see
-  the diagnostics.ts file comment and the P2.2/Sector-1 commit messages),
-  then wire + verify in the browser.
+- P2.2 — mistake-aware diagnostic. **Done, all 9 sectors.** Classifier
+  plumbing plus signatures for every sector's missions
+  (`src/lib/diagnostics.ts`, 22 missions total, 1-2 signatures each). Every
+  signature was verified two ways before being kept: first against
+  `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI (confirming the
+  described mistake actually produces a wrong executed result, not just a
+  stylistic difference), then live in the browser via seeded `localStorage`
+  progress (confirming the classifier actually fires the right label and
+  explanation on a real 2nd-wrong-attempt). Four dead-signature candidates
+  were caught this way and dropped rather than shipped: an unnecessary join
+  (Sector 1), `m6-2`'s CAST mistake (`Quantity` is already an INTEGER
+  column, so a missing CAST doesn't change the result), `m7-1`'s "forgot to
+  combine the Invoice side" (`Customer.Country` alone already covers all 24
+  countries), and one more from the original Sector-1 pass — see the
+  diagnostics.ts file comment. One pattern worth remembering if this file
+  is extended later: most missions want DESC ("highest/most first"), so the
+  generic signature flags *missing* DESC — but `m8-3` wants ascending
+  ("weakest first"), so its signature flags DESC *present* instead. Don't
+  assume the direction; check each mission's brief.
 
 **Still open / outstanding:**
-- P2.2 Sector 9 — the last one, not blocked.
 - P0.4 — blocked on a design request; deferred, not declined.
 - BACKLOG.md item 4's "does every sector transition get an authored beat"
   question — still open, blocks writing the Sector 8→9 beat specifically.
@@ -82,8 +82,12 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
 
 **How to continue:** read `AGENTS.md`, `docs/AI_WORKFLOW.md`, and
 `docs/GAME_DESIGN_BRIEF.md` first (standard project instruction, not new).
-The smoke test is done — pick the next P2.2 sector packet the same way the
-last three were done, no new questions needed.
+Both the smoke test and P2.2 are done. Everything else still open (P0.4,
+the sector-transition beat-authoring question, Wave 3) is blocked on a
+product-owner decision this session can't make — so the next move is the
+user's: review this branch and approve (or send back) the merge to `main`.
+If the user instead wants more unprompted work, `docs/BACKLOG.md` is the
+place to look for anything not already covered by an open question above.
 
 ---
 

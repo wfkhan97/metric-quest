@@ -383,6 +383,41 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, hasDesc),
     },
   ],
+  'm9-1': [
+    {
+      id: 'm9-1-missing-max-subquery',
+      label: 'Missing the MAX(year) subquery',
+      explanation:
+        "The most recent year has to be found, not assumed — (SELECT MAX(strftime('%Y', InvoiceDate)) FROM Invoice) is what finds it for real. Without that MAX(...) subquery, there is nothing to scope the WHERE clause to, so revenue sums across every year on record instead of just the latest one.",
+      glossaryEntryId: 'subqueries-vs-ctes',
+      matches: (sql) => !hasKeyword(sql, /\bmax\s*\(/i),
+    },
+    {
+      id: 'm9-1-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Rank countries inside it" by revenue needs ORDER BY Revenue DESC — without DESC, SQL sorts ascending by default, so the weakest countries come out on top instead of the strongest.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm9-2': [
+    {
+      id: 'm9-2-missing-distinct',
+      label: 'Missing DISTINCT',
+      explanation:
+        'COUNT(CustomerId) counts every 2010 invoice that has a customer attached — including repeat buyers, counted once per purchase. COUNT(DISTINCT CustomerId) is what collapses those repeats down to one count per unique purchaser, which is the real reach number this verdict needs.',
+      glossaryEntryId: 'count-variants',
+      matches: (sql) => !hasKeyword(sql, noDistinct),
+    },
+    {
+      id: 'm9-2-missing-year-filter',
+      label: 'Missing the 2010 filter',
+      explanation:
+        "This verdict is deliberately pinned to 2010, the last full closed year — without a WHERE strftime('%Y', InvoiceDate) = '2010' filter, both the revenue and the purchaser count get computed across ROGUE.exe's entire lifetime range instead of that one closed year.",
+      glossaryEntryId: 'dates-strftime',
+      matches: (sql) => !hasKeyword(sql, /2010/),
+    },
+  ],
 };
 
 /**
