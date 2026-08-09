@@ -36,11 +36,14 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   between-sector beat has been authored yet (see the still-open question
   below).
 - P2.2 — mistake-aware diagnostic. Classifier plumbing plus signatures for
-  **Sectors 1 through 6** (`src/lib/diagnostics.ts`). Sector 6's `m6-2` CAST
-  mistake was tried and dropped as a dead signature — `Quantity` is already
-  an INTEGER column, so a missing CAST doesn't change the executed result;
-  GROUP BY / ORDER BY mistakes replaced it after being verified live.
-  Sectors 7-9 are NOT done — each is its own follow-up packet, same shape:
+  **Sectors 1 through 7** (`src/lib/diagnostics.ts`). Two more dead-signature
+  candidates were caught and dropped this round: `m6-2`'s CAST mistake
+  (`Quantity` is already an INTEGER column, so a missing CAST doesn't
+  change the executed result) and `m7-1`'s "forgot to combine in the
+  Invoice side" mistake (`Customer.Country` alone already covers all 24
+  countries, so dropping the Invoice side of the UNION doesn't actually
+  produce a wrong result either). Sectors 8-9 are NOT done — each is its
+  own follow-up packet, same shape:
   pull the mission definitions from `src/lib/missions.ts`, design 1-2
   signatures per mission, **verify every one against
   `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI before writing it
@@ -49,7 +52,7 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   then wire + verify in the browser.
 
 **Still open / outstanding:**
-- P2.2 Sectors 7, 8, 9 — repeatable content packets, not blocked.
+- P2.2 Sectors 8, 9 — repeatable content packets, not blocked.
 - P0.4 — blocked on a design request; deferred, not declined.
 - BACKLOG.md item 4's "does every sector transition get an authored beat"
   question — still open, blocks writing the Sector 8→9 beat specifically.

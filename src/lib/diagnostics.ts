@@ -320,6 +320,32 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
     },
   ],
+  'm7-1': [
+    {
+      id: 'm7-1-union-all',
+      label: 'UNION ALL instead of UNION',
+      explanation:
+        'UNION ALL keeps every row from both sides, duplicates included — a country that shows up in both Customer and Invoice comes back twice. Plain UNION is the one that drops those duplicates down to a single row per country.',
+      glossaryEntryId: 'union-vs-union-all',
+      matches: (sql) => hasKeyword(sql, /\bunion\s+all\b/i),
+    },
+  ],
+  'm7-2': [
+    {
+      id: 'm7-2-missing-limit',
+      label: 'Missing LIMIT 5',
+      explanation:
+        'Ranking the countries is only half the job — LIMIT 5 is what cuts the sorted view down to just the top five instead of returning every country.',
+      matches: (sql) => !hasKeyword(sql, hasLimit),
+    },
+    {
+      id: 'm7-2-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Richest first" needs ORDER BY Revenue DESC — without DESC, SQL sorts ascending by default, so LIMIT 5 keeps the five lowest-revenue countries instead of the highest.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
 };
 
 /**
