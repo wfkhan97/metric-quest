@@ -196,6 +196,56 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, leftJoin) && !hasKeyword(sql, isNullCheck),
     },
   ],
+  'm4-1': [
+    {
+      id: 'm4-1-missing-avg-subquery',
+      label: 'Missing the AVG subquery',
+      explanation:
+        'The real average has to be computed first, as its own one-value question — (SELECT AVG(Total) FROM Invoice) — before it can be used as the bar every invoice gets compared to. Without that AVG(...) subquery, there is nothing real to filter against.',
+      glossaryEntryId: 'subqueries-vs-ctes',
+      matches: (sql) => !hasKeyword(sql, /\bavg\s*\(/i),
+    },
+    {
+      id: 'm4-1-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Richest first" needs ORDER BY Total DESC — without DESC, SQL sorts ascending by default, so the invoices just above average come out on top instead of the highest ones.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm4-2': [
+    {
+      id: 'm4-2-missing-limit',
+      label: 'Missing LIMIT 10',
+      explanation:
+        'Ranking the customers is only half the job — LIMIT 10 is what cuts the sorted leaderboard down to just the top ten instead of returning every customer.',
+      matches: (sql) => !hasKeyword(sql, hasLimit),
+    },
+    {
+      id: 'm4-2-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Top ten by lifetime revenue" needs ORDER BY LifetimeRevenue DESC — without DESC, SQL sorts ascending by default, so LIMIT 10 keeps the ten smallest spenders instead of the biggest.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm4-3': [
+    {
+      id: 'm4-3-missing-filter',
+      label: 'Missing the $10 filter',
+      explanation:
+        "The temp table is only supposed to hold invoices over $10 — without a WHERE Total > 10 filter on the CREATE TEMP TABLE statement, every invoice gets staged into it, not just the high-value ones.",
+      glossaryEntryId: 'temp-tables',
+      matches: (sql) => !hasKeyword(sql, /total\s*>\s*10\b/i),
+    },
+    {
+      id: 'm4-3-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Highest count first" needs ORDER BY InvoiceCount DESC — without DESC, SQL sorts ascending by default, so the countries with the fewest high-value invoices come out on top instead of the most.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
 };
 
 /**

@@ -36,45 +36,45 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   between-sector beat has been authored yet (see the still-open question
   below).
 - P2.2 — mistake-aware diagnostic. Classifier plumbing plus signatures for
-  **Sector 1 and Sector 2 and Sector 3** (`src/lib/diagnostics.ts`). Sectors
-  4-9 are NOT done — each is its own follow-up packet, same shape: pull the
-  mission definitions from `src/lib/missions.ts`, design 1-2 signatures per
-  mission, **verify every one against `SQL Databases/iTunes.sqlite` with the
-  `sqlite3` CLI before writing it down** (this caught real dead-signature
-  candidates twice already — see the diagnostics.ts file comment and the
-  P2.2/Sector-1 commit messages), then wire + verify in the browser.
+  **Sector 1, Sector 2, Sector 3, and Sector 4** (`src/lib/diagnostics.ts`).
+  Sectors 5-9 are NOT done — each is its own follow-up packet, same shape:
+  pull the mission definitions from `src/lib/missions.ts`, design 1-2
+  signatures per mission, **verify every one against
+  `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI before writing it
+  down** (this caught real dead-signature candidates twice already — see
+  the diagnostics.ts file comment and the P2.2/Sector-1 commit messages),
+  then wire + verify in the browser.
 
 **Still open / outstanding:**
-- P2.2 Sectors 4, 5, 6, 7, 8, 9 — repeatable content packets, not blocked.
+- P2.2 Sectors 5, 6, 7, 8, 9 — repeatable content packets, not blocked.
 - P0.4 — blocked on a design request; deferred, not declined.
 - BACKLOG.md item 4's "does every sector transition get an authored beat"
   question — still open, blocks writing the Sector 8→9 beat specifically.
 - Wave 3 (AI tutor, P3.1) — not a build packet, just a pending product
   decision. Don't prototype it.
-- **A full end-to-end playthrough smoke test was in progress and got cut off
-  by a context-window warning, not by finding a bug.** Confirmed clean so
-  far this session: cutscene → avatar creator → sector transition → mission
-  flow (multiple times), the glossary from both Home and Mission headers and
-  via concept-tag deep-links, 5 animated diagrams under simulated
-  reduced-motion, and diagnostic signatures in Sectors 1/2/3 (spot-checked
-  live, not just unit-tested). **Not yet spot-checked live this session:**
-  the campaign-complete banner (finishing `m9-2`, the last mission), the
-  sector-cleared milestone banner, and the `m8-1` ROGUE.exe encounter
-  (untouched by recent merges but worth a look since it's downstream of
-  several of them). Every mission's `solutionSql` IS already covered by an
-  automated test (`src/lib/missions.test.ts`, part of `npm run check`) that
-  passed throughout this session — that's not the risk. The risk is UI/state
-  bugs a unit test wouldn't catch, e.g. progress/points/badges not
-  accumulating right over a long real session, or a visual regression from
-  a merge. If a fresh session picks this up, running that playthrough before
-  (or instead of) starting new work is the highest-value next step, since
-  the user is about to do their own UAT pass.
+- **The end-to-end playthrough smoke test is now fully complete, no bugs
+  found.** Confirmed this session: cutscene → avatar creator → sector
+  transition → mission flow (multiple times), the glossary from both Home
+  and Mission headers and via concept-tag deep-links, 5 animated diagrams
+  under simulated reduced-motion, diagnostic signatures in Sectors 1/2/3,
+  the `m8-1` ROGUE.exe encounter (renders correctly, visually distinct
+  corrupted-state sprite), the "Sector cleared" milestone banner (fired
+  correctly completing `m8-3`), the "Campaign complete — mainframe restored"
+  banner (fired correctly completing `m9-2`, the last mission, with the
+  `Boardroom Analyst` badge unlocking alongside it), the Sector 9
+  transition screen (renders correctly with avatar + background art), and
+  the Home screen's 100%-complete state (25/25 terminals, both badges
+  listed, gracefully swaps "Resume: <mission>" for "Replay a sector" with
+  no crash). No console errors at any point. Verified live in-browser via
+  seeded `localStorage` progress (not just unit tests) — localStorage was
+  cleared afterward so it doesn't interfere with the user's own UAT pass.
+  Every mission's `solutionSql` was executed for real against the dataset
+  during this pass, not mocked.
 
 **How to continue:** read `AGENTS.md`, `docs/AI_WORKFLOW.md`, and
 `docs/GAME_DESIGN_BRIEF.md` first (standard project instruction, not new).
-Then either finish the interrupted playthrough smoke test on
-`claude/game-feel-polish`, or pick the next P2.2 sector packet the same way
-the last three were done — both are unblocked, no new questions needed.
+The smoke test is done — pick the next P2.2 sector packet the same way the
+last three were done, no new questions needed.
 
 ---
 
