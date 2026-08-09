@@ -346,6 +346,43 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
     },
   ],
+  'm8-1': [
+    {
+      id: 'm8-1-missing-distinct',
+      label: 'Missing DISTINCT',
+      explanation:
+        "COUNT(CustomerId) counts every invoice row that has a customer attached — that's ROGUE.exe's 412, one count per purchase, not per customer. COUNT(DISTINCT CustomerId) is what collapses repeat buyers down to one count each.",
+      glossaryEntryId: 'count-variants',
+      matches: (sql) => !hasKeyword(sql, noDistinct),
+    },
+  ],
+  'm8-2': [
+    {
+      id: 'm8-2-missing-year-filter',
+      label: 'Missing the 2010 filter',
+      explanation:
+        "This mission rescopes the claim to one real year, 2010 — without a WHERE strftime('%Y', InvoiceDate) = '2010' filter, the revenue is summed across ROGUE.exe's entire lifetime range instead, which is the same inflated-to-look-current trick the mission is calling out.",
+      glossaryEntryId: 'dates-strftime',
+      matches: (sql) => !hasKeyword(sql, /2010/),
+    },
+  ],
+  'm8-3': [
+    {
+      id: 'm8-3-missing-having',
+      label: 'Missing HAVING',
+      explanation:
+        "Filtering on a summed revenue has to happen after GROUP BY builds that total — that's what HAVING is for. WHERE runs before grouping, so it can only filter individual line-item rows, never the per-genre sum. Without HAVING SUM(...) < 20, every genre comes back, not just the low earners.",
+      glossaryEntryId: 'where-vs-having',
+      matches: (sql) => !hasKeyword(sql, noHaving),
+    },
+    {
+      id: 'm8-3-wrong-sort-direction',
+      label: 'Sorted descending instead of ascending',
+      explanation:
+        '"Weakest first" needs the default ascending order (or an explicit ASC) — DESC would put the strongest of the low-revenue genres first instead of the actual weakest.',
+      matches: (sql) => hasKeyword(sql, hasDesc),
+    },
+  ],
 };
 
 /**
