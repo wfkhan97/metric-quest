@@ -281,6 +281,45 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => !hasKeyword(sql, hasLimit),
     },
   ],
+  'm6-1': [
+    {
+      id: 'm6-1-missing-else',
+      label: 'Missing ELSE',
+      explanation:
+        "Without an ELSE, any invoice that doesn't match an earlier WHEN falls through with no label at all — that's what should have been the High value tier. ELSE 'High value' is what catches everything the two WHEN conditions above it didn't.",
+      glossaryEntryId: 'case',
+      matches: (sql) => hasKeyword(sql, /\bcase\b/i) && !hasKeyword(sql, /\belse\b/i),
+    },
+    {
+      id: 'm6-1-wrong-condition-order',
+      label: 'CASE conditions checked in the wrong order',
+      explanation:
+        'CASE checks each WHEN top to bottom and stops at the first match. Testing Total < 10 before Total < 5 means every Small invoice also satisfies the Core condition first — Small never gets a chance to match, so that tier disappears.',
+      glossaryEntryId: 'case',
+      matches: (sql) => {
+        const coreIndex = sql.search(/total\s*<\s*10\b/i);
+        const smallIndex = sql.search(/total\s*<\s*5(?!\d)/i);
+        return coreIndex !== -1 && smallIndex !== -1 && coreIndex < smallIndex;
+      },
+    },
+  ],
+  'm6-2': [
+    {
+      id: 'm6-2-missing-group-by',
+      label: 'Missing GROUP BY',
+      explanation:
+        'SUM(il.Quantity) needs GROUP BY genre to produce one units-sold total per genre. Without it, every line item across every genre gets folded into a single number instead of a per-genre breakdown.',
+      glossaryEntryId: 'group-by-aggregation',
+      matches: (sql) => !hasKeyword(sql, noGroupBy),
+    },
+    {
+      id: 'm6-2-missing-desc',
+      label: 'Sorted ascending instead of descending',
+      explanation:
+        '"Most units first" needs ORDER BY UnitsSold DESC — without DESC, SQL sorts ascending by default, so the lowest-selling genres come out on top instead of the highest.',
+      matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
 };
 
 /**
