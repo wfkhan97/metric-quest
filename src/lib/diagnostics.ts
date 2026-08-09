@@ -22,6 +22,8 @@ const noGroupBy = /\bgroup\s+by\b/i;
 const noHaving = /\bhaving\b/i;
 const noDistinct = /\bdistinct\b/i;
 const anyJoin = /\bjoin\b/i;
+const leftJoin = /\bleft\s+join\b/i;
+const isNullCheck = /\bis\s+null\b/i;
 
 /**
  * A short, high-confidence list per mission rather than an exhaustive one —
@@ -68,6 +70,67 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
         'COUNT(CustomerId) counts every invoice that has a customer attached — including repeat buyers, counted once per purchase. COUNT(DISTINCT CustomerId) is the one that collapses repeats down to one per unique customer, which is what the third number in this mission needs.',
       glossaryEntryId: 'count-variants',
       matches: (sql) => !hasKeyword(sql, noDistinct),
+    },
+  ],
+  'm3-1': [
+    {
+      id: 'm3-1-missing-join',
+      label: 'Missing JOIN',
+      explanation:
+        "Invoice only has a CustomerId — the customer's actual name lives on Customer. Without a JOIN between the two on that foreign key, there's no way to attach a name to an invoice row.",
+      glossaryEntryId: 'joins',
+      matches: (sql) => !hasKeyword(sql, anyJoin),
+    },
+    {
+      id: 'm3-1-missing-country-filter',
+      label: "Missing the USA filter",
+      explanation:
+        "The mission asks for the five largest U.S. invoices specifically — without a WHERE BillingCountry = 'USA' filter, the top 5 by Total pulls from every country instead.",
+      matches: (sql) => !hasKeyword(sql, /\busa\b/i),
+    },
+  ],
+  'm3-2': [
+    {
+      id: 'm3-2-missing-join',
+      label: 'Missing JOIN',
+      explanation:
+        'The track name lives on Track, not InvoiceLine — InvoiceLine only has a TrackId. Joining the two on TrackId is what turns a bare ID into a readable track name.',
+      glossaryEntryId: 'joins',
+      matches: (sql) => !hasKeyword(sql, anyJoin),
+    },
+    {
+      id: 'm3-2-missing-invoice-filter',
+      label: 'Missing the invoice filter',
+      explanation:
+        'This mission asks for what was purchased on one specific invoice (299) — without a WHERE InvoiceId = 299 filter, the query returns every line item on every invoice instead of just this one.',
+      matches: (sql) => !hasKeyword(sql, /\b299\b/),
+    },
+  ],
+  'm3-3': [
+    {
+      id: 'm3-3-missing-group-by',
+      label: 'Missing GROUP BY',
+      explanation:
+        'SUM(UnitPrice * Quantity) needs GROUP BY genre to produce one revenue total per genre. Without it, every line item across every genre gets folded into a single number instead of a per-genre breakdown.',
+      glossaryEntryId: 'group-by-aggregation',
+      matches: (sql) => !hasKeyword(sql, noGroupBy),
+    },
+  ],
+  'm3-4': [
+    {
+      id: 'm3-4-inner-not-left',
+      label: 'JOIN instead of LEFT JOIN',
+      explanation:
+        "A plain JOIN (INNER JOIN) only keeps a customer row when a matching 2011 invoice exists — exactly backwards for a list of customers with no 2011 invoice. LEFT JOIN keeps every customer regardless, so the ones with no match survive as a row with NULL invoice columns, which is what the IS NULL check needs.",
+      glossaryEntryId: 'joins',
+      matches: (sql) => hasKeyword(sql, anyJoin) && !hasKeyword(sql, leftJoin),
+    },
+    {
+      id: 'm3-4-missing-is-null',
+      label: 'Missing the IS NULL check',
+      explanation:
+        "LEFT JOIN alone keeps every customer, matched or not — it's the WHERE i.InvoiceId IS NULL afterward that narrows it down to just the customers whose invoice side came back empty, which is the actual reactivation list.",
+      matches: (sql) => hasKeyword(sql, leftJoin) && !hasKeyword(sql, isNullCheck),
     },
   ],
 };
