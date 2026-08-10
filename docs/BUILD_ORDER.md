@@ -350,11 +350,13 @@ signature list rather than exhaustive coverage; the 2nd wrong attempt
 triggers the diagnostic; it always supplements the generic feedback,
 never replaces it.
 
-**Status:** the classifier-plumbing-plus-one-sector split landed
-2026-08-08 — Sector 2 (`m2-1`/`m2-2`/`m2-3`), 4 signatures. Sector 3
-(`m3-1`-`m3-4`, joins) landed the same day, 7 signatures. Both linked
-into Wave 1's glossary entries. Sectors 1, 4-9 are still open, repeatable
-content-work packets, one per sector, per the suggested split above.
+**Status: fully shipped.** The classifier-plumbing-plus-one-sector split
+landed 2026-08-08 — Sector 2 (`m2-1`/`m2-2`/`m2-3`), 4 signatures. Sector
+3 (`m3-1`-`m3-4`, joins) landed the same day, 7 signatures. **Correction
+(2026-08-10):** this file previously said Sectors 1, 4-9 were still
+open — stale. Verified directly against `src/lib/diagnostics.ts`: all 25
+missions (`m1-1` through `m9-2`) have signature arrays. Item 2 is done;
+no remaining packets here.
 
 **Depends on:** P1.1 if the explanations link into glossary entries —
 landed and used.

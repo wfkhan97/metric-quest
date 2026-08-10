@@ -100,6 +100,11 @@ or "what does `HAVING` do differently from `WHERE`" in the game's own voice.
 
 ## 2. Mistake-aware diagnostic (local, rule-based)
 
+### Status: fully shipped (2026-08-10)
+All 25 missions (`m1-1` through `m9-2`) have signature arrays in
+`src/lib/diagnostics.ts`, verified directly against the file rather than
+assumed from an older status note. Nothing left to build here.
+
 ### Problem
 Players who fail a mission repeatedly get the same generic
 correct/incorrect feedback every time, with no escalation toward "here's
