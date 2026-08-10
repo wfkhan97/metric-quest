@@ -41,4 +41,27 @@ just the pure-logic unit tests added tonight in `src/lib/`), that's a
 tooling decision worth its own conversation, not something to add
 unannounced overnight.)*
 
+### 2026-08-10 — Avatar color picker is now dead code in the running UI
+
+`src/components/AvatarCreatorView.tsx` only renders its "Choose a color"
+`<fieldset>` (and thus lets a player actually pick from `colorOptions`)
+when `!hasImageSprite` — i.e. only for a sprite that has no real art yet.
+Found during tonight's Lane C accessibility audit: every one of the 12
+sprites in `src/lib/avatarOptions.ts` now has a real `imageUrl` (confirmed
+by this session's own `src/lib/avatarOptions.test.ts`), so `hasImageSprite`
+is always `true` today and that fieldset never renders. `colorOptions`,
+`getColorOption`, and `AvatarConfig.colorId` still exist and are still
+read (e.g. `defaultAvatar.colorId`, `AvatarPreview`'s `colorId` prop), but
+a player can no longer actually choose a color through the UI.
+
+Not fixed tonight — this is a product call, not an accessibility bug (the
+fieldset's absence isn't a keyboard/color-feedback defect, it correctly
+never renders), and removing dead code here means deciding whether
+recoloring is meant to come back for some future placeholder sprite or is
+gone for good now that real art shipped for all 12. Best-effort default if
+no correction is given: leave as-is — it's harmless dead code, not a
+regression, and deleting `colorOptions` would also mean deciding what
+happens to the `colorId` field already saved in existing players'
+`AvatarConfig` records.
+
 <!-- Append new entries below this line, most recent last. -->

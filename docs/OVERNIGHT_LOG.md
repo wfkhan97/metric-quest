@@ -343,4 +343,72 @@ match).
 Four PRs now open and awaiting review: #2 (P6.2), #3 (P6.1), #4 (Lanes
 A/B). Moving to Lane C (accessibility audit) next.
 
+## Entry — 2026-08-10, Lane C done: accessibility/keyboard audit — no bugs found, no PR
+
+Ran the original Lane C manual audit against `main` (a throwaway `vite
+--port 5199` server, Browser pane tools, no mouse for the tab-order
+checks — clicks only used where a screen requires a real value to type or
+this session's key-simulation limitation, noted below, applied). Covered
+every surface the handoff named: Home, the Concept glossary overlay, the
+Avatar Creator onboarding flow, the opening cutscene, the sector-transition
+screen, and the Mission screen (SQL editor, the P5.4 sector-map drawer,
+the badges disclosure, wrong-answer feedback + mistake diagnostic, the
+3-strikes "See answer" gate, and a correct-answer run).
+
+**Result: no accessibility bugs found.** Specifically verified, not just
+assumed:
+- Tab order on Home and Mission matches DOM order with zero `tabindex`
+  hacks, which matches visual/logical order.
+- The skip link is genuinely off-screen until focused, then moves
+  on-screen (`getBoundingClientRect().top` checked, not just CSS read).
+- `GlossaryPanel` and the Mission screen's sector-map drawer both: move
+  focus to Close on open, trap Tab in both directions (confirmed
+  Shift+Tab from the first element wraps to the last and vice versa, not
+  just read from source), close on Escape, and return focus to the
+  trigger button that opened them.
+- The badges disclosure is a native `<details>/<summary>` — keyboard
+  operability is free from the platform, confirmed focusable.
+- The CodeMirror SQL editor does **not** trap Tab for indentation
+  (`indentWithTab` is not in its keymap) — confirmed empirically: Tab
+  from inside the editor moves focus straight to "Run query," not into
+  the editor's own indent handling. This is exactly the kind of
+  non-obvious CodeMirror accessibility trap the P4.2 syntax-highlighting
+  work could have introduced and didn't.
+- `ResultTable` is a semantic `<table>` with `<th scope="col">`, not a
+  div grid.
+- Wrong/right-answer feedback uses `aria-live="polite" role="status"`
+  and distinct heading/body **text** for success vs. failure (`"ROGUE.exe
+  smirks..."` vs. `"Terminal restored..."`) — confirmed live by actually
+  submitting a wrong query (which correctly surfaced the `m1-1-missing-
+  where` diagnostic — nice live cross-check against this session's own
+  earlier diagnostics.ts test suite) and then a correct one, not just
+  reading the JSX. Never color-only.
+- Avatar sprite selection is a native radio group (arrow-key operable for
+  free) with a text `" (selected)"` suffix alongside the visual
+  highlight — not color-only either.
+
+**One non-a11y observation, logged as a question rather than fixed:**
+`AvatarCreatorView`'s color-picker `<fieldset>` only renders when
+`!hasImageSprite`, and every sprite now has real art (confirmed by this
+session's own `avatarOptions.test.ts`), so that fieldset — and by
+extension `colorOptions`/`getColorOption` in the running UI — is
+currently dead code. Not a keyboard/color-feedback bug itself, so out of
+Lane C's mandate to fix directly; added to
+`docs/OVERNIGHT_QUESTIONS.md` instead since removing it is a product call
+(does recoloring come back for future placeholder sprites, or is it gone
+for good).
+
+**Tooling note, not a product finding:** synthetic Enter/Space key events
+sent through this session's browser-automation tool did not trigger
+native `<button>` click activation, while Tab/Shift+Tab/Escape navigation
+worked correctly and a real mouse click always worked. Native button
+Enter/Space activation is baseline HTML behavior, not something app code
+implements, so this reads as an automation-harness limitation, not a
+real keyboard-accessibility defect — noted here so a future session
+doesn't re-investigate it as if it were one.
+
+No code changes, no branch, no PR for this lane — a clean audit is the
+correct outcome here, not manufactured busywork. Moving to Lane D (docs
+accuracy audit) next.
+
 <!-- Append new entries below this line, most recent last. -->
