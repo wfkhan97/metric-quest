@@ -1204,13 +1204,6 @@ tbody tr {
   border-color: var(--retro-amber);
 }
 
-.color-chip {
-  border: 2px solid var(--retro-text);
-  border-radius: 50%;
-  block-size: 1.25rem;
-  inline-size: 1.25rem;
-}
-
 .avatar-callsign-field {
   display: grid;
   gap: 0.35rem;
