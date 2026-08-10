@@ -123,12 +123,6 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         <div>
           <p className="eyebrow">Aurora Music mainframe · active terminal</p>
           <h1 id="page-title">Metric Quest</h1>
-          <button type="button" className="link-button" onClick={onBackToHome}>
-            <span aria-hidden="true">← </span>Back to sector map
-          </button>
-          <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
-            Concept glossary
-          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong className={pointsPulsing ? 'points-pulse' : undefined}>
@@ -155,6 +149,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           completedMissionIds={progress.completedMissionIds}
           activeMissionId={mission.id}
           onSelectMission={onSelectMission}
+          onBack={onBackToHome}
         />
 
         <section id="mission" className="mission-workspace" aria-labelledby="mission-title">
@@ -227,6 +222,9 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               </button>
               <button type="button" onClick={() => setShowSolution((shown) => !shown)}>
                 {showSolution ? 'Hide example' : 'Reveal example query'}
+              </button>
+              <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
+                Concept glossary
               </button>
             </div>
           </section>
