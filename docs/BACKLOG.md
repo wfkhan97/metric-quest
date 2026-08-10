@@ -2,16 +2,17 @@
 
 Status: items 1-4 are the original four ideas (mostly built now — see each
 section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
-2026-08-09 from the first real UAT playtest of the merged build. Items
-5-7 are unblocked and scheduled as BUILD_ORDER.md P4.x packets; item 8 is
-explicitly deferred (post-polish); item 3 still needs explicit
-product-owner approval per `AGENTS.md` before any implementation starts.
-P4.2 and P4.4 have since landed on `main`. Item 9 and an update to item 4
-were opened 2026-08-09 (continued) from a second UAT round on the merged
-build, scheduled as BUILD_ORDER.md P5.x packets. Read
-`docs/GAME_DESIGN_BRIEF.md` and `docs/architecture.md` first; nothing here
-changes the grading contract, the SQL loop, or the browser-only boundary
-unless a section explicitly flags that it does.
+2026-08-09 from the first real UAT playtest of the merged build; item 3
+still needs explicit product-owner approval per `AGENTS.md` before any
+implementation starts. P4.x and P5.x (items 5, 6, 9, and the P5.1 part of
+item 4) have all since landed on `main`. Item 2 was found fully shipped
+2026-08-10 (an earlier status note here was stale — corrected). Item 8
+(multi-save) was un-deferred and designed 2026-08-10 and item 10 (public
+deployment) was opened the same day from real research — both scheduled
+as BUILD_ORDER.md P6.x. Read `docs/GAME_DESIGN_BRIEF.md` and
+`docs/architecture.md` first; nothing here changes the grading contract,
+the SQL loop, or the browser-only boundary unless a section explicitly
+flags that it does.
 
 More assets are being generated on an ongoing basis via Claude Design (the
 same workflow as `docs/GAME_DESIGN_BRIEF.md` §B), so items below are not
@@ -554,30 +555,196 @@ owner to run it and hand back the result.
 
 ## 8. Multi-save / new-game / profile state management
 
-### Status
-New item, explicitly deferred by product direction 2026-08-09 — **do
-not build now**. Logged so it isn't lost, not scheduled into
-BUILD_ORDER.md.
+### Status: un-deferred and designed (2026-08-10) — ready to build
+Originally deferred post-polish 2026-08-09. Product direction 2026-08-10:
+design it now, and it's substantial/safe enough to schedule immediately
+rather than wait — no open product question is left blocking a build,
+see the design below. Scheduled as BUILD_ORDER.md P6.2.
 
 ### Problem
 Progress today is a single implicit save per browser (`localStorage`,
 see `src/lib/progress.ts`) — there's no way to start a new game, keep
 multiple save slots, or return to a previous game state once overwritten.
-For a single-player classroom exercise this is fine for now; it becomes
-a real gap if multiple students share a machine, or a player wants to
-replay from scratch without losing their current run.
+For a single-player classroom exercise this is fine; it's a real gap if
+multiple students share a machine, or a player wants to replay from
+scratch without losing their current run. It also matters more once
+item 10 (public deployment) ships — friends playing on their own devices
+already get separate saves for free (separate browsers), but anyone
+sharing a device needs this.
 
-### Explicit product direction
-Revisit **post-polish** — after the current visual/UX polish pass (P4.x)
-and any remaining P2.2-style content work, not before. Not blocked on a
-missing decision so much as intentionally not prioritized yet.
+### Design (2026-08-10)
 
-### Open questions (for whenever this gets picked up)
-- Save-slot model: named slots, a slot picker on Home, or something
-  simpler (just an explicit "New Game" that confirms before overwriting)?
-- Does this change the `localStorage` schema in `progress.ts` in a way
-  that needs a migration for existing single-save players, or is it
-  additive?
+**Data model.** A new top-level `localStorage` key,
+`metric-quest-saves-v1`, holding a `SaveStore`:
+
+```ts
+type SaveSlot = {
+  id: string;
+  name: string;          // player-editable, defaults to the avatar's callsign
+  createdAt: string;      // ISO timestamp
+  updatedAt: string;      // ISO timestamp, bumped on every save
+  progress: Progress;     // today's existing Progress type, unchanged
+};
+
+type SaveStore = {
+  version: 2;
+  activeSlotId: string | null;
+  slots: SaveSlot[];
+};
+```
+
+The existing `Progress` type (`completedMissionIds`, `points`, `badges`,
+`avatar`, `seenSectors`, `seenOpening`) doesn't change shape at all — it
+just moves from being the top-level saved object to being one slot's
+payload. `MissionView`, `HomeView`, and everything else that reads/writes
+`Progress` today needs **no changes** — they keep calling
+`onProgressChange`/receiving `progress` exactly as now.
+
+**Migration, one-time and non-destructive.** On load, if
+`metric-quest-saves-v1` doesn't exist yet but the old
+`metric-quest-progress-v1` key does, wrap the existing `Progress` into a
+single slot (name defaults to the avatar's callsign, or "Recruit" if
+none), mark it active, write the new key. The old key is left in place
+afterward, untouched — negligible storage cost, and it means a migration
+bug can't lose data since the pre-migration copy still exists. Migration
+only runs when the new key is fully absent, so it can't double-run.
+
+**API surface (`src/lib/progress.ts`).** `loadProgress()`/`saveProgress()`
+keep working exactly as today (they become "act on the active slot"
+under the hood — every existing call site is unaffected). New exports:
+`listSaveSlots()`, `createNewSave(name?: string)`,
+`switchActiveSave(slotId): Progress`, `deleteSave(slotId)`,
+`renameSave(slotId, name)`. `App.tsx` needs one small addition: a
+slot-switch handler that calls `setProgress(switchActiveSave(id))` —
+plain state update, no remount trickery needed.
+
+**UI.** Home gets one new small link (same visual weight as today's
+"Edit avatar"/"Replay opening" row — not a new boxed control) that opens
+a slot-picker overlay: same modal/overlay mechanics already established
+by `GlossaryPanel` and P5.4's sector-map drawer (backdrop, trapped focus,
+Escape closes, focus returns to the trigger) — no new interaction
+paradigm. The overlay lists existing slots (name, last-played date,
+points/completion summary) with a way to switch to one, a "New Game"
+action, a rename action, and a delete action per slot.
+
+**Why "New Game" needs no confirm step, but delete does:** creating a
+slot is purely additive — it never touches another slot's data, so
+there's nothing to accidentally overwrite. Only deleting a slot is
+destructive and needs an explicit confirm, consistent with how the rest
+of this project treats irreversible actions.
+
+**Verified low-risk:** the whole design is additive over the existing
+architecture — no existing component needs to know save slots exist at
+all except `App.tsx`'s bootstrap and the new Home entry point.
+
+### Non-goals
+- No account system, no server-side sync — still 100% `localStorage`,
+  still browser-only per `AGENTS.md`.
+- No cap enforcement beyond a soft, easily-changed default (10 slots) —
+  `Progress` objects are a few KB at most, storage quota isn't a real
+  constraint here.
+
+### Open questions still to resolve before build
+None blocking — implementation-detail defaults were made above (slot
+naming default, soft 10-slot cap, leaving the old key in place
+indefinitely) and are cheap to change later if you want something
+different. If you want to correct any of those defaults, do it whenever;
+it doesn't need to happen before the packet starts.
+
+---
+
+## 10. Public deployment (Vercel)
+
+### Status: researched 2026-08-10 — prework unblocked, going live is not
+New item. The technical deployment path is simple (this is a static
+Vite/React app); **one specific finding below is a hard blocker on
+actually going live**, not a checklist item to route around. Prework
+that doesn't touch that blocker is scheduled as BUILD_ORDER.md P6.1.
+
+### Problem
+The app runs locally (`npm run dev`/`npm run build`) but isn't deployed
+anywhere the product owner can share a link to. Wanted: a public URL
+(Vercel) friends can play without cloning the repo.
+
+### Research findings (2026-08-10)
+- **Deployment shape is simple.** No client-side router (`type View =
+  'home' | 'avatar' | ...` is plain React state, not URL-based) — the
+  whole app is one route. Vite's zero-config Vercel integration (build
+  command `npm run build`, output directory `dist`) needs no rewrite
+  rules, since there's nothing to route.
+- **Bundle size is fine.** `dist/` is ~6.1MB total, comfortably inside
+  any Vercel tier's static-asset limits.
+- **Node version isn't pinned.** Local dev runs Node v26; Vercel's build
+  image supports Node 20+, but v26 specifically isn't confirmed
+  available. Recommend an explicit `"engines"` field in `package.json`
+  pinning a known LTS (e.g. 22) rather than assuming the newest local
+  version matches Vercel's build environment.
+- **No environment variables are used today** — nothing to configure in
+  Vercel's project settings on that front.
+- **The hard blocker: `SQL Databases/iTunes.sqlite` ships as-is in every
+  production build, unminimized.** `src/lib/sqlRunner.ts` loads the
+  database via `new URL('../../SQL Databases/iTunes.sqlite',
+  import.meta.url)` — Vite bundles that exact file into
+  `dist/assets/iTunes-*.sqlite` (confirmed: the shipped file's size
+  matches the source file's size on disk exactly). Deploying today means
+  publishing the raw course-material database to the public internet,
+  downloadable by anyone — precisely the scenario
+  `docs/AI_WORKFLOW.md`'s course-data release gate exists for ("Do not
+  publish a source database by default"). **This must be resolved before
+  any public deployment**, per that existing rule — it is not new scope
+  invented for this item, it's the same gate `AGENTS.md` already states.
+- **Helpful context, not a substitute for approval:** the shipped data
+  matches the well-known open "Chinook" sample database (recognizable
+  from `Customer`'s canonical first rows) — a widely-used, freely-
+  licensed public teaching dataset, not proprietary business data. That's
+  useful context for making the call, but the project's own rule still
+  requires an explicit decision, not an agent's assumption that
+  "it's probably fine."
+- **A minimized derivative is ready to evaluate, not yet applied.**
+  Checked which tables the game's 25 missions actually touch
+  (`visibleTables` across `src/lib/missions.ts`, cross-checked against
+  every `solutionSql`): only `Customer`, `Genre`, `Invoice`,
+  `InvoiceLine`, and `Track` — 5 of the database's 11 tables. Built and
+  tested a derivative keeping only those 5: **356KB vs. 1,092KB (a 67%
+  reduction)**, spot-verified to return byte-identical results for an
+  existing mission's reference query. This is a concrete, low-effort
+  "minimized derivative" option per the release gate, ready to apply
+  the moment it's approved — not applied yet, since switching the data
+  source is itself the gated decision, not a prework step.
+
+### Decision needed before deployment (yours, not an agent's)
+Per `docs/AI_WORKFLOW.md`'s course-data release gate, pick one:
+- Approve the current full `iTunes.sqlite` as a licensed/reviewed copy
+  suitable for public distribution as-is, or
+- Approve switching to the minimized 5-table derivative described above.
+
+Record the decision, provenance, and minimization method here once made,
+per the release-gate's own requirement.
+
+### Rough scope (prework only — safe to build now, does not deploy anything)
+- `"engines"` field in `package.json` pinning a known Vercel-supported
+  Node LTS.
+- A `vercel.json` (or documented zero-config settings) pinning build
+  command/output directory explicitly rather than relying on
+  auto-detection silently continuing to guess right.
+- A "Deployment" section in `README.md` that documents the process *and*
+  states the data-release-gate requirement inline, so a future deploy
+  can't happen by accident without seeing the warning.
+- The minimized-derivative SQLite file, built for real (not just the
+  scratch proof-of-concept above) and kept ready alongside the existing
+  loader — wired in only once the decision above is made, per
+  `AGENTS.md`'s "use an approved copy or minimized derivative" rule.
+
+### Non-goals
+- Not actually deploying or sharing a live URL — that's the part gated
+  on the decision above.
+- Not adding accounts, a backend, or telemetry — deployment target
+  doesn't change the browser-only architecture.
+
+### Open questions still to resolve before going live
+- **The data decision above.** Hard blocker.
+- Custom domain, or the default `*.vercel.app` URL? Cosmetic, not
+  blocking prework.
 
 ---
 
@@ -702,7 +869,7 @@ above to remove any "not built yet" caveat that no longer applies.
   in the tracker above) into branch-sized packets with acceptance
   criteria, and names which open question blocks each one. Read it before
   scoping any of this into a session.
-- Items 1, 2, 4, and 9 fit the current architecture with no approval
+- Items 1, 2, 4, 8, and 9 fit the current architecture with no approval
   needed — they can be scoped into normal sector/session work whenever
   prioritized. Item 4's new "pulled into the mainframe" beat is the one
   exception inside an otherwise-unblocked item: it's waiting on the
@@ -710,6 +877,11 @@ above to remove any "not built yet" caveat that no longer applies.
 - Item 3 needs an explicit approval decision before any implementation
   work starts, per `AGENTS.md`. Treat it as a standing research item
   until that decision is made.
+- Item 10 (deployment) is split: the prework (config, docs, preparing a
+  minimized data derivative) needs no approval and fits the current
+  architecture; actually going live needs an explicit data-release
+  decision first, per `docs/AI_WORKFLOW.md`'s course-data gate — the same
+  standing rule item 3 references, not a new one invented for this item.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.
