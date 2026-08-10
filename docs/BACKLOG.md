@@ -528,37 +528,50 @@ question.
 
 ## 7. Avatar sprite transparency fix
 
-### Status
-New item, defect found during 2026-08-09 UAT playtest. Blocked on the
-product owner running a Claude Design prompt (already drafted) and
-handing back the result — not an agent-buildable item. Tracked as
-BUILD_ORDER.md P4.5.
+### Status: 10 of 12 fixed (2026-08-10, PR #11) — 2 still broken, re-export needed
+`recruit-analyst`, `-archivist`, `-auditor`, `-cartographer`, `-consultant`,
+`-curator`, `-engineer`, `-registrar`, `-statistician`, and `-strategist`
+were re-exported with real alpha transparency and merged. **`recruit-broker.png`
+and `recruit-operator.png` are still defective** — see the correction
+below for why they were wrongly marked "already fine" earlier tonight.
+Tracked as BUILD_ORDER.md P4.5.
 
 ### Problem
-**Correction (2026-08-10):** re-verified pixel-by-pixel right before
-handing paths to the product owner for re-export — 10 of the 12 delivered
-avatar sprites (`src/assets/avatars/recruit-*.png`) are defective: fully
-opaque (`alpha=255` everywhere) with a checkerboard *pattern baked into
-the actual pixels* rather than a real alpha channel. **`recruit-broker.png`
-and `recruit-operator.png` already have genuine transparency** (alpha
-extrema `(153, 255)`) and are not part of this defect — the original
-"all 12" claim here was wrong; only re-export the other 10. It renders as
-a visible gray/white checkerboard behind every affected character — most
-noticeable on the avatar creator and sector-transition screens. Every
-other delivered asset (ROGUE.exe sprites, sector backgrounds, UI chrome)
-was checked the same way and confirmed to have genuine transparency —
-this defect is isolated to 10 of the 12 avatar sprites.
+The 10 sprites listed above were fully opaque (`alpha=255` everywhere)
+with a checkerboard *pattern baked into the actual pixels* rather than a
+real alpha channel — a visible gray/white checkerboard behind the
+character, most noticeable on the avatar creator and sector-transition
+screens. Every other delivered asset (ROGUE.exe sprites, sector
+backgrounds, UI chrome) was checked the same way and confirmed to have
+genuine transparency.
+
+**Correction (2026-08-10, later the same night):** an earlier pass this
+session claimed `recruit-broker.png` and `recruit-operator.png` "already
+have genuine transparency" and excluded them from the re-export prompt —
+that was wrong, caught while independently reviewing the PR that
+delivered the other 10. `Image.getextrema()` alone is not a sufficient
+check: both files return alpha extrema `(153, 255)` — not a flat `255`,
+which looks like a pass — but a full per-pixel histogram shows only
+**256 of 72,192 pixels (0.4%)** carry that `153` value; the other 99.6%
+are flatly opaque at `255`, i.e. still the same baked-checkerboard defect
+as the other 10, just with one small incidental non-opaque patch
+somewhere in the file that happened to move the *extrema* without
+reflecting the image as a whole. Compare a genuinely-fixed file, e.g.
+`recruit-analyst.png`: 77% of its pixels are alpha `0`, the correct
+shape for a real character-on-transparent-background cutout. `AGENTS.md`
+is updated with the corrected check (proportion of transparent pixels,
+not just whether the extrema differ from `255`).
 
 ### Fix
 Not fixable in code — this is baked pixel content, not a CSS/rendering
 bug, and per `AGENTS.md` this project doesn't generate replacement
-character art directly. The re-export prompt and a verification method
-(so the fix can be confirmed before re-wiring, rather than trusted by
-eye) are in `docs/GAME_DESIGN_BRIEF.md` §B Step 1c.
+character art directly. The re-export prompt (now covering just these 2
+remaining files) and the corrected verification method are in
+`docs/GAME_DESIGN_BRIEF.md` §B Step 1c.
 
 ### Open questions still to resolve before build
-None — root cause confirmed, fix prompt drafted. Waiting on the product
-owner to run it and hand back the result.
+None — root cause confirmed for the remaining 2 files, fix prompt
+drafted. Waiting on the product owner to run it and hand back the result.
 
 ---
 

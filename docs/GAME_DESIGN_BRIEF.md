@@ -283,37 +283,40 @@ canvas, so I can hand them to my developer as image assets.
 
 ### Step 1c — Fix: avatar sprite transparency defect (found 2026-08-09)
 
-**Correction (2026-08-10):** re-verified all 12 files pixel-by-pixel right
-before pointing a re-export at them, since the original "all 12" claim
-below was about to be trusted at face value. It doesn't hold: 10 of the
-12 avatar sprites are still fully opaque, but `recruit-broker.png` and
-`recruit-operator.png` already have a genuine alpha channel (extrema
-`(153, 255)`, not a flat `255`) — those two do not need re-export. The
-prompt below now lists only the 10 that are actually still broken.
+**Status (2026-08-10): 10 of 12 fixed and merged. 2 remain —
+`recruit-broker.png` and `recruit-operator.png`.** An earlier pass
+tonight wrongly cleared those two as "already fine" based on
+`Image.getextrema()` alone returning a non-`255` alpha minimum. That check
+is insufficient on its own: both files' alpha extrema are `(153, 255)`,
+but a full per-pixel histogram shows only **256 of 72,192 pixels (0.4%)**
+actually carry that `153` value — the other 99.6% are flatly opaque at
+`255`, the same baked-checkerboard defect as the other 10, just with one
+small incidental non-opaque patch that happened to move the *extrema*
+without the image as a whole having real transparency. The corrected
+verification method below checks the *proportion* of transparent pixels,
+not just whether the minimum differs from `255`.
 
-The other 10 delivered avatar sprites were verified pixel-by-pixel and
-confirmed to have this defect: they are fully opaque (`alpha=255`
-everywhere) with a checkerboard *pattern baked into the actual RGB
-pixels* — a flattened transparency-preview grid, not real transparency.
-It renders as a visible gray/white checkerboard behind every character in
-the app (most visible on the sector-transition screens). Use this prompt
-to get a corrected re-export:
+The 10 already-fixed sprites (analyst, archivist, auditor, cartographer,
+consultant, curator, engineer, registrar, statistician, strategist) were
+fully opaque with a checkerboard *pattern baked into the actual RGB
+pixels* — a flattened transparency-preview grid, not real transparency —
+and have been corrected. Use this prompt to get the remaining 2 fixed the
+same way:
 
 ```text
-10 of the 12 sprites in the avatar set you generated earlier ("Recruit"
-character sprites: analyst, archivist, auditor, cartographer, consultant,
-curator, engineer, registrar, statistician, strategist) have a
-transparency export bug: instead of a real alpha channel, the transparent
-areas were flattened into an opaque checkerboard pattern (the standard
-"no background" preview grid baked directly into the image pixels). The
-other two in the set (broker, operator) already have real transparency
-and do not need re-export.
+2 sprites in the avatar set you generated earlier ("Recruit" character
+sprites: broker, operator) still have a transparency export bug: instead
+of a real alpha channel, the transparent areas were flattened into an
+opaque checkerboard pattern (the standard "no background" preview grid
+baked directly into the image pixels). The rest of the set (10 other
+sprites) has already been corrected and matches the real-transparency
+version you should match here.
 
-Please re-export just those 10 sprites with a genuine alpha channel --
-fully transparent (alpha = 0) in every area outside the character, not a
-checkerboard fill. Keep everything else identical: same pose,
-proportions, canvas size, pixel density, and color palette as what you
-already delivered.
+Please re-export just these 2 sprites (broker, operator) with a genuine
+alpha channel -- fully transparent (alpha = 0) in every area outside the
+character, not a checkerboard fill. Keep everything else identical: same
+pose, proportions, canvas size, pixel density, and color palette as what
+you already delivered.
 
 Export as individual PNG files with real alpha transparency, not
 flattened against any background color or pattern.
@@ -323,16 +326,28 @@ Before wiring any re-delivered asset back in, verify the fix actually
 landed rather than trusting how it looks in a preview pane — a checkerboard
 *can* be a legitimate "no transparency" UI indicator that renders fine in
 the design tool's own viewer while still being flattened into the actual
-file. Check with:
+file, and a bare extrema check can itself be fooled by a single stray
+non-opaque pixel (see the correction above). Check the actual proportion
+of transparent pixels, not just the extrema:
 
 ```bash
-python3 -c "from PIL import Image; im = Image.open('PATH.png').convert('RGBA'); print(im.getextrema())"
+python3 -c "
+from PIL import Image
+import collections
+img = Image.open('PATH.png').convert('RGBA')
+w, h = img.size
+hist = collections.Counter(a for _,_,_,a in img.getdata())
+transparent = sum(c for a, c in hist.items() if a < 200)
+print(f'{100*transparent/(w*h):.1f}% transparent', hist.most_common(5))
+"
 ```
 
-The alpha channel (4th tuple) should show a low end of `0`, not `255` —
-`((r_min,r_max),(g_min,g_max),(b_min,b_max),(0,255))` or similar. If the
-alpha low end is `255`, the file is still fully opaque and the fix didn't
-land, regardless of how it looks in a preview.
+A real character-on-transparent-background cutout should show a large
+majority of pixels (typically 70-90%, depending on how much of the canvas
+the character fills) at or near alpha `0` — compare `recruit-analyst.png`
+(77% transparent) as a known-good reference. A result in the low single
+digits, even if the extrema technically isn't a flat `255`, means the fix
+did not land.
 
 ### Step 2 — Sector background scenes (Sectors 1, 2, 3, 8 first)
 
