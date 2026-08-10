@@ -560,11 +560,13 @@ owner to run it and hand back the result.
 
 ## 8. Multi-save / new-game / profile state management
 
-### Status: un-deferred and designed (2026-08-10) — ready to build
-Originally deferred post-polish 2026-08-09. Product direction 2026-08-10:
-design it now, and it's substantial/safe enough to schedule immediately
-rather than wait — no open product question is left blocking a build,
-see the design below. Scheduled as BUILD_ORDER.md P6.2.
+### Status: shipped (2026-08-10)
+Built as BUILD_ORDER.md P6.2 and merged to `main` (PR #2). The design
+below is a record of what shipped, not a plan still to build: the
+`metric-quest-saves-v1` `SaveStore`, the one-time migration from the old
+single-save key, `listSaveSlots`/`createNewSave`/`switchActiveSave`/
+`deleteSave`/`renameSave` in `src/lib/progress.ts`, and the "Save slots"
+entry point on Home. Nothing left to build here.
 
 ### Problem
 Progress today is a single implicit save per browser (`localStorage`,
@@ -660,11 +662,16 @@ it doesn't need to happen before the packet starts.
 
 ## 10. Public deployment (Vercel)
 
-### Status: researched 2026-08-10 — prework unblocked, going live is not
-New item. The technical deployment path is simple (this is a static
-Vite/React app); **one specific finding below is a hard blocker on
-actually going live**, not a checklist item to route around. Prework
-that doesn't touch that blocker is scheduled as BUILD_ORDER.md P6.1.
+### Status: prework shipped 2026-08-10 — going live is still blocked on you
+All of BUILD_ORDER.md P6.1's prework merged to `main` (PR #3): the
+`engines` pin, `vercel.json`, the README Deployment section, and the real
+minimized 5-table derivative at `src/assets/data/iTunes.min.sqlite`
+(verified against all 25 missions' expected results, not just spot-checked
+— see the update below). **One specific finding below is still a hard
+blocker on actually going live**, not a checklist item to route around —
+see "Decision needed before deployment" further down. Nothing in this
+item's prework is left to build; the remaining step is your decision, not
+more agent work.
 
 ### Problem
 The app runs locally (`npm run dev`/`npm run build`) but isn't deployed
