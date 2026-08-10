@@ -457,4 +457,94 @@ remains from the original priority list: the optional stretch goal
 carefully, per this session's own instruction to back out rather than
 ship something uncertain.
 
+## Entry — 2026-08-10, stretch goal shipped: CodeMirror code-splitting
+
+Branch `claude/codemirror-code-splitting`, PR
+[#6](https://github.com/wfkhan97/metric-quest/pull/6) open against
+`main`. This was the last item on tonight's priority list.
+
+`MissionView.tsx` now imports `SqlEditor` via `React.lazy()` wrapped in
+`Suspense` instead of eagerly at module load — Home, the avatar creator,
+and the cutscene/transition screens never touch CodeMirror, so it no
+longer needs to block their load. Pure loading-strategy change, verified
+carefully in-browser (not just from the build log) before treating it as
+done, per this session's own instruction to back out rather than ship
+something uncertain: confirmed the new `SqlEditor-*.js` chunk fetches
+with a 200 only once a mission screen mounts, typing works, syntax
+highlighting still renders (checked computed `color`, not just class
+names — 9 colored spans), a real correct query still grades successfully
+end to end, and Tab still exits the editor to the next control exactly as
+before. `Suspense`'s fallback is an empty `.sql-editor` div, whose CSS
+already carries the border/background/min-height the real editor uses, so
+there is no layout shift while the chunk loads.
+
+**Result:** main JS chunk 666.52kB → 356.79kB; CodeMirror +
+`@codemirror/lang-sql` now load in their own 310.65kB on-demand chunk.
+The build's "chunk larger than 500kB" warning is gone entirely — first
+time it hasn't appeared since P4.2 added CodeMirror.
+
+`npm run check` passed (lint, 48 tests, typecheck, build).
+
+---
+
+## Final summary — end of session, 2026-08-10
+
+**Everything from tonight's priority list is done.** Six PRs open
+against `main`, all with `npm run check` green, all awaiting review:
+
+| # | Branch | What |
+|---|---|---|
+| [#2](https://github.com/wfkhan97/metric-quest/pull/2) | `claude/p6-2-multi-save` | P6.2 — multi-save/profile state management (BACKLOG.md item 8) |
+| [#3](https://github.com/wfkhan97/metric-quest/pull/3) | `claude/p6-1-deployment-prework` | P6.1 — deployment prework: engines pin, vercel.json, minimized SQLite derivative verified against all 25 missions (BACKLOG.md item 10) |
+| [#4](https://github.com/wfkhan97/metric-quest/pull/4) | `claude/lane-a-b-diagnostics-avatar-tests` | Lane A/B — test coverage for `diagnostics.ts` (all 43 signatures × 25 missions) and `avatarOptions.ts` |
+| [#5](https://github.com/wfkhan97/metric-quest/pull/5) | `claude/lane-d-docs-accuracy-audit` | Lane D — docs accuracy audit, one stale claim corrected |
+| [#6](https://github.com/wfkhan97/metric-quest/pull/6) | `claude/codemirror-code-splitting` | Stretch goal — CodeMirror code-splitting, main chunk under 500kB again |
+| (no PR) | — | Lane C — accessibility/keyboard audit across every named surface. **No bugs found**, so no branch was opened; see the dedicated log entry above for exactly what was checked and how. |
+
+**Hard rules from the session prompt, confirmed honored across every
+packet above:**
+- `SQL Databases/` was never modified — only ever read (verified with
+  `git status`/`git diff --stat` after P6.1, the packet that touches it
+  most).
+- The minimized derivative was **not** wired into `sqlRunner.ts`, and
+  nothing was deployed anywhere — both remain on the product owner's
+  data-release decision.
+- No new npm dependencies were added.
+- Nothing was merged or pushed to `main` — six open PRs, zero merges.
+- No narrative/cutscene copy was authored; no character art was
+  generated.
+- Every packet that touched a text-heavy learning surface either
+  preserved or (Lane C) actively verified keyboard operability, visible
+  focus, and non-color-dependent feedback.
+
+**Two items logged to `docs/OVERNIGHT_QUESTIONS.md` for the morning,
+neither guessed at:**
+1. The standing list of already-known blocked items (between-sector
+   beats, P5.5's cutscene script, the AI tutor approval decision, the
+   avatar sprite re-export, multi-save's old "deferred" status — now
+   superseded by tonight's P6.2 work) — restated, not new.
+2. **New tonight:** `AvatarCreatorView`'s color-picker fieldset is now
+   dead code in the running UI (every sprite has real art, so the
+   `!hasImageSprite` condition that reveals it is never true anymore).
+   Found during the Lane C audit; not fixed, since removing it is a
+   product call about whether recoloring is meant to return.
+
+**What's still queued, not done tonight, and why:** nothing from
+tonight's assigned scope. The `docs/OVERNIGHT_LOG.md` handoff's original
+Lane A-D framing plus the superseded plan's P6.1/P6.2 plus the stretch
+goal is the complete list that was authorized, and all of it shipped.
+Everything else in `docs/BACKLOG.md`/`docs/BUILD_ORDER.md` beyond that
+list is explicitly blocked on the product owner (item 3's AI tutor
+approval, item 7's avatar re-export, P5.5's cutscene script, the
+between-sector-beats question, and the data-release decision that gates
+P6.1's minimized derivative from ever being wired in) — not agent-buildable
+tonight, so correctly left alone rather than guessed at.
+
+**Stopping here — clean, honest stop, not manufactured scope.** Morning
+first move: read `docs/OVERNIGHT_QUESTIONS.md`, then review/merge PRs
+#2-#6 in whatever order is convenient (P6.2 and P6.1 are independent of
+each other and of the other four; Lanes A/B, D, and the code-split PR are
+all independent of everything else too — no merge-order dependencies
+between any of the six).
+
 <!-- Append new entries below this line, most recent last. -->
