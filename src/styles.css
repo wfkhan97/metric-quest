@@ -144,8 +144,10 @@ pre,
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+/* P5.4: the footer badges strip is gone (badges moved into a header
+   disclosure), so the mission screen is back to two rows like Home. */
 .mission-view {
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .terminal-hud {
@@ -160,11 +162,90 @@ pre,
   padding: clamp(0.4rem, 0.9vw, 0.6rem) clamp(0.65rem, 1.5vw, 1rem);
 }
 
-/* P4.1: mission screen's HUD carries only the points/integrity readout now
-   (nav moved into the sector map heading and the editor's action row), so
-   it can run noticeably thinner than Home's — no h1/eyebrow stack to clear. */
+/* P4.1 thinned this header's padding; P5.4 then gave it more to carry
+   (sector-map trigger, terminal reward, badges disclosure) so it wraps
+   and lets those sections grow into the width that used to sit empty. */
 .mission-view .terminal-hud {
+  flex-wrap: wrap;
   padding-block: clamp(0.3rem, 0.7vw, 0.5rem);
+}
+
+.terminal-hud-title {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: start;
+}
+
+.terminal-hud-title .link-button {
+  font-size: 0.72rem;
+  padding-inline: 0;
+}
+
+.mission-view .scoreboard,
+.header-reward {
+  flex: 1 1 13rem;
+}
+
+.map-toggle {
+  background: var(--retro-panel-raised);
+  border: 1px solid var(--retro-border);
+  color: var(--retro-teal);
+  font-size: 0.72rem;
+  font-weight: 800;
+  justify-self: start;
+  padding: 0.25rem 0.5rem;
+}
+
+.map-toggle:hover {
+  background: rgba(31, 211, 196, 0.16);
+}
+
+.header-reward h2 {
+  color: var(--retro-amber);
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.3rem;
+  text-transform: uppercase;
+}
+
+.header-reward p {
+  font-size: 0.82rem;
+  margin: 0 0 0.2rem;
+}
+
+/* Native <details> for the badges list — expand/collapse semantics and
+   keyboard operability come free from the platform, no custom JS state
+   needed for what is otherwise a very small disclosure. */
+.badges-disclosure {
+  color: var(--retro-muted);
+  font-size: 0.78rem;
+  margin-block-start: 0.4rem;
+}
+
+.badges-disclosure summary {
+  color: var(--retro-teal);
+  cursor: pointer;
+  font-weight: 800;
+  list-style: none;
+}
+
+.badges-disclosure summary::-webkit-details-marker {
+  display: none;
+}
+
+.badges-disclosure summary::before {
+  content: '▸ ';
+}
+
+.badges-disclosure[open] summary::before {
+  content: '▾ ';
+}
+
+.badges-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-block-start: 0.35rem;
 }
 
 .mission-view .eyebrow {
@@ -302,7 +383,6 @@ h3 {
 .panel,
 .chapter-map,
 .mission-workspace,
-.badges,
 .hints,
 .solution,
 .feedback,
@@ -546,18 +626,15 @@ h3 {
   font-size: 0.75rem;
 }
 
-/* Mission: side map stays in its own scroll zone, while all learning content
-   scrolls inside the workspace instead of moving the page. */
+/* Mission: P5.4 moved the sector map into a drawer (see .sector-map-drawer
+   below), so the workspace no longer shares this row with a permanent
+   sidebar column — single column, same scroll-inside-the-workspace rule
+   as before. */
 .game-layout {
   display: grid;
   gap: clamp(0.55rem, 1.3vw, 1rem);
-  grid-template-columns: minmax(13rem, 0.6fr) minmax(0, 2.1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-block-size: 0;
-}
-
-.game-layout .chapter-map {
-  grid-column: auto;
-  grid-row: auto;
 }
 
 .mission-workspace {
@@ -580,13 +657,6 @@ h3 {
 .brief {
   margin: 0;
   max-inline-size: none;
-}
-
-.two-column {
-  display: grid;
-  gap: 0.65rem;
-  grid-template-columns: minmax(0, 1.3fr) minmax(12rem, 0.7fr);
-  margin-block-start: 0.55rem;
 }
 
 .panel h3 {
@@ -958,15 +1028,6 @@ td {
 
 tbody tr {
   animation: row-materialize 260ms ease-out both;
-}
-
-.badges {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-  min-inline-size: 0;
-  padding: 0.45rem 0.65rem;
 }
 
 .badge {
@@ -1454,6 +1515,55 @@ tbody tr {
   margin-block-start: 0;
 }
 
+/* Sector map drawer (P5.4). Collapsed by default, opened from a header
+   trigger — same overlay mechanics as the glossary panel above (fixed
+   backdrop, trapped focus, Escape closes, focus returns to the trigger),
+   but slides in from the left edge like a drawer instead of centering,
+   since this is "jump to another mission" navigation, not reference
+   content to read in place. */
+.sector-map-backdrop {
+  background: rgba(4, 7, 18, 0.78);
+  inset: 0;
+  position: fixed;
+  z-index: 30;
+}
+
+.sector-map-drawer {
+  animation: sector-map-slide-in 220ms ease-out both;
+  background: var(--retro-panel);
+  block-size: 100%;
+  border-inline-end: 2px solid var(--retro-teal);
+  box-shadow: 0 0 32px rgba(31, 211, 196, 0.3);
+  display: grid;
+  gap: 0.5rem;
+  grid-template-rows: auto minmax(0, 1fr);
+  inline-size: min(20rem, 88vw);
+  inset-block: 0;
+  inset-inline-start: 0;
+  padding: 0.75rem;
+  position: fixed;
+}
+
+@keyframes sector-map-slide-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.sector-map-drawer .chapter-map {
+  block-size: 100%;
+  grid-column: auto;
+  grid-row: auto;
+  /* Overrides the narrow-viewport .chapter-map/.chapter-list max-block-size
+     caps below (tuned for Home's fixed-shell sidebar) — this drawer already
+     has its own full-height scroll area, so the list should use all of it. */
+  max-block-size: none;
+  padding: 0;
+}
+
+.sector-map-drawer .chapter-list {
+  max-block-size: none;
+}
+
 .glossary-entry {
   border: 1px solid var(--retro-border);
   margin-block-end: 0.5rem;
@@ -1700,17 +1810,6 @@ tbody tr {
   }
 }
 
-@media (max-width: 900px) {
-  .game-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
-  }
-
-  .game-layout .chapter-map {
-    max-block-size: min(45vh, 18rem);
-  }
-}
-
 @media (max-width: 720px) {
   .app-shell {
     padding: 0.5rem;
@@ -1722,17 +1821,11 @@ tbody tr {
     gap: 0.45rem;
   }
 
+  /* P5.4: the generic column stack above already reflows the header's three
+     sections (title, scoreboard, terminal reward) at this width — the
+     wide-viewport-only grid override this used to have is gone with it. */
   .mission-view .terminal-hud {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .mission-view .scoreboard {
-    min-inline-size: 7.7rem;
-  }
-
-  .mission-view .scoreboard .progress-bar-heading {
-    display: none;
+    flex-wrap: nowrap;
   }
 
   .home-content {
@@ -1753,8 +1846,7 @@ tbody tr {
     grid-row: 3;
   }
 
-  .chapter-map,
-  .game-layout .chapter-map {
+  .chapter-map {
     display: block;
     max-block-size: min(42vh, 17rem);
     overflow: auto;
@@ -1771,10 +1863,6 @@ tbody tr {
   .chapter-list {
     margin-block-start: 0.55rem;
     max-block-size: 13rem;
-  }
-
-  .two-column {
-    grid-template-columns: 1fr;
   }
 
   .schema-explorer {
@@ -1812,11 +1900,8 @@ tbody tr {
     font-size: 0.56rem;
   }
 
-  .mission-view .terminal-hud {
-    grid-template-columns: 1fr;
-  }
-
-  .mission-view .scoreboard {
+  .mission-view .scoreboard,
+  .header-reward {
     min-inline-size: 0;
   }
 
