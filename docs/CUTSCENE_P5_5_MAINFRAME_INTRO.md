@@ -399,7 +399,9 @@ custom-fitted.
 ### Cue A — "Cubicle Fluorescence" (Act I, Panels 1-4)
 
 **Track:** ["Local Forecast – Elevator" by Kevin MacLeod](https://incompetech.com/wordpress/2013/02/local-forecast/)
-(incompetech.com) — `src/assets/audio/cue-a-cubicle-fluorescence.mp3`
+(incompetech.com) — `src/assets/audio/cue-a-cubicle-fluorescence.m4a` (re-encoded
+from the delivered 320kbps mp3 to 128kbps AAC during P5.5 CutsceneView
+wiring — 7.6MB to 3.0MB, no audible loss for background music)
 **License:** Creative Commons BY 3.0 — free for commercial use, **requires
 attribution**. This is the only one of the three cues that does.
 
@@ -454,7 +456,9 @@ a clean ending.
 ### Cue C — "Mainframe Overture" (Act III, Panels 9-13)
 
 **Track:** ["The Adventure Begins" by Frenchyboy Studios](https://opengameart.org/content/the-adventure-begins)
-(OpenGameArt.org) — `src/assets/audio/cue-c-mainframe-overture.wav`
+(OpenGameArt.org) — `src/assets/audio/cue-c-mainframe-overture.m4a` (re-encoded
+from the delivered 6.1MB uncompressed wav to 128kbps AAC during P5.5
+CutsceneView wiring — 1.1MB)
 **License:** CC0 (public domain equivalent) — no attribution required.
 
 This is a first-pass pick, not a locked choice — of the three cues it's

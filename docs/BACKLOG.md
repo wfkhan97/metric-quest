@@ -5,7 +5,9 @@ section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
 2026-08-09 from the first real UAT playtest of the merged build; item 3
 still needs explicit product-owner approval per `AGENTS.md` before any
 implementation starts. P4.x and P5.x (items 5, 6, 9, and the P5.1 part of
-item 4) have all since landed on `main`. Item 2 was found fully shipped
+item 4) have all since landed on `main`; the P5.5 mainframe-pull cutscene
+(the rest of item 4) is built and checked on its own branch, not yet
+merged. Item 2 was found fully shipped
 2026-08-10 (an earlier status note here was stale — corrected). Item 8
 (multi-save) was un-deferred and designed 2026-08-10 and item 10 (public
 deployment) was opened the same day from real research — both scheduled
@@ -379,17 +381,16 @@ Split into two pieces, one buildable now and one not:
 - **Reorder only (buildable now):** avatar creator runs first, then the
   existing unchanged opening beat. No new copy, no new screen. Tracked as
   BUILD_ORDER.md P5.1.
-- **New "pulled into the mainframe" cutscene — script delivered
-  2026-08-10:** the product owner wrote the full script directly (an
-  Office-Space-toned beat: a CEO memo announcing an unsupervised AI
-  rollout, escalating office chaos, a pull into the mainframe, a corridor
-  of 9 sector doors, and a chase into Sector 1). Full storyboard, memo
-  text, Claude Design asset prompts, and Suno music prompts are in
-  `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`. **Scoped as Phase 2** (needs 5
-  new commissioned images), not the Phase 1 default this item originally
-  assumed. Tracked as BUILD_ORDER.md P5.5, now unblocked on content but
-  still blocked on a `CutsceneView` multi-panel playback change (today it
-  only ever renders `panels[0]`) and on the 5 new art assets landing.
+- **New "pulled into the mainframe" cutscene — built 2026-08-10, not yet
+  merged:** the
+  product owner wrote the full script directly (an Office-Space-toned
+  beat: a CEO memo announcing an unsupervised AI rollout, escalating
+  office chaos, a pull into the mainframe, a corridor of 9 sector doors,
+  and a chase into Sector 1). Built as **Phase 2** (`CutsceneView` now
+  supports multi-panel playback, not just `panels[0]`) once the 5
+  commissioned images landed. Full storyboard, memo text, and build notes
+  are in `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`; implementation detail in
+  BUILD_ORDER.md P5.5.
 
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
