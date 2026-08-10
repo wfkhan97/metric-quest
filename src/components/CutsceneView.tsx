@@ -28,6 +28,7 @@ export function CutsceneView({ beat, skippable, onFinish }: CutsceneViewProps) {
 
   return (
     <main className="app-shell sector-transition cutscene" aria-labelledby="cutscene-title">
+      <div className="cutscene-glitch-overlay" aria-hidden="true" />
       <div className="sector-transition-frame cutscene-frame phase-scanline">
         <p className="eyebrow">{beat.eyebrow}</p>
         <h1 id="cutscene-title">{beat.heading}</h1>

@@ -8,9 +8,15 @@ type ChapterMapProps = {
   activeMissionId?: Mission['id'];
   onSelectMission: (mission: Mission) => void;
   heading?: string;
+  /** When provided, the heading itself becomes a "back to sector map" control
+   * (P4.1) instead of a separate boxed button elsewhere on the page — the
+   * sector map is already the thing being pointed back to, so it doubles as
+   * its own link. Kept as a real focusable button (not a hover-only
+   * affordance) per AGENTS.md's keyboard-operability bar. */
+  onBack?: () => void;
 };
 
-export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Sector map' }: ChapterMapProps) {
+export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Sector map', onBack }: ChapterMapProps) {
   const listId = useId();
   const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches);
   const [isOpen, setIsOpen] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 720px)').matches);
@@ -30,7 +36,16 @@ export function ChapterMap({ missions, completedMissionIds, activeMissionId, onS
   return (
     <nav className="chapter-map" aria-label={heading}>
       <div className="chapter-map-heading">
-        <h2>{heading}</h2>
+        <h2>
+          {onBack ? (
+            <button type="button" className="chapter-map-heading-link" onClick={onBack}>
+              <span aria-hidden="true">← </span>
+              {heading}
+            </button>
+          ) : (
+            heading
+          )}
+        </h2>
         <button
           type="button"
           className="chapter-toggle"
