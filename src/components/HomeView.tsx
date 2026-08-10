@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AiTutorPanel } from './AiTutorPanel';
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
@@ -31,8 +32,23 @@ export function HomeView({
 }: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false);
+  // Monet's OAuth callback redirects back here with ?connected=<provider>
+  // once the connection is live — reopen the tutor panel so the player
+  // lands somewhere that confirms it worked.
+  const [isAiTutorOpen, setIsAiTutorOpen] = useState(() => new URLSearchParams(window.location.search).has('connected'));
   const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const saveSlotsButtonRef = useRef<HTMLButtonElement>(null);
+  const aiTutorButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Drop the query param once read, so a page refresh doesn't reopen the
+  // panel. Pure side effect on the URL, not on React state, by design.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has('connected')) return;
+    params.delete('connected');
+    const nextSearch = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (nextSearch ? `?${nextSearch}` : ''));
+  }, []);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];
@@ -52,6 +68,9 @@ export function HomeView({
           </button>
           <button type="button" className="link-button" onClick={() => setIsSaveSlotsOpen(true)} ref={saveSlotsButtonRef}>
             Save slots
+          </button>
+          <button type="button" className="link-button" onClick={() => setIsAiTutorOpen(true)} ref={aiTutorButtonRef}>
+            Friendly AI tutor
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
@@ -81,6 +100,15 @@ export function HomeView({
           onClose={() => {
             setIsSaveSlotsOpen(false);
             saveSlotsButtonRef.current?.focus();
+          }}
+        />
+      )}
+
+      {isAiTutorOpen && (
+        <AiTutorPanel
+          onClose={() => {
+            setIsAiTutorOpen(false);
+            aiTutorButtonRef.current?.focus();
           }}
         />
       )}
