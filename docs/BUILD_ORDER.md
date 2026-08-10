@@ -102,6 +102,42 @@ item 4) and the Wave 5 packets below. Two things worth flagging:
 
 ---
 
+## Session status (2026-08-10) — read this first
+
+**All of Wave 5 (P5.1-P5.4) is merged into `main` and pushed.** P5.2 and
+P5.3 conflicted on the same `MissionView.tsx` region (expected — both
+touched the SQL editor block) and were resolved manually; P5.4 conflicted
+too (the header-relocated Terminal reward panel vs. P5.2's trimmed copy
+of the same text) and was also resolved manually, keeping P5.2's trimmed
+wording in its new P5.4 location. `npm run check` passed on `main` after
+every merge and after the final push. P5.5 remains blocked on the product
+owner's script.
+
+**Then, direct product-owner request:** research what public deployment
+(Vercel) needs, and design the previously-deferred multi-save system
+(BACKLOG.md item 8). Both came back further along than expected:
+- **BACKLOG.md item 2 was found already fully shipped** — a prior status
+  note here said "Sectors 1, 4-9 still open," which was stale. Verified
+  directly against `src/lib/diagnostics.ts`: all 25 missions have
+  signatures. Corrected in both docs. There is no remaining
+  diagnostic-signature work.
+- **Item 8 (multi-save) is un-deferred and fully designed** — no open
+  product question is left blocking a build. Scheduled as P6.2.
+- **Item 10 (deployment) is real but split.** The prework (config, docs,
+  preparing a minimized data derivative) is unblocked and scheduled as
+  P6.1. **Actually deploying is a hard blocker, not a checklist item**:
+  `sqlRunner.ts` currently ships the raw, unmodified
+  `SQL Databases/iTunes.sqlite` in every production build — deploying
+  today means publishing the course-material database to the public
+  internet. This is exactly what `docs/AI_WORKFLOW.md`'s course-data
+  release gate already covers; it needs an explicit product-owner
+  decision (approve the full file, or switch to the verified minimized
+  derivative) before any deploy happens. See BACKLOG.md item 10 for the
+  full research, including the tested 356KB/1,092KB minimized-derivative
+  numbers.
+
+---
+
 ## The ordering principle
 
 Three things determine order:
@@ -702,6 +738,99 @@ asset tracker in `docs/BACKLOG.md`).
 update). Do not prototype placeholder copy for this in the meantime.
 
 **Depends on:** P5.1 (needs the reordered flow to have a slot for it).
+
+---
+
+## Wave 6 — Deployment prework and save-slot state management
+
+Opened 2026-08-10 from direct product-owner request: research what
+public deployment (Vercel) needs, and design the multi-save system
+(BACKLOG.md item 8) that was previously deferred. Both came back
+unblocked enough to schedule immediately. P6.1 and P6.2 are independent
+of each other — safe to parallelize, one branch each.
+
+### P6.1 — Deployment prework (not a deploy)
+
+**What:** BACKLOG.md item 10. Everything in that item's "Rough scope"
+that does not require the data-release decision:
+- `"engines"` field in `package.json` pinning a known Vercel-supported
+  Node LTS (e.g. 22) instead of leaving the build Node version
+  unspecified.
+- A `vercel.json` (or equivalent documented zero-config settings)
+  explicitly pinning build command (`npm run build`) and output
+  directory (`dist`).
+- A "Deployment" section in `README.md` documenting the process, with
+  the data-release-gate requirement stated inline and impossible to miss
+  — not a footnote.
+- Build the minimized 5-table SQLite derivative (`Customer`, `Genre`,
+  `Invoice`, `InvoiceLine`, `Track` — see item 10's research for the
+  exact method and verified size) for real, save it alongside the
+  existing `SQL Databases/iTunes.sqlite` reference (**never modify or
+  replace anything inside `SQL Databases/` itself** — the derivative is
+  a new file elsewhere, e.g. `src/assets/data/`), and verify it against
+  every mission's expected results (not just the one spot-checked during
+  research), the same way `docs/AI_WORKFLOW.md` requires reference SQL
+  to be checked against real data before being trusted. **Do not wire it
+  into `sqlRunner.ts` as the active data source** — that switch is the
+  gated decision itself, not prework.
+
+**Done when:**
+- `npm run check` still passes with the new `engines` field and
+  `vercel.json` in place.
+- README's deployment section exists and states the data-gate
+  requirement before any deploy-command instructions, not after.
+- The minimized derivative file exists, is verified against all 25
+  missions' expected results (not a sample), and is **not** referenced
+  by any runtime code path yet.
+- Nothing in `SQL Databases/` was modified.
+- Nothing was actually deployed anywhere.
+
+**Blocked on:** Nothing for the prework above. Actually deploying is
+blocked on the data-release decision in BACKLOG.md item 10 — that
+decision is not this packet's job to make or wait on; it just shouldn't
+be crossed.
+
+---
+
+### P6.2 — Multi-save / profile state management
+
+**What:** BACKLOG.md item 8's full design, implemented: a new
+`metric-quest-saves-v1` `SaveStore` (`src/lib/progress.ts`), a one-time
+non-destructive migration from the existing single-save
+`metric-quest-progress-v1` key, new exports (`listSaveSlots`,
+`createNewSave`, `switchActiveSave`, `deleteSave`, `renameSave`) beside
+the unchanged `loadProgress`/`saveProgress`, and a Home-screen entry
+point into a slot-picker overlay reusing `GlossaryPanel`'s established
+overlay/focus-trap pattern (see item 8's design for the full rationale on
+each of these — read it before starting, don't re-derive it from
+scratch).
+
+**Done when:**
+- A fresh browser with no existing save gets exactly one default slot,
+  created transparently — no "no save found" dead end.
+- A browser with an existing v1 single save migrates to exactly one slot
+  on first load post-upgrade, with all existing progress intact, and the
+  migration does not run again on subsequent loads.
+- A player can create a new save (no confirm needed — additive, nothing
+  is overwritten), switch between saves, rename a save, and delete a
+  save (confirm required — destructive).
+- Every existing component (`MissionView`, `HomeView`, `AvatarCreatorView`,
+  etc.) needs **zero changes** beyond `App.tsx`'s bootstrap and the new
+  Home entry point — if a component besides those two needs to change,
+  that's a signal the `Progress`-shaped API surface wasn't preserved
+  correctly and is worth stopping to reconsider, not pushing through.
+- The slot-picker overlay is keyboard-operable end to end (trapped Tab,
+  Escape closes, focus returns to the trigger), matching
+  `GlossaryPanel`'s existing bar.
+- New tests in `src/lib/progress.test.ts` cover: migration from a v1
+  save, migration not double-running, create/switch/delete/rename, and
+  the cold-start no-existing-data case.
+- `npm run check` passes.
+
+**Blocked on:** Nothing — see BACKLOG.md item 8's "Open questions" note:
+the remaining implementation-detail defaults (slot-naming default, soft
+10-slot cap, leaving the old v1 key in place indefinitely) are cheap to
+change later and don't need to block starting.
 
 ---
 
