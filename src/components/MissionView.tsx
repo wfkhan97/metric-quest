@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
@@ -39,6 +39,8 @@ type MissionViewProps = {
   onBackToHome: () => void;
 };
 
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
+
 export function MissionView({ mission, missions, progress, onProgressChange, onSelectMission, onBackToHome }: MissionViewProps) {
   const [sql, setSql] = useState(mission.starterSql);
   const [result, setResult] = useState<QueryResult>();
@@ -49,6 +51,14 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [glossaryEntryId, setGlossaryEntryId] = useState<string | undefined>(undefined);
   const glossaryTriggerRef = useRef<HTMLButtonElement | null>(null);
+  // P5.4: the sector map is a collapsed-by-default drawer off a header
+  // trigger rather than a permanent sidebar. Focus handling mirrors
+  // GlossaryPanel's overlay pattern (focus the close control on open,
+  // trap Tab inside, Escape closes, return focus to the trigger on close).
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const mapPanelRef = useRef<HTMLDivElement>(null);
+  const mapCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const mapTriggerRef = useRef<HTMLButtonElement | null>(null);
   const completed = progress.completedMissionIds.includes(mission.id);
   const pointsRef = useRef(progress.points);
   const [pointsPulsing, setPointsPulsing] = useState(false);
@@ -74,6 +84,39 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
     const timeout = setTimeout(() => setPointsPulsing(false), 700);
     return () => clearTimeout(timeout);
   }, [progress.points]);
+
+  const closeMap = useCallback(() => {
+    setIsMapOpen(false);
+    mapTriggerRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (isMapOpen) mapCloseButtonRef.current?.focus();
+  }, [isMapOpen]);
+
+  useEffect(() => {
+    if (!isMapOpen) return;
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        closeMap();
+        return;
+      }
+      if (event.key !== 'Tab' || !mapPanelRef.current) return;
+      const focusable = Array.from(mapPanelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isMapOpen, closeMap]);
 
   async function runQuery() {
     setIsRunning(true);
@@ -121,16 +164,56 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         Skip to active mission
       </a>
       <header className="terminal-hud">
-        <div>
+        <div className="terminal-hud-title">
           <p className="eyebrow">Aurora Music mainframe · active terminal</p>
           <h1 id="page-title">Metric Quest</h1>
+          <button type="button" className="link-button" onClick={onBackToHome}>
+            <span aria-hidden="true">← </span>Sector map
+          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
+          <button
+            type="button"
+            className="map-toggle"
+            aria-expanded={isMapOpen}
+            aria-controls="sector-map-drawer"
+            onClick={() => setIsMapOpen(true)}
+            ref={mapTriggerRef}
+          >
+            Browse sectors
+          </button>
           <strong className={pointsPulsing ? 'points-pulse' : undefined}>
             <img className="icon-inline" src={iconPoints} alt="" aria-hidden="true" />
             {progress.points} points
           </strong>
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
+          <details className="badges-disclosure">
+            <summary>Badges{progress.badges.length ? ` (${progress.badges.length})` : ''}</summary>
+            <div className="badges-list">
+              {progress.badges.length ? (
+                progress.badges.map((badge) => (
+                  <span key={badge} className="badge">
+                    <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" />
+                    {badge}
+                  </span>
+                ))
+              ) : (
+                <p className="subtle">Purge Priority invoices or Duplicate-customer trap to earn a badge.</p>
+              )}
+            </div>
+          </details>
+        </section>
+        <section className="panel header-reward" aria-labelledby="rewards-title">
+          <h2 id="rewards-title">Terminal reward</h2>
+          <p>
+            <strong>{mission.points} points</strong>
+            {mission.badge ? ` · ${mission.badge} badge` : ''}
+          </p>
+          <p>
+            {completed
+              ? 'Purged terminals can be replayed without changing your points.'
+              : 'Points are awarded once; hints never lock progress.'}
+          </p>
         </section>
       </header>
 
@@ -144,15 +227,32 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         />
       )}
 
-      <div className="game-layout">
-        <ChapterMap
-          missions={missions}
-          completedMissionIds={progress.completedMissionIds}
-          activeMissionId={mission.id}
-          onSelectMission={onSelectMission}
-          onBack={onBackToHome}
-        />
+      {isMapOpen && (
+        <div
+          className="sector-map-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeMap();
+          }}
+        >
+          <div id="sector-map-drawer" className="sector-map-drawer" role="dialog" aria-modal="true" aria-label="Sector map" ref={mapPanelRef}>
+            <button type="button" className="link-button" onClick={closeMap} ref={mapCloseButtonRef}>
+              <span aria-hidden="true">✕ </span>Close
+            </button>
+            <ChapterMap
+              missions={missions}
+              completedMissionIds={progress.completedMissionIds}
+              activeMissionId={mission.id}
+              onSelectMission={(selected) => {
+                setIsMapOpen(false);
+                onSelectMission(selected);
+              }}
+              alwaysOpen
+            />
+          </div>
+        </div>
+      )}
 
+      <div className="game-layout">
         <section id="mission" className="mission-workspace" aria-labelledby="mission-title">
           <p className="eyebrow">
             {mission.chapter} ·{' '}
@@ -172,21 +272,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             </aside>
           )}
 
-          <div className="two-column">
-            <SchemaExplorer tables={mission.visibleTables} relationships={mission.relationships} />
-            <section className="panel" aria-labelledby="rewards-title">
-              <h3 id="rewards-title">Terminal reward</h3>
-              <p>
-                <strong>{mission.points} points</strong>
-                {mission.badge ? ` · ${mission.badge} badge` : ''}
-              </p>
-              <p>
-                {completed
-                  ? 'Purged terminals can be replayed without changing your points.'
-                  : 'Points are awarded once; hints never lock progress.'}
-              </p>
-            </section>
-          </div>
+          <SchemaExplorer tables={mission.visibleTables} relationships={mission.relationships} />
 
           <section className="panel sql-editor-panel" aria-labelledby="editor-title">
             <div className="editor-header">
@@ -291,20 +377,6 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           {result && <ResultTable result={result} />}
         </section>
       </div>
-
-      <footer className="badges mission-badges" aria-label="Earned badges">
-        <strong>Badges:</strong>
-        {progress.badges.length ? (
-          progress.badges.map((badge) => (
-            <span key={badge} className="badge">
-              <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" />
-              {badge}
-            </span>
-          ))
-        ) : (
-          <span>Purge Priority invoices or Duplicate-customer trap to earn a badge.</span>
-        )}
-      </footer>
     </main>
   );
 }

@@ -14,9 +14,22 @@ type ChapterMapProps = {
    * its own link. Kept as a real focusable button (not a hover-only
    * affordance) per AGENTS.md's keyboard-operability bar. */
   onBack?: () => void;
+  /** When true, skip the internal mobile collapse toggle entirely — the
+   * parent already controls whether this is visible at all (P5.4's
+   * sector-map drawer in MissionView). Home's permanent-sidebar usage
+   * leaves this unset, so its existing mobile collapse is unaffected. */
+  alwaysOpen?: boolean;
 };
 
-export function ChapterMap({ missions, completedMissionIds, activeMissionId, onSelectMission, heading = 'Sector map', onBack }: ChapterMapProps) {
+export function ChapterMap({
+  missions,
+  completedMissionIds,
+  activeMissionId,
+  onSelectMission,
+  heading = 'Sector map',
+  onBack,
+  alwaysOpen = false,
+}: ChapterMapProps) {
   const listId = useId();
   const [isCompact, setIsCompact] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 720px)').matches);
   const [isOpen, setIsOpen] = useState(() => typeof window === 'undefined' || !window.matchMedia('(max-width: 720px)').matches);
@@ -46,17 +59,19 @@ export function ChapterMap({ missions, completedMissionIds, activeMissionId, onS
             heading
           )}
         </h2>
-        <button
-          type="button"
-          className="chapter-toggle"
-          aria-expanded={isOpen}
-          aria-controls={listId}
-          onClick={() => setIsOpen((open) => !open)}
-        >
-          {isOpen ? 'Hide sectors' : 'Browse sectors'}
-        </button>
+        {!alwaysOpen && (
+          <button
+            type="button"
+            className="chapter-toggle"
+            aria-expanded={isOpen}
+            aria-controls={listId}
+            onClick={() => setIsOpen((open) => !open)}
+          >
+            {isOpen ? 'Hide sectors' : 'Browse sectors'}
+          </button>
+        )}
       </div>
-      <ol id={listId} className="chapter-list" hidden={isCompact && !isOpen}>
+      <ol id={listId} className="chapter-list" hidden={!alwaysOpen && isCompact && !isOpen}>
         {chapters.map((chapter) => {
           const chapterMissions = missions.filter((mission) => chapterNumber(mission) === chapter.number);
           return (
