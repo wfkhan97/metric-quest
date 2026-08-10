@@ -2,7 +2,14 @@ import initSqlJs, { type Database, type SqlJsStatic, type Statement } from 'sql.
 import wasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 import { type QueryResult, type SqlValue } from './grading';
 
-const databaseUrl = new URL('../../SQL Databases/iTunes.sqlite', import.meta.url).href;
+// Minimized derivative (Customer, Genre, Invoice, InvoiceLine, Track only —
+// the 5 tables the game's 25 missions actually touch), not the full source
+// database. Wiring this in was gated on an explicit data-release decision
+// per docs/AI_WORKFLOW.md's course-data release gate; approved 2026-08-10 —
+// see docs/BACKLOG.md item 10. The full `SQL Databases/iTunes.sqlite` stays
+// in the repo as the read-only source material it was built from, never
+// itself shipped to the browser.
+const databaseUrl = new URL('../assets/data/iTunes.min.sqlite', import.meta.url).href;
 let sqlPromise: Promise<SqlJsStatic> | undefined;
 let databaseBytesPromise: Promise<Uint8Array> | undefined;
 
