@@ -213,7 +213,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 single equivalent SELECT.
               </p>
             )}
-            <div className="actions">
+            <div className="actions sql-editor-actions">
               <button type="button" className={isRunning ? 'primary running' : 'primary'} onClick={() => void runQuery()} disabled={isRunning}>
                 {isRunning ? 'Running query…' : 'Run query'}
               </button>
@@ -224,12 +224,18 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               >
                 {hintCount === mission.hints.length ? 'All hints shown' : `Show hint${hintCount ? ` ${hintCount + 1}` : ''}`}
               </button>
-              <button type="button" onClick={() => setShowSolution((shown) => !shown)}>
-                {showSolution ? 'Hide example' : 'Reveal example query'}
-              </button>
               <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
                 Concept glossary
               </button>
+              {/* P5.3: was an always-visible "Reveal example query" button. mission.solutionSql
+                  is the actual reference answer, not a lighter "example," so it only becomes
+                  available after 3 consecutive wrong attempts on this mission visit (reuses the
+                  same wrongAttemptCount counter the mistake-aware diagnostic already gates at 2). */}
+              {wrongAttemptCount >= 3 && (
+                <button type="button" onClick={() => setShowSolution((shown) => !shown)}>
+                  {showSolution ? 'Hide answer' : 'See answer'}
+                </button>
+              )}
             </div>
           </section>
 
@@ -244,8 +250,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             </section>
           )}
           {showSolution && (
-            <section className="solution" aria-label="Example query">
-              <h3>Example query</h3>
+            <section className="solution" aria-label="Answer">
+              <h3>Answer</h3>
               <pre>
                 <code>{mission.solutionSql}</code>
               </pre>

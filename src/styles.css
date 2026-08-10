@@ -704,6 +704,21 @@ h3 {
   margin-block-start: 0.55rem;
 }
 
+/* P5.3: the SQL editor's action row gets a lighter, smaller treatment than
+   other .actions rows (cutscene "Continue", start-button, etc.) so it stops
+   competing visually with the editor itself — same layout and button art,
+   just thinner chrome and smaller type. */
+.sql-editor-actions {
+  gap: 0.4rem;
+}
+
+.sql-editor-actions button {
+  border-image-width: 6px 5px 5px 5px;
+  border-width: 6px 5px 5px 5px;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.55rem;
+}
+
 .hints,
 .solution,
 .feedback,
