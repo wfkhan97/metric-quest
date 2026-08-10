@@ -1291,16 +1291,6 @@ tbody tr {
   max-inline-size: none;
 }
 
-/* A long panel (the CEO memo, avatar + several paragraphs) can add up to
-   more than the viewport even with .cutscene-copy's own cap below — the
-   frame itself needs the hard limit, with its own internal scroll, so it's
-   the sub-panel that scrolls (per §A7) rather than overflowing .app-shell's
-   overflow:hidden and getting silently clipped off-screen. */
-.cutscene-frame {
-  max-block-size: min(92vh, 40rem);
-  overflow-y: auto;
-}
-
 
 .cutscene-progress {
   margin: 0;
@@ -1527,9 +1517,19 @@ tbody tr {
 /* P4.3: cutscenes get a one-time shake on top of .phase-scanline's ambient
    crt-flicker (restated here, same values, so the ambient flicker is
    unchanged) — declared after .phase-scanline so this combined value wins
-   the cascade instead of being silently dropped back to flicker-only. */
+   the cascade instead of being silently dropped back to flicker-only.
+   max-block-size/overflow-y live here for the same reason: .phase-scanline
+   sets the `overflow` shorthand (to hidden), which silently wins over an
+   earlier `overflow-y: auto` at equal specificity — this rule has to come
+   after .phase-scanline to actually take effect. A long panel (the CEO
+   memo, avatar + several paragraphs) can exceed the viewport even with
+   .cutscene-copy's own cap; the frame needs its own hard limit with
+   internal scroll so it's the sub-panel that scrolls (per §A7), not
+   .app-shell's overflow:hidden silently clipping it off-screen. */
 .cutscene-frame {
   animation: crt-flicker 4.8s steps(1, end) infinite, cutscene-shake 650ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  max-block-size: min(92vh, 40rem);
+  overflow-y: auto;
 }
 
 .phase-slide {
