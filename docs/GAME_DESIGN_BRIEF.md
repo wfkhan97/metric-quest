@@ -281,6 +281,46 @@ Export each as an individual image file, not just visible in a prototype
 canvas, so I can hand them to my developer as image assets.
 ```
 
+### Step 1c — Fix: avatar sprite transparency defect (found 2026-08-09)
+
+All 12 delivered avatar sprites (`src/assets/avatars/recruit-*.png`) were
+verified pixel-by-pixel and confirmed to have this defect: they are fully
+opaque (`alpha=255` everywhere) with a checkerboard *pattern baked into the
+actual RGB pixels* — a flattened transparency-preview grid, not real
+transparency. It renders as a visible gray/white checkerboard behind every
+character in the app (most visible on the sector-transition screens). Use
+this prompt to get a corrected re-export:
+
+```text
+The avatar sprite set you generated earlier (12 "Recruit" character sprites)
+has a transparency export bug: instead of a real alpha channel, the
+transparent areas were flattened into an opaque checkerboard pattern (the
+standard "no background" preview grid baked directly into the image pixels).
+
+Please re-export all 12 sprites with a genuine alpha channel -- fully
+transparent (alpha = 0) in every area outside the character, not a
+checkerboard fill. Keep everything else identical: same pose, proportions,
+canvas size, pixel density, and color palette as what you already delivered.
+
+Export as individual PNG files with real alpha transparency, not flattened
+against any background color or pattern.
+```
+
+Before wiring any re-delivered asset back in, verify the fix actually
+landed rather than trusting how it looks in a preview pane — a checkerboard
+*can* be a legitimate "no transparency" UI indicator that renders fine in
+the design tool's own viewer while still being flattened into the actual
+file. Check with:
+
+```bash
+python3 -c "from PIL import Image; im = Image.open('PATH.png').convert('RGBA'); print(im.getextrema())"
+```
+
+The alpha channel (4th tuple) should show a low end of `0`, not `255` —
+`((r_min,r_max),(g_min,g_max),(b_min,b_max),(0,255))` or similar. If the
+alpha low end is `255`, the file is still fully opaque and the fix didn't
+land, regardless of how it looks in a preview.
+
 ### Step 2 — Sector background scenes (Sectors 1, 2, 3, 8 first)
 
 ```text
@@ -365,6 +405,43 @@ Two states, same character:
 Style: same 8-bit/16-bit pixel art as the rest of the set, transparent
 background, consistent canvas size. Tone: playful retro-arcade villain, not
 horror -- a classic, campy 8-bit boss character, not something frightening.
+```
+
+### Step 3b — Sector 8/9 confrontation cinematic (§A8 Phase 2, requested 2026-08-09)
+
+Not commissioned yet — playtesting confirmed `m8-1` (ROGUE.exe's first
+direct appearance) and the Sector 9 finale don't currently land as
+confrontations; they reuse the same static aside/transition treatment as
+every other mission. A CSS-only escalation ships first without this art
+(see BUILD_ORDER.md P4.4), so this is not blocking — send this whenever a
+"real" cinematic upgrade is wanted:
+
+```text
+Design a short multi-panel confrontation sequence for Metric Quest, in the
+same 8-bit/16-bit pixel art style and transparent-canvas format as the
+ROGUE.exe illustrations and sector backgrounds you already generated.
+
+Two moments, 3-4 panels each, visual-novel/slideshow style (single static
+image per panel, shown in sequence with text underneath -- not animation):
+
+1. "ROGUE.exe's first direct appearance" (Sector 8, The Inner Sanctum) --
+   the player enters ROGUE.exe's own territory for the first time and it
+   speaks directly for the first time. Escalate from the "calm/smug"
+   ROGUE.exe pose toward something more confrontational -- more of the
+   screen filled with its glitching presence, closer/larger in frame --
+   without becoming frightening or humanoid. Same campy 8-bit-villain tone
+   as the existing illustrations, not horror.
+2. "The final confrontation" (Sector 9, The Boardroom Core) -- the climax,
+   set in the boardroom-turned-battle-arena background already generated
+   for this sector. ROGUE.exe at its most chaotic/corrupted, then breaking
+   down/defeated in the final panel as the player wins.
+
+Reuse the existing ROGUE.exe character exactly (same design, same two
+states already delivered) -- these panels compose and re-stage that
+character rather than redesigning it. Keep every panel on a transparent
+background, consistent canvas size, same palette as the rest of the set.
+
+Export each panel as an individual PNG file.
 ```
 
 ### Step 4 — UI chrome kit (optional, do this last if at all)
