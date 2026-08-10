@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { RogueSprite } from './RogueSprite';
 import { SchemaExplorer } from './SchemaExplorer';
-import { SqlEditor } from './SqlEditor';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
@@ -16,6 +15,13 @@ import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
 import { runMissionQuery } from '../lib/sqlRunner';
+
+// CodeMirror (via SqlEditor) is the single largest dependency in the main
+// bundle. Every other screen (Home, avatar creator, cutscenes) never needs
+// it, so it is loaded on demand here rather than eagerly with the rest of
+// MissionView — a loading-strategy change only, not a behavior change: same
+// props, same DOM shape once loaded.
+const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
 type Feedback =
   | { tone: 'error'; heading: string; text: string }
@@ -280,13 +286,15 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             <span className="sql-label" id="sql-label">
               Write a read-only SQL query
             </span>
-            <SqlEditor
-              id="sql-editor"
-              value={sql}
-              onChange={setSql}
-              ariaLabelledBy="sql-label"
-              ariaDescribedBy={mission.allowsTempWorkspace ? 'runner-note' : undefined}
-            />
+            <Suspense fallback={<div className="sql-editor" aria-hidden="true" />}>
+              <SqlEditor
+                id="sql-editor"
+                value={sql}
+                onChange={setSql}
+                ariaLabelledBy="sql-label"
+                ariaDescribedBy={mission.allowsTempWorkspace ? 'runner-note' : undefined}
+              />
+            </Suspense>
             {/* P5.2: the generic "runs locally, nothing leaves your machine, one SELECT"
                 boilerplate is removed (players don't need it explained every mission),
                 but the two-statement setup-statement allowance stays for the two
