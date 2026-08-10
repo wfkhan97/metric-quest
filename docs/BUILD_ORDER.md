@@ -716,26 +716,37 @@ region three times mid-flight, not because they must land in one commit.
 
 ---
 
-### P5.5 — New "pulled into the mainframe" cutscene (blocked)
+### P5.5 — New "pulled into the mainframe" cutscene (script delivered, not yet built)
 
 **What:** BACKLOG.md item 4's second-round update. A new cutscene beat
 between avatar confirmation and the existing opening beat, showing the
-player's just-chosen avatar being pulled into the mainframe. **Not
-started — blocked on the product owner scripting it** (copy, beat/panel
-count, whether it stays Phase 1 CSS-on-existing-art or needs something
-Phase 2-shaped). No placeholder dialogue will be invented for a named,
-on-screen story beat.
+player's just-chosen avatar being pulled into the mainframe. **Script
+delivered 2026-08-10** — full storyboard (13 panels across 3 acts), the
+CEO memo text, Claude Design asset prompts, and Suno music prompts are in
+`docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`. Not yet implemented.
 
-**Default assumption once the script lands:** Phase 1, CSS-only (§A8),
-reusing the avatar sprite the player just picked with the same
-glitch/slide/zoom/scanline-sweep toolkit already used elsewhere — no new
-art dependency, consistent with every cutscene beat shipped so far. If
-the script needs more than that toolkit can do, that's a Phase 2 scope
-call, same escalation path as item 4's other Phase 2 candidates (see the
-asset tracker in `docs/BACKLOG.md`).
+**Scope call: Phase 2, not the Phase 1 default this item originally
+assumed.** The script needs an office, a memo, a portal, and a corridor of
+9 sector doors — more than CSS effects on the existing avatar sprite can
+carry. 5 new commissioned images are requested (office calm/alarm pair,
+one portal/vortex burst, corridor calm/breached pair); everything else
+reuses the existing avatar sprite and the existing ROGUE.exe "corrupted"
+illustration, or is built as in-app UI/CSS with no commissioned art at all
+(the memo itself, and the boot-sequence hand-off into Sector 1).
 
-**Blocked on:** Product owner's script (see `docs/BACKLOG.md` item 4's
-update). Do not prototype placeholder copy for this in the meantime.
+**Music is sourced and done (2026-08-10):** all 3 cues are real,
+royalty-free tracks (2 CC0, 1 CC-BY requiring an on-screen credit line —
+text and placement specified in the Music section) committed at
+`src/assets/audio/`. No Suno generation needed; the prompts are kept in
+the doc only as a fallback if a track needs replacing later.
+
+**Blocked on, to actually build:**
+1. The 5 new art assets (prompts ready to send in
+   `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`).
+2. A `CutsceneView` change to support multi-panel playback — today it
+   only ever renders `panels[0]` (see the comment on `Beat` in
+   `src/content/beats.ts`); the `BeatPanel[]` data shape already supports
+   more, the renderer doesn't yet.
 
 **Depends on:** P5.1 (needs the reordered flow to have a slot for it).
 
