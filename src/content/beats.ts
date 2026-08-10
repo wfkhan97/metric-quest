@@ -7,6 +7,7 @@ import corridorBreached from '../assets/backgrounds/corridor-sector-1-breached.j
 import cueA from '../assets/audio/cue-a-cubicle-fluorescence.m4a';
 import cueB from '../assets/audio/cue-b-signal-interrupt.mp3';
 import cueC from '../assets/audio/cue-c-mainframe-overture.m4a';
+import glitchZap from '../assets/audio/glitch-zap.ogg';
 
 export type PanelLayout = 'frame' | 'boot';
 export type AvatarMotion = 'entrance' | 'shake' | 'run' | 'dissolve';
@@ -37,6 +38,8 @@ export type BeatPanel = {
    * spanning several panels keeps playing instead of restarting each time.
    */
   audioSrc?: string;
+  /** A one-shot sound effect, played once as this panel comes on screen (does not loop, does not replace audioSrc's music). */
+  sfxSrc?: string;
   /** Attribution text, shown only while a CC-BY (not CC0) track is playing. */
   creditLine?: string;
   /** Overrides the default "Next" (or "Continue" on a beat's last panel). */
@@ -155,6 +158,7 @@ export const mainframePullBeat: Beat = {
       showAvatar: true,
       avatarMotion: 'dissolve',
       audioSrc: cueB,
+      sfxSrc: glitchZap,
       copy: [],
     },
     {

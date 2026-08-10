@@ -431,14 +431,15 @@ screen).
 **License:** CC0 (public domain equivalent) — no attribution required, no
 credit line needed for this one.
 
-The glitch-zap "cutoff" sound under Panel 8 still isn't sourced — that's a
-sub-second sound effect, not a music cue, and Pixabay/Mixkit (the two
-candidates from before) both gate their actual download links behind a
-JS-driven flow that can't be fetched directly the way the two OpenGameArt
-files and the incompetech file could. Grab one manually from
-[Pixabay's glitch effects](https://pixabay.com/sound-effects/search/glitch/)
-(free, commercial use okay, no attribution) when this beat gets built, or
-pull one second of hard digital artifact out of this same track instead.
+**Sourced 2026-08-10:** the Panel 8 glitch-zap stinger is
+["zap1" from Kenney's Digital Audio pack](https://kenney.nl/assets/digital-audio)
+— `src/assets/audio/glitch-zap.ogg`, CC0, no attribution required. Pixabay
+and Mixkit (the two candidates from before) both still gate their actual
+download links behind a JS-driven flow that can't be fetched directly;
+Kenney's asset packs ship as a plain zip with a stable direct URL instead.
+Wired in as a one-shot `sfxSrc` on Panel 8 (`BeatPanel` in
+`src/content/beats.ts`) — separate from the looping `audioSrc` music
+channel, so it plays once over Cue B without interrupting it.
 
 Suno fallback prompt:
 

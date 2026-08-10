@@ -34,6 +34,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
   const [panelIndex, setPanelIndex] = useState(0);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const sfxRef = useRef<HTMLAudioElement>(null);
   const lastAudioSrcRef = useRef<string | undefined>(undefined);
   const [muted, setMuted] = useState(false);
 
@@ -41,6 +42,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
   const isLastPanel = panelIndex === beat.panels.length - 1;
   const isBoot = panel.layout === 'boot';
   const hasAnyAudio = beat.panels.some((candidate) => candidate.audioSrc);
+  const hasAnySfx = beat.panels.some((candidate) => candidate.sfxSrc);
 
   useEffect(() => {
     // preventScroll: the frame itself can now scroll internally (long
@@ -96,12 +98,29 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
 
   useEffect(() => {
     if (audioRef.current) audioRef.current.muted = muted;
+    if (sfxRef.current) sfxRef.current.muted = muted;
   }, [muted]);
 
   useEffect(() => {
     const audioEl = audioRef.current;
-    return () => audioEl?.pause();
+    const sfxEl = sfxRef.current;
+    return () => {
+      audioEl?.pause();
+      sfxEl?.pause();
+    };
   }, []);
+
+  // One-shot sound effect, separate from the looping audioSrc music channel
+  // above — fired from handleContinue (a real click), not an effect, for
+  // the same gesture-attachment reason syncAudio is.
+  function playSfx(src: string) {
+    const sfxEl = sfxRef.current;
+    if (!sfxEl) return;
+    sfxEl.src = src;
+    sfxEl.currentTime = 0;
+    sfxEl.muted = muted;
+    void sfxEl.play().catch(() => {});
+  }
 
   function handleContinue() {
     syncAudio(panel.audioSrc);
@@ -109,6 +128,8 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
       onFinish();
       return;
     }
+    const nextPanel = beat.panels[panelIndex + 1];
+    if (nextPanel.sfxSrc) playSfx(nextPanel.sfxSrc);
     setPanelIndex((index) => index + 1);
   }
 
@@ -146,6 +167,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
     <main className="app-shell sector-transition cutscene" aria-labelledby="cutscene-title">
       <div className="cutscene-glitch-overlay" aria-hidden="true" />
       {hasAnyAudio && <audio ref={audioRef} aria-hidden="true" />}
+      {hasAnySfx && <audio ref={sfxRef} aria-hidden="true" />}
       {panel.background && (
         <div
           key={`bg-${panelIndex}`}
