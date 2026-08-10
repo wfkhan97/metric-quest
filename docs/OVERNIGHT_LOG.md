@@ -232,4 +232,64 @@ the data-release gate stated inline, and build+verify the minimized
 wiring it into `sqlRunner.ts` and **not** deploying anything — both remain
 gated on the product owner's data-release decision.
 
+## Entry — 2026-08-10, P6.1 shipped: deployment prework
+
+Branch `claude/p6-1-deployment-prework`, PR
+[#3](https://github.com/wfkhan97/metric-quest/pull/3) open against
+`main`. Both `main`-priority items from the superseded plan are now up
+for review (P6.2 in [#2](https://github.com/wfkhan97/metric-quest/pull/2),
+P6.1 here).
+
+**What shipped**, matching `docs/BUILD_ORDER.md` P6.1 / `docs/BACKLOG.md`
+item 10's prework scope exactly, no re-derivation:
+- `package.json`: `"engines": {"node": "22.x"}`.
+- `vercel.json` (new): explicit `buildCommand`/`outputDirectory`/
+  `framework` instead of relying on auto-detection.
+- `README.md`: moved the course-data release-gate warning to the *top* of
+  the Deployment section as a callout, before any deploy instructions —
+  the section already existed from an earlier session but had the gate
+  stated *after* the Vercel steps, which fails P6.1's own done-criteria
+  ("before any deploy-command instructions, not after"). Fixed that
+  ordering rather than treating the section as already satisfying the
+  packet.
+- `src/assets/data/iTunes.min.sqlite` (new, real artifact this time, not
+  a scratch estimate): built by copying only `Customer`, `Genre`,
+  `Invoice`, `InvoiceLine`, `Track` (schema + data, `VACUUM`ed) out of
+  `SQL Databases/iTunes.sqlite` via the `sqlite3` CLI, dropping foreign
+  keys to the 6 excluded tables (nothing references them from any
+  mission). `SQL Databases/iTunes.sqlite` was only ever opened read-only
+  (`sqlite3 file.sqlite < script.sql` with `ATTACH ... AS src` +
+  `INSERT INTO x SELECT * FROM src.x`, never `UPDATE`/`ALTER` against it).
+  Row counts match the source exactly for all 5 tables. **Measured size:
+  528KB vs. 1,067KB source, a 51% reduction** — corrects the prior
+  session's unverified 356KB/67% scratch estimate in `docs/BACKLOG.md`
+  item 10, which is now updated with this real number and marked as
+  superseded rather than deleted.
+
+**Verification (the packet's main "done when" bar — all 25 missions, not
+a sample):** wrote a throwaway vitest test (not committed — lived at
+`src/lib/__scratch-verify-minimized-db.test.ts` during the run, deleted
+before the final commit) that loaded both the source and minimized
+databases via `sql.js` in Node, ran every mission's `solutionSql` against
+both, and diffed both results against `mission.expected`. All 25 passed
+identically, including the two `allowsTempWorkspace` missions (m4-3,
+m7-2). Console output: "All 25 missions verified identical against both
+databases."
+
+**Checks:** `npm run check` passed — lint, 48 tests (unchanged from
+`main`'s baseline, since this packet touches no test files), `tsc
+--noEmit`, `vite build`. Confirmed the production build still bundles
+only the full unminimized `iTunes-*.sqlite` (1,092.60 kB) — the
+derivative is not referenced by any runtime import, matching the hard
+rule not to wire it into `sqlRunner.ts`.
+
+**Explicitly not done, per the hard rule in this session's instructions
+and the packet's own scope:** `src/lib/sqlRunner.ts` was not touched;
+nothing was deployed anywhere; the data-release decision itself
+(`docs/BACKLOG.md` item 10's "Decision needed before deployment") was not
+made — still waiting on the product owner.
+
+Both `main`-priority packets are now done and awaiting review. Moving to
+the original Lane A (diagnostics.ts tests) next since there is time left.
+
 <!-- Append new entries below this line, most recent last. -->
