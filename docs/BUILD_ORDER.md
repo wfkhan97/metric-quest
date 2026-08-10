@@ -59,9 +59,15 @@ should be `0`, not `255`) before wiring anything in as final.
 - BACKLOG.md item 8 (multi-save/state management) — explicitly deferred
   to post-polish, not scheduled into any packet below.
 - P4.1's exact padding/sizing targets — the product owner said they'd
-  send a separate look-and-feel note (screenshots/annotations). Build the
-  directional guidance in P4.1 first; don't block on the note, but expect
-  a follow-up pass once it arrives.
+  send a separate look-and-feel note (screenshots/annotations); P4.1
+  shipped on the directional guidance without it. That note never
+  arrived — Wave 5's P5.2-P5.4 supersede it with more specific direction,
+  so treat this as folded into Wave 5 rather than a separate follow-up.
+- **New:** P5.5 (the "pulled into the mainframe" cutscene) — blocked on
+  the product owner's script. See `docs/BACKLOG.md` item 4's update.
+- **New:** P5.4's sector-map slide-out interaction is a judgment call
+  (overlay/drawer off a header control), not a confirmed decision — flag
+  for correction before/during the packet if wrong.
 
 **How to continue:** read `AGENTS.md`, `docs/AI_WORKFLOW.md`, and
 `docs/GAME_DESIGN_BRIEF.md` first (standard project instruction, not new).
@@ -69,6 +75,30 @@ The four packets below (P4.1-P4.4) are all unblocked and independent of
 each other — safe to parallelize across sessions/branches, one branch per
 packet per the git workflow. P4.5 (avatar sprite fix) isn't agent-buildable
 at all; it's waiting on the product owner to run a Claude Design prompt.
+
+---
+
+## Session status (2026-08-09, continued again) — read this first
+
+**P4.2 and P4.4 are merged into `main` and pushed** (P4.2 on its own
+branch first, then P4.4 rebased onto the post-P4.2 `main` and merged
+second — both touched `MissionView.tsx` in non-overlapping regions, so
+the rebase was clean). `npm run check` passed on `main` after each merge
+and after the final push. P4.1 and P4.3 were already live from the prior
+sync point. **P4.5 is still outstanding** — still waiting on the product
+owner.
+
+**Then a second UAT round on the merged build produced more feedback**,
+now fully processed into `docs/BACKLOG.md` (item 9, plus an update to
+item 4) and the Wave 5 packets below. Two things worth flagging:
+- One sub-part of item 4's update (P5.5, the new "pulled into the
+  mainframe" cutscene) is **blocked on the product owner scripting it** —
+  not an open architectural question, just missing content. Everything
+  else in Wave 5 is unblocked.
+- P5.4 (header consolidation) contains one genuine judgment call — the
+  sector-map slide-out interaction — made explicit in both this file and
+  `docs/BACKLOG.md` item 9 rather than silently assumed. Confirm or
+  correct it before/during that packet.
 
 ---
 
@@ -475,6 +505,201 @@ the result. Once it lands, a small follow-up packet swaps the 12 files
 in `src/assets/avatars/` and verifies transparency landed for real (the
 verification command is in the same doc section) before treating it as
 done — don't just eyeball the new files.
+
+---
+
+## Wave 5 — Second UAT feedback round (BACKLOG.md item 9, item 4 update)
+
+Opened 2026-08-09 (continued) from a second playtest pass on the merged
+build. Ordered by value-per-effort rather than by BACKLOG.md item number:
+the cheapest, lowest-risk copy trims first (P5.2), then the action-row
+change (P5.3), then the larger and more judgment-call-heavy header
+consolidation (P5.4) — each is independently reviewable, and doing the
+small wins first means the header work (the packet most likely to need a
+correction round) isn't blocking anything else while that happens. P5.1
+(onboarding reorder) is cheap and independent of the density work, so it
+runs in parallel with no particular urgency relative to P5.2-P5.4. P5.5
+is parked last because it cannot start yet — it's a hard content
+blocker, not a priority call.
+
+### P5.1 — Onboarding order: avatar creator before the opening cutscene
+
+**What:** BACKLOG.md item 4's second-round update. Today's first-run
+path (`src/App.tsx`) is: `handleSelectMission` plays the opening cutscene
+(if unseen) via `pendingBeat`/`openingBeat`, then `handleCutsceneFinish`
+calls `proceedToMission`, which sends a player with no saved avatar into
+`AvatarCreatorView` before finally reaching the mission. Swap the order
+so the avatar creator runs first and the existing opening beat (unchanged
+content) plays after — no new screen, no new copy, purely a sequencing
+change across `handleSelectMission`, `proceedToMission`, and
+`handleAvatarConfirm`.
+
+**Done when:**
+- A first-time player's path is: avatar creator → existing opening
+  cutscene → Home/first mission.
+- "Replay opening" (`handleReplayOpening`, Home) and avatar edit
+  (`handleEditAvatar`) still work exactly as today — this reorder only
+  touches the first-run path, not those standalone entry points.
+- A returning player (avatar already set, opening already seen) sees no
+  behavior change at all.
+- `npm run check` passes.
+
+**Blocked on:** Nothing.
+
+**Depends on:** Nothing, but P5.5 depends on this landing first (it needs
+somewhere to slot the new beat in between).
+
+---
+
+### P5.2 — Trim mission-screen copy
+
+**What:** BACKLOG.md item 9. Three independent, low-risk deletions from
+`MissionView.tsx`/`styles.css`:
+- Remove the `#runner-note` paragraph under the SQL editor ("Runs locally
+  in your browser... This runner allows one read-only SELECT query.").
+  `SqlEditor`'s `ariaDescribedBy="runner-note"` prop and wiring need to
+  come out with it, not point at a deleted element.
+- Remove "Points are awarded once; hints never lock progress." from the
+  Terminal reward panel (the `completed` ternary's other branch, "Purged
+  terminals can be replayed without changing your points," stays — that
+  one's load-bearing, not filler).
+- Remove the `.placeholder-tag` span ("Placeholder — autocomplete is
+  coming in a later release") from the rendered editor header. Per
+  BACKLOG.md item 6's clarifying note, leave the underlying future item
+  and a short code comment pointing back to it — don't delete the
+  concept, just stop showing it every mission.
+
+**Done when:**
+- All three are gone from the rendered page; no dangling `aria-describedby`
+  reference to a removed element.
+- Nothing else in the SQL editor panel changes layout awkwardly once the
+  removed lines free up vertical space (a quick visual check, not a
+  redesign — P5.4 is where the header gets redesigned).
+- `npm run check` passes.
+
+**Blocked on:** Nothing.
+
+---
+
+### P5.3 — SQL editor action row: resize + gated "See answer"
+
+**What:** BACKLOG.md item 9. Two changes to `MissionView.tsx`'s
+`.actions` row (Run query / Show hint / Reveal example query / Concept
+glossary, already co-located next to the editor since P4.1):
+- Give the row a visually smaller/lighter treatment than today's full
+  pixel-art button styling — it shouldn't compete with the SQL editor
+  for attention.
+- Remove the always-available "Reveal example query" control. Add a 4th
+  control, **"See answer"**, that reveals `mission.solutionSql` (the
+  same content, same `.solution` panel) but is only enabled/visible once
+  `wrongAttemptCount >= 3` on the current mission — reuse the existing
+  `wrongAttemptCount` state (already tracks consecutive wrong attempts
+  this mission visit and already gates the diagnostic at 2; this is a
+  second, higher threshold reading the same counter, not a new one).
+
+**Done when:**
+- Run query / Show hint / Concept glossary are visually smaller/lighter
+  than today, still fully keyboard-operable with visible focus.
+- "See answer" is absent or disabled below 3 consecutive wrong attempts,
+  and becomes available at exactly 3 — verify against a real mission,
+  not just the counter logic in isolation.
+- Once available, "See answer" behaves like today's "Reveal example
+  query" (toggles the `.solution` panel open/closed) — same content,
+  same accessibility, just gated and relabeled.
+- A player who gets a mission right before reaching 3 wrong attempts
+  never sees "See answer" for that mission (it's moot once solved, but
+  shouldn't flash into existence in feedback either).
+- `npm run check` passes.
+
+**Blocked on:** Nothing.
+
+**Watch out for:** `wrongAttemptCount` resets on remount (leaving and
+returning to a mission), same as today's diagnostic gate — that's
+existing, accepted behavior per the comment already in `MissionView.tsx`,
+not a new gap introduced by this packet.
+
+---
+
+### P5.4 — Mission header consolidation
+
+**What:** BACKLOG.md item 9, the largest piece of this wave. Three
+changes to `MissionView.tsx`'s header/layout that share the same
+real estate, bundled into one packet rather than three overlapping ones:
+- **Collapsible sector map.** `ChapterMap` stops being a permanent
+  sidebar in `.game-layout` and starts collapsed, behind a trigger control
+  placed in the top header box; clicking it slides the map out.
+  `ChapterMap` already has an `isOpen`/`isCompact` toggle for narrow
+  viewports (`src/components/ChapterMap.tsx`) — generalize that
+  mechanism rather than building a second one. See the open interaction
+  question below before starting.
+- **Terminal reward relocation.** Move the Terminal reward panel's
+  content into the header, to the right of the existing points/integrity
+  readout; both expand to use the width the header currently leaves
+  empty. The standalone Terminal reward panel (currently paired with
+  `SchemaExplorer` in `.two-column`) is removed once its content moves.
+- **Badges toggle.** Remove the `<footer className="badges mission-badges">`
+  strip entirely; earned badges become a togglable disclosure inside the
+  header's progress area (collapsed/hidden by default, per the same
+  "don't show everything all the time" principle as the sector map).
+
+**Done when:**
+- Sector map starts collapsed on every mission load, is reachable and
+  operable via keyboard (a real focusable trigger, `aria-expanded`
+  reflecting state), and doesn't shift mission content when it opens
+  (overlay, not a layout push — see the open question below).
+- Terminal reward info (points, badge name, purged-replay note) is
+  readable from the header with no loss of information versus today's
+  panel.
+- Badges are still reachable (toggle open, keyboard-operable) but not
+  permanently on-screen; the "no badges yet" copy still has somewhere to
+  live.
+- Header doesn't feel cramped at the accessible width range the project
+  already commits to (320px through desktop) — reflow narrow widths
+  (e.g. badges/reward collapse further, or the map trigger becomes the
+  only thing shown) rather than shrinking text until unreadable, per §A7.
+- Keyboard operability, visible focus, and non-color-dependent feedback
+  hold throughout (`AGENTS.md`'s standing bar) — this packet touches more
+  interactive surface than most, so this is the item most likely to
+  regress it if rushed.
+- `npm run check` passes.
+
+**Blocked on:** Nothing architecturally, but see the open interaction
+question in `docs/BACKLOG.md` item 9 before starting — the sector-map
+slide-out is documented as a judgment call (overlay/drawer off a header
+control), not a confirmed product decision. Cheap to confirm before
+building, expensive to redo after.
+
+**Watch out for:** this is the packet most likely to be worth splitting
+further once someone is actually in the code (e.g. sector-map collapse
+as its own commit within the branch before the reward/badges moves) —
+the three changes are bundled here because they share the same header
+real estate and reviewing them separately would mean reviewing the same
+region three times mid-flight, not because they must land in one commit.
+
+---
+
+### P5.5 — New "pulled into the mainframe" cutscene (blocked)
+
+**What:** BACKLOG.md item 4's second-round update. A new cutscene beat
+between avatar confirmation and the existing opening beat, showing the
+player's just-chosen avatar being pulled into the mainframe. **Not
+started — blocked on the product owner scripting it** (copy, beat/panel
+count, whether it stays Phase 1 CSS-on-existing-art or needs something
+Phase 2-shaped). No placeholder dialogue will be invented for a named,
+on-screen story beat.
+
+**Default assumption once the script lands:** Phase 1, CSS-only (§A8),
+reusing the avatar sprite the player just picked with the same
+glitch/slide/zoom/scanline-sweep toolkit already used elsewhere — no new
+art dependency, consistent with every cutscene beat shipped so far. If
+the script needs more than that toolkit can do, that's a Phase 2 scope
+call, same escalation path as item 4's other Phase 2 candidates (see the
+asset tracker in `docs/BACKLOG.md`).
+
+**Blocked on:** Product owner's script (see `docs/BACKLOG.md` item 4's
+update). Do not prototype placeholder copy for this in the meantime.
+
+**Depends on:** P5.1 (needs the reordered flow to have a slot for it).
 
 ---
 

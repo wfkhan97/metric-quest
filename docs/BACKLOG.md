@@ -6,9 +6,12 @@ section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
 5-7 are unblocked and scheduled as BUILD_ORDER.md P4.x packets; item 8 is
 explicitly deferred (post-polish); item 3 still needs explicit
 product-owner approval per `AGENTS.md` before any implementation starts.
-Read `docs/GAME_DESIGN_BRIEF.md` and `docs/architecture.md` first; nothing
-here changes the grading contract, the SQL loop, or the browser-only
-boundary unless a section explicitly flags that it does.
+P4.2 and P4.4 have since landed on `main`. Item 9 and an update to item 4
+were opened 2026-08-09 (continued) from a second UAT round on the merged
+build, scheduled as BUILD_ORDER.md P5.x packets. Read
+`docs/GAME_DESIGN_BRIEF.md` and `docs/architecture.md` first; nothing here
+changes the grading contract, the SQL loop, or the browser-only boundary
+unless a section explicitly flags that it does.
 
 More assets are being generated on an ongoing basis via Claude Design (the
 same workflow as `docs/GAME_DESIGN_BRIEF.md` §B), so items below are not
@@ -357,6 +360,27 @@ this item — CSS-only now, real art later, per product direction:
   §B Step 3b, but not commissioned yet — send that prompt whenever the
   real-art version is wanted. Tracked as BUILD_ORDER.md P4.4.
 
+### Update (2026-08-09, continued) — second UAT round: onboarding order + a new beat
+
+Product direction from a second playtest pass: the first-run sequence
+should be **avatar creator → a new cutscene of the avatar being pulled
+into the mainframe → the existing opening beat** (the "Login accepted"/
+ROGUE.exe intro, unchanged) **→ Home/first mission.** Today's order
+(`src/App.tsx`) is opening beat first, then avatar creator — the
+opposite — per the P2.1 decision recorded below, which this supersedes.
+
+Split into two pieces, one buildable now and one not:
+- **Reorder only (buildable now):** avatar creator runs first, then the
+  existing unchanged opening beat. No new copy, no new screen. Tracked as
+  BUILD_ORDER.md P5.1.
+- **New "pulled into the mainframe" cutscene (blocked):** a beat showing
+  the just-created avatar getting pulled into the computer, slotted
+  between avatar confirmation and the existing opening beat. **Waiting on
+  the product owner to script it** (copy, beat/panel count, whether it
+  needs anything beyond the existing Phase 1 CSS toolkit applied to the
+  avatar sprite the player just picked). Not started; no placeholder
+  dialogue will be invented for it. Tracked as BUILD_ORDER.md P5.5.
+
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
   just the Sector 8→9 case plus the opening) for v1, with the rest as
@@ -364,6 +388,10 @@ this item — CSS-only now, real art later, per product direction:
   general between-sector beat mechanism but only authored the opening;
   `sectorBeats` in `src/content/beats.ts` is empty, so this question still
   needs an answer before Sector 8→9 (or any other) beat gets written.
+- **New (2026-08-09, continued):** the "pulled into the mainframe" beat's
+  script — content, panel count, and whether it stays Phase 1 (CSS on
+  existing art) or needs something Phase 2-shaped. Blocks BUILD_ORDER.md
+  P5.5 outright; see the update above.
 - ~~Should the opening cutscene run before or after the avatar creator~~ —
   **Resolved 2026-08-08:** before. Landed in P2.1.
 - ~~How is "skip" surfaced~~ — **Resolved 2026-08-08:** unskippable on
@@ -462,7 +490,14 @@ credible/professional.
 - Not adding autocomplete, linting, or schema-aware completions in this
   pass — the "Placeholder — syntax highlighting and autocomplete are
   coming in a later release" note can drop "syntax highlighting" once
-  this ships, but "autocomplete" stays a future item.
+  this ships, but "autocomplete" stays a future item. **Clarifying note
+  (2026-08-09, continued):** this is plain CodeMirror-style
+  keyword/schema autocomplete for the SQL editor — unrelated to item 3's
+  "good AI" tutor character. It has no packet of its own yet; the visible
+  placeholder tag is removed from the UI in BUILD_ORDER.md P5.2 (too much
+  on-screen text), but the underlying future item and its markup/comment
+  stay, so re-adding the visible note later (or replacing it once
+  autocomplete actually ships) isn't a rediscovery.
 - Not changing the grading/runner boundary — the editor is still a plain
   text source for one read-only SELECT (or the temp-table two-statement
   form); this is presentational only.
@@ -546,6 +581,99 @@ missing decision so much as intentionally not prioritized yet.
 
 ---
 
+## 9. Mission screen information density & hierarchy pass
+
+### Status
+New item, opened 2026-08-09 (continued) from a second UAT round on the
+merged build (P4.1-P4.4 all live). Unblocked — no new art, no new
+dependency, pure layout/CSS and small component reshuffles, same
+character as item 5. Scheduled as BUILD_ORDER.md P5.2-P5.4.
+
+### Problem
+P4.1 thinned the header and moved controls around, but the mission
+screen as a whole still reads as an undifferentiated wall of text and
+boxes of similar visual weight — the brief, the schema panel, the
+terminal-reward panel, the runner disclaimer, and the action buttons all
+compete for attention roughly equally. Nothing draws the eye to the two
+things that actually matter moment-to-moment: the mission's business
+context and the SQL editor itself. Feedback verbatim: "there's just too
+much text — it's hard to see what's actually important... eye should be
+drawn to the box where the context is & where the SQL editor is."
+
+### Goals
+- **Trim copy that doesn't earn its place** (BUILD_ORDER.md P5.2):
+  - Remove the runner-note paragraph under the SQL editor ("Runs locally
+    in your browser against the real dataset behind this terminal —
+    nothing leaves your machine. This runner allows one read-only SELECT
+    query.") — players don't need or want this explained every mission.
+  - Remove "Points are awarded once; hints never lock progress." from
+    the Terminal reward panel.
+  - Remove the "Placeholder — autocomplete is coming in a later release"
+    tag from the visible UI (keep the underlying future item — see item
+    6's clarifying note above — the tag is just visual noise today).
+- **Restructure the SQL editor's action row** (BUILD_ORDER.md P5.3):
+  - Run query / Show hint / Concept glossary become smaller, lighter-
+    weight controls (they're already positioned next to the editor since
+    P4.1 — this is a size/weight pass, not a relocation).
+  - Remove the always-visible "Reveal example query" control. Per the
+    product owner's read (confirmed correct): `mission.solutionSql` is
+    the actual reference answer, not a lighter "example," so showing it
+    on demand undercuts the exercise. Replace it with a 4th control,
+    **"See answer,"** that only becomes available after 3 consecutive
+    wrong attempts on the current mission (a `wrongAttemptCount` state
+    already exists in `MissionView` and already gates the mistake-aware
+    diagnostic at 2 — reuse the same counter, new threshold).
+- **Consolidate the header** (BUILD_ORDER.md P5.4, the largest piece):
+  - The sector map (`ChapterMap`) starts collapsed and lives behind a
+    control in the top header box rather than as a permanent sidebar —
+    clicking it slides the map out. `ChapterMap` already has an
+    open/closed toggle for narrow viewports (`isOpen`/`isCompact` in
+    `src/components/ChapterMap.tsx`) that this can generalize rather
+    than building a second mechanism from scratch.
+  - Terminal reward moves into the header, to the right of the existing
+    points/integrity readout — both expand to use the header's freed-up
+    width instead of sitting in a mostly-empty box.
+  - The "Badges" footer strip is removed; earned badges become a
+    togglable disclosure inside the header's progress area instead of a
+    permanently-visible footer.
+
+### Non-goals
+- Not a redesign of the terminal visual system (§A6) — same palette,
+  same panel-frame/border language, just resized, relocated, and made
+  collapsible.
+- Not touching the SQL loop, grading, or mission content. The "See
+  answer" gate changes *when a control is available*, never what
+  counts as correct.
+- Not a full tutorial system — the product owner flagged a tutorial as a
+  possible longer-run answer to the same "too much text" problem, but
+  that's a materially bigger feature and out of scope here. If wanted
+  later, scope it as its own backlog item rather than folding it into
+  this density pass.
+
+### Rough scope
+See the three BUILD_ORDER.md packets (P5.2-P5.4) referenced under each
+goal above — split so the cheap, low-risk copy trims can land and be
+reviewed independently from the larger header-layout change.
+
+### Open questions still to resolve before build
+- **Sector-map slide-out interaction:** the product owner described
+  "put it into the top box and if someone clicks it then it slides out"
+  — read here as an overlay/drawer triggered from a header control
+  (similar pattern to the existing `GlossaryPanel` overlay), rather than
+  an inline-expanding accordion that would push mission content around.
+  This is a judgment call, not a confirmed decision — flagged for the
+  product owner to correct before or during P5.4 if the intended
+  interaction is different (e.g. an inline expand instead of an
+  overlay).
+- Exact visual treatment of the consolidated header (how the map
+  trigger, points/integrity readout, terminal reward, and badges toggle
+  share the header's width without becoming cramped again) is an
+  implementation call for whoever builds P5.4, in the same spirit as
+  item 5's deferred exact padding numbers — direction is clear, pixel
+  values aren't.
+
+---
+
 ## Design asset tracker
 
 Single source of truth for which art each backlog item needs and whether
@@ -574,9 +702,11 @@ above to remove any "not built yet" caveat that no longer applies.
   in the tracker above) into branch-sized packets with acceptance
   criteria, and names which open question blocks each one. Read it before
   scoping any of this into a session.
-- Items 1, 2, and 4 fit the current architecture with no approval
+- Items 1, 2, 4, and 9 fit the current architecture with no approval
   needed — they can be scoped into normal sector/session work whenever
-  prioritized.
+  prioritized. Item 4's new "pulled into the mainframe" beat is the one
+  exception inside an otherwise-unblocked item: it's waiting on the
+  product owner's script, not an approval decision.
 - Item 3 needs an explicit approval decision before any implementation
   work starts, per `AGENTS.md`. Treat it as a standing research item
   until that decision is made.
