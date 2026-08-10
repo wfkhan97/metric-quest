@@ -987,6 +987,30 @@ tbody tr {
   object-fit: cover;
 }
 
+/* P4.4: m8-1's first direct ROGUE.exe encounter escalates the generic
+   .rogue-encounter treatment above — bigger sprite, brighter danger glow,
+   room for the overlay flash pseudo-element. Animation-bearing rules for
+   these classes are declared later (after .rogue-encounter's own animation
+   override), same reason .cutscene-frame is declared after .phase-scanline:
+   animation is a shorthand that doesn't merge across classes, so the rule
+   meant to win has to come last in source order. */
+.rogue-boss-moment {
+  border-color: var(--retro-danger);
+  overflow: hidden;
+  position: relative;
+}
+
+.rogue-sprite-boss {
+  block-size: 4.2rem;
+  box-shadow: 0 0 16px rgba(255, 138, 128, 0.55);
+  flex-basis: 4.2rem;
+  inline-size: 4.2rem;
+}
+
+.rogue-boss-line {
+  font-size: 1.05rem;
+}
+
 /* Avatar creator stays a fixed viewport too: its actual choices live in the
    scrollable form zone rather than falling below the page. */
 .avatar-creator {
@@ -1320,6 +1344,50 @@ tbody tr {
 
 .rogue-encounter {
   animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
+}
+
+/* P4.4: Sector 8 boss moment. m8-1 is ROGUE.exe's first direct appearance
+   (see docs/GAME_DESIGN_BRIEF.md §A4), so it escalates past the standard
+   .rogue-encounter treatment above — a one-time entrance shake plus a red
+   glitch-flash sweep across the whole aside (reusing the cutscene-shake and
+   cutscene-flash keyframes P4.3 already introduced, so this reads as the
+   same "something just got worse" language rather than a new effect
+   vocabulary), and a faster, higher-amplitude glitch loop scoped to the
+   sprite itself. Restates rogue-glitch/crt-flicker here alongside the new
+   shake, same reason .cutscene-frame restates crt-flicker: animation is a
+   shorthand that doesn't merge across classes on one element, so the rule
+   meant to win has to fully repeat every animation it wants active. */
+.rogue-boss-moment {
+  animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite,
+    cutscene-shake 650ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.rogue-boss-moment::before {
+  animation: cutscene-flash 750ms steps(2, end) both;
+  background: repeating-linear-gradient(0deg, rgba(255, 90, 90, 0.35) 0 2px, transparent 2px 4px);
+  content: '';
+  inset: 0;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  position: absolute;
+  z-index: 1;
+}
+
+.rogue-sprite-boss {
+  animation: rogue-boss-glitch 1.8s steps(1, end) infinite, crt-flicker 2.6s steps(1, end) infinite;
+}
+
+@keyframes rogue-boss-glitch {
+  0%, 100% { transform: translate(0) scale(1); }
+  8% { transform: translate(-4px, 3px) scale(1.04); }
+  9% { transform: translate(4px, -3px) scale(0.97); }
+  10% { transform: translate(0) scale(1); }
+  47% { transform: translate(3px, -2px); }
+  48% { transform: translate(-3px, 2px); }
+  49% { transform: translate(0); }
+  74% { transform: translate(-3px, 0) scale(1.03); }
+  75% { transform: translate(3px, 0) scale(0.98); }
+  76% { transform: translate(0) scale(1); }
 }
 
 /* Glossary overlay (P1.1). Opens on top of Home/Mission rather than
