@@ -180,29 +180,39 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 <strong>{mission.points} points</strong>
                 {mission.badge ? ` · ${mission.badge} badge` : ''}
               </p>
-              <p>
-                {completed
-                  ? 'Purged terminals can be replayed without changing your points.'
-                  : 'Points are awarded once; hints never lock progress.'}
-              </p>
+              {completed && <p>Purged terminals can be replayed without changing your points.</p>}
             </section>
           </div>
 
           <section className="panel sql-editor-panel" aria-labelledby="editor-title">
             <div className="editor-header">
               <h3 id="editor-title">SQL editor</h3>
-              <span className="placeholder-tag">Placeholder — autocomplete is coming in a later release</span>
+              {/* P5.2: the "syntax highlighting and autocomplete" placeholder tag is
+                  removed from view (too much on-screen text) but the future item it
+                  tracked is not dropped — see BACKLOG.md item 6's clarifying note. */}
             </div>
             <span className="sql-label" id="sql-label">
               Write a read-only SQL query
             </span>
-            <SqlEditor id="sql-editor" value={sql} onChange={setSql} ariaLabelledBy="sql-label" ariaDescribedBy="runner-note" />
-            <p id="runner-note" className="subtle">
-              Runs locally in your browser against the real dataset behind this terminal — nothing leaves your machine.{' '}
-              {mission.allowsTempWorkspace
-                ? 'This terminal accepts one setup statement (CREATE TEMP TABLE or CREATE TEMP VIEW) followed by one read-only SELECT to grade — or a single equivalent SELECT.'
-                : 'This runner allows one read-only SELECT query.'}
-            </p>
+            <SqlEditor
+              id="sql-editor"
+              value={sql}
+              onChange={setSql}
+              ariaLabelledBy="sql-label"
+              ariaDescribedBy={mission.allowsTempWorkspace ? 'runner-note' : undefined}
+            />
+            {/* P5.2: the generic "runs locally, nothing leaves your machine, one SELECT"
+                boilerplate is removed (players don't need it explained every mission),
+                but the two-statement setup-statement allowance stays for the two
+                temp-workspace missions — that's functional information about what the
+                runner will accept, not filler, and the starter SQL's own comments don't
+                reliably survive a player editing/deleting them. */}
+            {mission.allowsTempWorkspace && (
+              <p id="runner-note" className="subtle">
+                This terminal accepts one setup statement (CREATE TEMP TABLE or CREATE TEMP VIEW) followed by one read-only SELECT to grade — or a
+                single equivalent SELECT.
+              </p>
+            )}
             <div className="actions">
               <button type="button" className={isRunning ? 'primary running' : 'primary'} onClick={() => void runQuery()} disabled={isRunning}>
                 {isRunning ? 'Running query…' : 'Run query'}
