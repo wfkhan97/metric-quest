@@ -752,14 +752,38 @@ constraint to a table that no longer exists) — no mission's
 on grading. **Still not wired into `src/lib/sqlRunner.ts`** — that
 switch remains the gated decision above, not a prework step.
 
-### Decision needed before deployment (yours, not an agent's)
-Per `docs/AI_WORKFLOW.md`'s course-data release gate, pick one:
-- Approve the current full `iTunes.sqlite` as a licensed/reviewed copy
-  suitable for public distribution as-is, or
-- Approve switching to the minimized 5-table derivative described above.
+### Decision made (2026-08-10)
+Per `docs/AI_WORKFLOW.md`'s course-data release gate — **approved: switch
+to the minimized 5-table derivative**, not the full file. Recorded here
+per the release gate's own requirement:
 
-Record the decision, provenance, and minimization method here once made,
-per the release-gate's own requirement.
+- **Decision:** ship `src/assets/data/iTunes.min.sqlite` (`Customer`,
+  `Genre`, `Invoice`, `InvoiceLine`, `Track` only) as the production data
+  source, not the full `SQL Databases/iTunes.sqlite`.
+- **Provenance:** the well-known open "Chinook" sample database (see the
+  research findings above) — not proprietary Aurora Music/course business
+  data, and already the same file the app has run against locally since
+  before this decision.
+- **Minimization method:** kept only the tables the game's 25 missions'
+  `visibleTables`/`solutionSql` actually touch; dropped `Album`, `Artist`,
+  `Employee`, `MediaType`, `Playlist`, `PlaylistTrack` (6 of 11 tables) and
+  the foreign keys pointing at them. Built via `sqlite3` (schema recreate
+  + `ATTACH`/`INSERT INTO ... SELECT`), `VACUUM`ed. Verified against all
+  25 missions' expected results (not a sample) before this decision was
+  acted on — see the P6.1 update above. No other database file in
+  `SQL Databases/` is or was ever tracked in this repository (confirmed —
+  `git ls-files 'SQL Databases/'` shows only `iTunes.sqlite`), so there was
+  nothing else to drop.
+- **Wired in 2026-08-10:** `src/lib/sqlRunner.ts`'s `databaseUrl` now
+  points at `src/assets/data/iTunes.min.sqlite` instead of
+  `SQL Databases/iTunes.sqlite`. Verified in-browser post-wiring: the
+  production build now bundles the 540.67kB derivative instead of the
+  1,092.60kB full file, and a representative 3-table-join mission
+  (`m3-3`, `InvoiceLine`⋈`Track`⋈`Genre`) graded correctly end to end
+  against it.
+- **Still not done:** actually deploying anywhere. This decision unblocks
+  that (the data-release gate is now clear), but deploying itself is a
+  separate step nobody has asked for yet.
 
 ### Rough scope (prework only — safe to build now, does not deploy anything)
 - `"engines"` field in `package.json` pinning a known Vercel-supported
