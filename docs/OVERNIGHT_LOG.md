@@ -411,4 +411,50 @@ No code changes, no branch, no PR for this lane — a clean audit is the
 correct outcome here, not manufactured busywork. Moving to Lane D (docs
 accuracy audit) next.
 
+## Entry — 2026-08-10, Lane D shipped: docs accuracy audit
+
+Branch `claude/lane-d-docs-accuracy-audit`, PR
+[#5](https://github.com/wfkhan97/metric-quest/pull/5) open against
+`main`.
+
+Spot-checked every "done/shipped" claim across `docs/BACKLOG.md` and
+`docs/BUILD_ORDER.md` against the actual source tree, the same way the
+earlier-tonight item-2 correction was made — not assumed from the prose.
+Checked, and confirmed accurate: glossary entry count (16, matches
+`src/content/glossary.ts`'s actual entries), all 9 sector background
+files exist, both ROGUE.exe sprite files exist,
+`prefers-reduced-motion` is genuinely handled (`styles.css` +
+`GlossaryVisuals.tsx`), `button-hover.png` is genuinely absent from the
+repo (matches the doc's "source-only" claim — it only ever lived in the
+external Downloads export), and the error-feedback icon is still a CSS
+placeholder rather than `icon-corruption.png`. Also **re-verified the
+avatar sprite transparency defect (item 7) is still real** — re-ran the
+PIL alpha check from `AGENTS.md`, still `alpha=255` everywhere — so item
+7's "still blocked on the product owner, not agent-fixable" status
+holds; checked for staleness in both directions, not just "did someone
+already fix this."
+
+**One stale claim found and corrected:** the design asset tracker row for
+the ROGUE.exe sprites said `calm` was "available for the P2.1 opening
+cutscene." P2.1 shipped since that note was written, and its
+`openingBeat` panel in `src/content/beats.ts` actually uses
+`rogueState: 'corrupted'`. `calm` remains genuinely unused today —
+corrected the row to say so instead of leaving a claim about what P2.1
+would do that no longer matches what it did.
+
+Also cross-validated several `BUILD_ORDER.md` P5.x "shipped" claims live
+in the browser during tonight's separate Lane C audit (trimmed mission
+copy, the 3-strikes "See answer" gate, the header sector-map drawer, the
+badges disclosure) — all matched.
+
+`npm run check` passed (lint, 48 tests, typecheck, build) — docs-only
+change.
+
+Five PRs now open: #2 (P6.2), #3 (P6.1), #4 (Lanes A/B), #5 (Lane D). All
+four named lanes plus both `main`-priority packets are done. One item
+remains from the original priority list: the optional stretch goal
+(code-splitting CodeMirror out of the main bundle). Attempting it next,
+carefully, per this session's own instruction to back out rather than
+ship something uncertain.
+
 <!-- Append new entries below this line, most recent last. -->
