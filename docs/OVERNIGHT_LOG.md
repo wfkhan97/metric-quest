@@ -123,4 +123,42 @@ emphasis because this session runs unattended.
 
 ---
 
+## Update — 2026-08-10, before this session started: plan superseded
+
+Before running the overnight prompt, the product owner asked for two
+more things to be researched/designed first: what public deployment to
+Vercel needs, and a real design for the multi-save system (item 8,
+previously deferred). Both are now done and merged to `main`
+(`docs/BACKLOG.md` items 8 and 10, `docs/BUILD_ORDER.md` Wave 6 — P6.1
+deployment prework, P6.2 multi-save). **Read those sections before
+starting tonight's work** — don't re-derive the design from scratch, it's
+already fully specified.
+
+**Revised priority order for tonight, replacing the original Lanes A-D
+framing above (that framing is now superseded, not deleted — the
+reasoning in it about "don't invent scope" still stands):**
+
+1. **P6.2 — multi-save/profile state management** (`docs/BACKLOG.md` item
+   8, `docs/BUILD_ORDER.md` P6.2). Real feature work, fully designed, no
+   blocking product question. This is the highest-value thing available
+   tonight — do this first.
+2. **P6.1 — deployment prework** (`docs/BACKLOG.md` item 10,
+   `docs/BUILD_ORDER.md` P6.1). Config/docs/derivative-file prep only.
+   **Do not wire the minimized derivative into `sqlRunner.ts` and do not
+   deploy anything** — both are explicitly gated on a product decision
+   that is not yours to make. Verify the derivative against all 25
+   missions' expected results, not just one, before calling it done.
+3. **Original Lane A (diagnostics.ts tests) and Lane B (avatarOptions.ts
+   tests)** from the initial handoff above — still valid, still safe,
+   still worth doing if there's time after P6.1/P6.2.
+4. **Original Lane C (accessibility audit) and Lane D (docs accuracy
+   audit)** — still valid, lower priority than the above.
+5. Original stretch goal (code-splitting CodeMirror) — still last.
+
+P6.2 and P6.1 are independent of each other (different files) and can
+run in parallel. Same rules as before: one branch + one PR per packet,
+`npm run check` before every commit, log every milestone here and push
+this branch, never touch `main`, never guess on a product decision — log
+it to `docs/OVERNIGHT_QUESTIONS.md` instead.
+
 <!-- Append new entries below this line, most recent last. -->
