@@ -854,27 +854,9 @@ h3 {
 }
 
 .feedback-icon.error {
-  background: var(--retro-panel-raised);
-  border: 2px solid var(--retro-danger);
   animation: rogue-glitch 3.7s steps(1, end) infinite, crt-flicker 5.2s steps(1, end) infinite;
-}
-
-.feedback-icon.error::before,
-.feedback-icon.error::after {
-  background: var(--retro-danger);
-  box-shadow: 0.8rem 0 0 var(--retro-danger);
-  content: '';
-  block-size: 0.26rem;
-  inline-size: 0.26rem;
-  left: 0.5rem;
-  position: absolute;
-  top: 0.6rem;
-}
-
-.feedback-icon.error::after {
-  box-shadow: 0.32rem 0 0 var(--retro-danger), 0.64rem 0 0 var(--retro-danger);
-  left: 0.58rem;
-  top: 1.32rem;
+  image-rendering: pixelated;
+  object-fit: contain;
 }
 
 .feedback-icon.success {
