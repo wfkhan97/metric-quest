@@ -420,6 +420,14 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
   ],
 };
 
+/** Read-only access to a mission's signature library, exported for direct
+ * per-signature testing (see diagnostics.test.ts) — classifyAttempt below
+ * only ever exposes the first match, which isn't enough to exercise every
+ * signature in a mission that has more than one. */
+export function getMistakeSignatures(missionId: Mission['id']): MistakeSignature[] {
+  return signaturesByMission[missionId] ?? [];
+}
+
 /**
  * Classifies a failed attempt against this mission's signature library.
  * Returns the first match, or undefined if nothing matches (including
@@ -429,7 +437,5 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
  * and produced a wrong result, since these checks assume `result` exists.
  */
 export function classifyAttempt(missionId: Mission['id'], sql: string, result: QueryResult): MistakeSignature | undefined {
-  const signatures = signaturesByMission[missionId];
-  if (!signatures) return undefined;
-  return signatures.find((signature) => signature.matches(sql, result));
+  return getMistakeSignatures(missionId).find((signature) => signature.matches(sql, result));
 }
