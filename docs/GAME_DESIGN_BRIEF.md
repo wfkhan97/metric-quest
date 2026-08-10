@@ -457,6 +457,48 @@ background, consistent canvas size, same palette as the rest of the set.
 Export each panel as an individual PNG file.
 ```
 
+### Step 3c — "Good AI" mentor character (BACKLOG.md item 3, art-only — not approved to build)
+
+Not commissioned yet. This is the friendly counterpart to ROGUE.exe that
+`docs/BACKLOG.md` item 3 (the Monet.gg-connected in-game tutor) and
+`docs/GAME_DESIGN_BRIEF.md` §A3's "optional, later" mentor/sysadmin voice
+both reserve space for. **Requesting this art does not approve or start
+building item 3** — the tutor feature itself is still blocked on an
+explicit product-owner approval decision per `AGENTS.md`'s external-AI-call
+rule, and this prompt doesn't touch that. It's safe to send whenever you
+want the character designed, the same way Step 3b's cinematic art was
+drafted ahead of its own build being unblocked.
+
+```text
+Design 1-2 illustrations of a friendly system-mentor character for Metric
+Quest, a companion piece to "ROGUE.exe" (the game's antagonist, which you
+may have already designed for me -- a glitchy, corrupted, non-humanoid
+terminal/CRT-monitor face). This new character is ROGUE.exe's opposite:
+an uncorrupted, helpful presence inside the same mainframe -- think of it
+as "what ROGUE.exe should have been" before it went rogue.
+
+Like ROGUE.exe, it should NOT be humanoid or robotic -- it should read as
+"a clean, orderly system," the same way ROGUE.exe reads as "a broken
+one." Some directions to consider: a calm, steady terminal/CRT face with
+crisp uncorrupted lines (vs. ROGUE.exe's fragmented glitch), a glowing
+steady cursor or waveform, or a simple geometric "system icon" shape that
+feels trustworthy and orderly by contrast. I don't have a name locked in
+yet, so don't bake specific text/labels into the art.
+
+Two states, same character (parallel to ROGUE.exe's calm/corrupted pair):
+1. "Idle/attentive" -- steady, calm, present but not intrusive.
+2. "Active/helping" -- a brighter or more animated-feeling variant used
+   when it's actively assisting, without becoming showy or distracting.
+
+Style: same 8-bit/16-bit pixel art as the rest of the set, transparent
+background, consistent canvas size. Palette: lean toward the terminal
+system's teal (#1fd3c4) and the app's success/positive tone rather than
+ROGUE.exe's corrupted-glitch coloring -- it should read as calm and
+trustworthy at a glance, distinct from ROGUE.exe even in a thumbnail.
+Tone: friendly, approachable, playful retro-arcade -- a helpful in-game
+presence, not a mascot or a person.
+```
+
 ### Step 4 — UI chrome kit (optional, do this last if at all)
 
 ```text
@@ -474,11 +516,50 @@ Style: consistent with the sprite/background pixel art already generated.
 ```
 
 This one is a nice-to-have — CSS borders/shapes already approximate all of
-this well enough to ship without it. The two feedback-state icons in
-particular already exist as CSS placeholders (a glitching red square and a
-pulsing teal ring) built into the results panel; sending this prompt would
-just give you a drop-in real-art replacement for those two, not a new
-feature.
+this well enough to ship without it. **Update (2026-08-08):** most of this
+kit has since been delivered and wired in — panel border, button frame
+(idle/active/disabled; hover is CSS `brightness`+`translateY` on the idle
+art instead, see `docs/BACKLOG.md`'s asset tracker), and the points/badge/
+progress/**signal-restored** icons are all live. Only the "corruption
+detected" icon came back illegible and is still the original CSS
+placeholder (a glitching red square) — see Step 4a below for a focused
+re-request rather than resending this whole kit.
+
+### Step 4a — Fix: `icon-corruption.png` legibility (requested 2026-08-10)
+
+Not sent yet. The corruption-detected icon from the Step 4 kit came back
+illegible — it reads as generic static/noise rather than communicating
+"corruption" the way the delivered "signal restored" icon clearly reads
+as "restored." This is a narrow re-request for just that one icon, not
+the whole kit.
+
+```text
+The "corruption detected" icon from the small feedback-icon set I asked
+for earlier didn't come through legibly -- it reads as generic static or
+noise rather than clearly communicating "corruption" or "something is
+wrong." Please redesign just that one icon.
+
+Context: it's the visual counterpart to the "signal restored" icon you
+already delivered (clean, teal, checkmark/pulse-ring feeling, shown next
+to positive feedback text when a player's query is correct). This icon is
+its opposite -- shown next to feedback text when a player's query is
+wrong. It needs to read clearly as "corrupted/broken/wrong" at a glance,
+at small size (roughly icon-sized, sitting right next to a line of body
+text, not a full illustration).
+
+Some directions to consider: a fractured/glitching square or signal
+icon, a broken/jagged shape breaking apart, static interference lines
+across a simple glyph -- something with clear silhouette and readable
+contrast at small sizes, not fine detail that disappears when scaled
+down.
+
+Style: same 8-bit/16-bit pixel art as the rest of the UI kit. Color:
+red/amber, matching the app's existing error-state color
+(#ff8a80) rather than the teal/positive palette used for "signal
+restored." Transparent background, same square canvas size as the other
+small icons in the kit (128x128px, matching points/badge/progress/
+signal-restored).
+```
 
 ---
 
