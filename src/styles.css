@@ -676,18 +676,25 @@ h3 {
   margin-block-start: 0.45rem;
 }
 
+/* P4.2: .sql-editor is now the wrapper around a CodeMirror 6 instance
+   (see SqlEditor.tsx) rather than a textarea itself — chrome (border,
+   background, glow) stays on this wrapper so the visual result is
+   unchanged; CodeMirror's own root fills it via the rules below. */
 .sql-editor {
   background: #070d1d;
   border: 2px solid var(--retro-teal);
   box-shadow: inset 0 0 16px rgba(31, 211, 196, 0.08);
-  color: var(--retro-text);
   display: block;
-  line-height: 1.45;
   margin-block-start: 0.3rem;
   min-block-size: clamp(7rem, 15vh, 10rem);
-  padding: 0.65rem;
+  overflow: hidden;
   resize: vertical;
   width: 100%;
+}
+
+.sql-editor .cm-editor {
+  block-size: 100%;
+  outline: none;
 }
 
 .actions {

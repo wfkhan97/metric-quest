@@ -5,6 +5,7 @@ import { ProgressBar } from './ProgressBar';
 import { ResultTable } from './ResultTable';
 import { RogueSprite } from './RogueSprite';
 import { SchemaExplorer } from './SchemaExplorer';
+import { SqlEditor } from './SqlEditor';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
@@ -190,19 +191,12 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           <section className="panel sql-editor-panel" aria-labelledby="editor-title">
             <div className="editor-header">
               <h3 id="editor-title">SQL editor</h3>
-              <span className="placeholder-tag">Placeholder — syntax highlighting and autocomplete are coming in a later release</span>
+              <span className="placeholder-tag">Placeholder — autocomplete is coming in a later release</span>
             </div>
-            <label className="sql-label" htmlFor="sql-editor">
+            <span className="sql-label" id="sql-label">
               Write a read-only SQL query
-            </label>
-            <textarea
-              id="sql-editor"
-              className="sql-editor"
-              value={sql}
-              onChange={(event) => setSql(event.target.value)}
-              spellCheck="false"
-              aria-describedby="runner-note"
-            />
+            </span>
+            <SqlEditor id="sql-editor" value={sql} onChange={setSql} ariaLabelledBy="sql-label" ariaDescribedBy="runner-note" />
             <p id="runner-note" className="subtle">
               Runs locally in your browser against the real dataset behind this terminal — nothing leaves your machine.{' '}
               {mission.allowsTempWorkspace
