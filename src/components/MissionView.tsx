@@ -6,6 +6,7 @@ import { ResultTable } from './ResultTable';
 import { RogueSprite } from './RogueSprite';
 import { SchemaExplorer } from './SchemaExplorer';
 import iconBadge from '../assets/ui/icon-badge.png';
+import iconCorruption from '../assets/ui/icon-corruption.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
 import { chapterNumber } from '../content/chapters';
@@ -364,7 +365,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 {feedback.tone === 'success' ? (
                   <img className="feedback-icon success" src={iconRestored} alt="" aria-hidden="true" />
                 ) : (
-                  <span className="feedback-icon error" aria-hidden="true" />
+                  <img className="feedback-icon error" src={iconCorruption} alt="" aria-hidden="true" />
                 )}
                 <div>
                   <h3>{feedback.heading}</h3>
