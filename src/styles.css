@@ -1515,6 +1515,72 @@ tbody tr {
   margin-block-start: 0;
 }
 
+/* Save slot panel (P6.2) — reuses .glossary-panel/.glossary-backdrop's
+   overlay mechanics (fixed backdrop, trapped focus, Escape closes, focus
+   returns to the trigger) rather than a new interaction paradigm. */
+.save-slot-list {
+  display: grid;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+
+.save-slot-item {
+  border: 1px solid var(--retro-border);
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.6rem;
+}
+
+.save-slot-item-active {
+  border-color: var(--retro-amber);
+}
+
+.save-slot-name {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.save-slot-badge {
+  background: rgba(255, 209, 102, 0.13);
+  border: 1px solid var(--retro-amber);
+  color: var(--retro-amber);
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+}
+
+.save-slot-summary p {
+  margin: 0.2rem 0 0;
+}
+
+.save-slot-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.save-slot-rename-form {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.save-slot-rename-form label {
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.save-slot-rename-form input {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  color: var(--retro-text);
+  padding: 0.4rem 0.5rem;
+}
+
 /* Sector map drawer (P5.4). Collapsed by default, opened from a header
    trigger — same overlay mechanics as the glossary panel above (fixed
    backdrop, trapped focus, Escape closes, focus returns to the trigger),

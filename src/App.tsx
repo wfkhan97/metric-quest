@@ -40,6 +40,13 @@ export function App() {
     saveProgress(next);
   }
 
+  // P6.2: switching/creating/deleting a save slot already persists the new
+  // active slot in src/lib/progress.ts — this just syncs the state that
+  // lives here, without re-persisting (which would only bump timestamps).
+  function handleActiveProgressChange(next: Progress) {
+    setProgress(next);
+  }
+
   function enterMissionWithTransitionCheck(mission: Mission, progressSnapshot: Progress) {
     const sector = chapterNumber(mission);
     if (!hasSeenSector(progressSnapshot, sector)) {
@@ -185,6 +192,7 @@ export function App() {
         onSelectMission={handleSelectMission}
         onEditAvatar={handleEditAvatar}
         onReplayOpening={hasSeenOpening(progress) ? handleReplayOpening : undefined}
+        onActiveProgressChange={handleActiveProgressChange}
       />
     );
   }

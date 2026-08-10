@@ -3,10 +3,11 @@ import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
+import { SaveSlotPanel } from './SaveSlotPanel';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import { type Mission } from '../lib/missions';
-import { type Progress } from '../lib/progress';
+import { getActiveSaveId, type Progress } from '../lib/progress';
 
 type HomeViewProps = {
   missions: Mission[];
@@ -15,11 +16,23 @@ type HomeViewProps = {
   onEditAvatar: () => void;
   /** Undefined until the opening cutscene has been seen once — nothing to replay yet. */
   onReplayOpening?: () => void;
+  /** Called after a save-slot switch, create, or delete-of-active changes
+   * which progress is active — App owns `progress` state and needs to sync. */
+  onActiveProgressChange: (progress: Progress) => void;
 };
 
-export function HomeView({ missions, progress, onSelectMission, onEditAvatar, onReplayOpening }: HomeViewProps) {
+export function HomeView({
+  missions,
+  progress,
+  onSelectMission,
+  onEditAvatar,
+  onReplayOpening,
+  onActiveProgressChange,
+}: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+  const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false);
   const glossaryButtonRef = useRef<HTMLButtonElement>(null);
+  const saveSlotsButtonRef = useRef<HTMLButtonElement>(null);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];
@@ -36,6 +49,9 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar, on
           <h1 id="page-title">Metric Quest</h1>
           <button type="button" className="link-button" onClick={() => setIsGlossaryOpen(true)} ref={glossaryButtonRef}>
             Concept glossary
+          </button>
+          <button type="button" className="link-button" onClick={() => setIsSaveSlotsOpen(true)} ref={saveSlotsButtonRef}>
+            Save slots
           </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
@@ -54,6 +70,17 @@ export function HomeView({ missions, progress, onSelectMission, onEditAvatar, on
           onClose={() => {
             setIsGlossaryOpen(false);
             glossaryButtonRef.current?.focus();
+          }}
+        />
+      )}
+
+      {isSaveSlotsOpen && (
+        <SaveSlotPanel
+          activeSlotId={getActiveSaveId()}
+          onActiveProgressChange={onActiveProgressChange}
+          onClose={() => {
+            setIsSaveSlotsOpen(false);
+            saveSlotsButtonRef.current?.focus();
           }}
         />
       )}
