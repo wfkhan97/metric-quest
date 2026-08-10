@@ -535,15 +535,19 @@ handing back the result — not an agent-buildable item. Tracked as
 BUILD_ORDER.md P4.5.
 
 ### Problem
-All 12 delivered avatar sprites (`src/assets/avatars/recruit-*.png`) were
-verified pixel-by-pixel and confirmed defective: fully opaque
-(`alpha=255` everywhere) with a checkerboard *pattern baked into the
-actual pixels* rather than a real alpha channel. It renders as a visible
-gray/white checkerboard behind every character — most noticeable on the
-avatar creator and sector-transition screens. Every other delivered
-asset (ROGUE.exe sprites, sector backgrounds, UI chrome) was checked the
-same way and confirmed to have genuine transparency — this defect is
-isolated to the avatar set.
+**Correction (2026-08-10):** re-verified pixel-by-pixel right before
+handing paths to the product owner for re-export — 10 of the 12 delivered
+avatar sprites (`src/assets/avatars/recruit-*.png`) are defective: fully
+opaque (`alpha=255` everywhere) with a checkerboard *pattern baked into
+the actual pixels* rather than a real alpha channel. **`recruit-broker.png`
+and `recruit-operator.png` already have genuine transparency** (alpha
+extrema `(153, 255)`) and are not part of this defect — the original
+"all 12" claim here was wrong; only re-export the other 10. It renders as
+a visible gray/white checkerboard behind every affected character — most
+noticeable on the avatar creator and sector-transition screens. Every
+other delivered asset (ROGUE.exe sprites, sector backgrounds, UI chrome)
+was checked the same way and confirmed to have genuine transparency —
+this defect is isolated to 10 of the 12 avatar sprites.
 
 ### Fix
 Not fixable in code — this is baked pixel content, not a CSS/rendering

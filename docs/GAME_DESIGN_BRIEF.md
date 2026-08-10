@@ -283,27 +283,40 @@ canvas, so I can hand them to my developer as image assets.
 
 ### Step 1c — Fix: avatar sprite transparency defect (found 2026-08-09)
 
-All 12 delivered avatar sprites (`src/assets/avatars/recruit-*.png`) were
-verified pixel-by-pixel and confirmed to have this defect: they are fully
-opaque (`alpha=255` everywhere) with a checkerboard *pattern baked into the
-actual RGB pixels* — a flattened transparency-preview grid, not real
-transparency. It renders as a visible gray/white checkerboard behind every
-character in the app (most visible on the sector-transition screens). Use
-this prompt to get a corrected re-export:
+**Correction (2026-08-10):** re-verified all 12 files pixel-by-pixel right
+before pointing a re-export at them, since the original "all 12" claim
+below was about to be trusted at face value. It doesn't hold: 10 of the
+12 avatar sprites are still fully opaque, but `recruit-broker.png` and
+`recruit-operator.png` already have a genuine alpha channel (extrema
+`(153, 255)`, not a flat `255`) — those two do not need re-export. The
+prompt below now lists only the 10 that are actually still broken.
+
+The other 10 delivered avatar sprites were verified pixel-by-pixel and
+confirmed to have this defect: they are fully opaque (`alpha=255`
+everywhere) with a checkerboard *pattern baked into the actual RGB
+pixels* — a flattened transparency-preview grid, not real transparency.
+It renders as a visible gray/white checkerboard behind every character in
+the app (most visible on the sector-transition screens). Use this prompt
+to get a corrected re-export:
 
 ```text
-The avatar sprite set you generated earlier (12 "Recruit" character sprites)
-has a transparency export bug: instead of a real alpha channel, the
-transparent areas were flattened into an opaque checkerboard pattern (the
-standard "no background" preview grid baked directly into the image pixels).
+10 of the 12 sprites in the avatar set you generated earlier ("Recruit"
+character sprites: analyst, archivist, auditor, cartographer, consultant,
+curator, engineer, registrar, statistician, strategist) have a
+transparency export bug: instead of a real alpha channel, the transparent
+areas were flattened into an opaque checkerboard pattern (the standard
+"no background" preview grid baked directly into the image pixels). The
+other two in the set (broker, operator) already have real transparency
+and do not need re-export.
 
-Please re-export all 12 sprites with a genuine alpha channel -- fully
-transparent (alpha = 0) in every area outside the character, not a
-checkerboard fill. Keep everything else identical: same pose, proportions,
-canvas size, pixel density, and color palette as what you already delivered.
+Please re-export just those 10 sprites with a genuine alpha channel --
+fully transparent (alpha = 0) in every area outside the character, not a
+checkerboard fill. Keep everything else identical: same pose,
+proportions, canvas size, pixel density, and color palette as what you
+already delivered.
 
-Export as individual PNG files with real alpha transparency, not flattened
-against any background color or pattern.
+Export as individual PNG files with real alpha transparency, not
+flattened against any background color or pattern.
 ```
 
 Before wiring any re-delivered asset back in, verify the fix actually
