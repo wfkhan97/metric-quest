@@ -112,6 +112,18 @@ pre,
   top: 0.75rem;
 }
 
+.sr-only {
+  border: 0;
+  clip: rect(0 0 0 0);
+  block-size: 1px;
+  inline-size: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+}
+
 .app-shell {
   background-color: var(--retro-bg);
   background-image: repeating-linear-gradient(0deg, rgba(234, 246, 244, 0.025) 0 1px, transparent 1px 3px);
@@ -1277,6 +1289,145 @@ tbody tr {
 
 .cutscene-copy .sector-transition-flavor {
   max-inline-size: none;
+}
+
+/* A long panel (the CEO memo, avatar + several paragraphs) can add up to
+   more than the viewport even with .cutscene-copy's own cap below — the
+   frame itself needs the hard limit, with its own internal scroll, so it's
+   the sub-panel that scrolls (per §A7) rather than overflowing .app-shell's
+   overflow:hidden and getting silently clipped off-screen. */
+.cutscene-frame {
+  max-block-size: min(92vh, 40rem);
+  overflow-y: auto;
+}
+
+
+.cutscene-progress {
+  margin: 0;
+}
+
+.cutscene-credit {
+  margin: 0;
+  max-inline-size: 34ch;
+}
+
+.cutscene-mute-toggle {
+  font-size: 0.72rem;
+}
+
+/* P5.5 multi-panel cutscenes: a background image layer, positioned behind
+   the (always-opaque) frame within the same .cutscene shell — painted
+   first in DOM order so the frame, which follows it, layers on top without
+   needing an explicit z-index fight. */
+.cutscene {
+  position: relative;
+}
+
+.cutscene-bg {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  inset: 0;
+  position: absolute;
+  z-index: 0;
+}
+
+@keyframes cutscene-bg-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.16); }
+}
+
+.cutscene-bg-zoom {
+  animation: cutscene-bg-zoom 4.5s ease-out both;
+}
+
+/* Panel-level avatar motion, layered on top of the default .phase-slide
+   entrance already used elsewhere — each is a one-time punctuation for a
+   specific storyboard beat, not an ambient loop. */
+@keyframes cutscene-avatar-shake {
+  0%, 100% { transform: translate(0, 0); }
+  20% { transform: translate(-6px, 2px); }
+  40% { transform: translate(5px, -3px); }
+  60% { transform: translate(-4px, 3px); }
+  80% { transform: translate(3px, -1px); }
+}
+
+.cutscene-avatar-shake {
+  animation: cutscene-avatar-shake 420ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes cutscene-avatar-run {
+  from { opacity: 0; transform: translateX(-2.5rem); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.cutscene-avatar-run {
+  animation: cutscene-avatar-run 700ms ease-in both;
+}
+
+@keyframes cutscene-avatar-dissolve {
+  0% { filter: blur(0); opacity: 1; transform: scale(1); }
+  100% { filter: blur(3px); opacity: 0; transform: scale(0.7) translateY(-0.5rem); }
+}
+
+.cutscene-avatar-dissolve {
+  animation: cutscene-avatar-dissolve 900ms ease-in both;
+}
+
+@keyframes cutscene-rogue-dash {
+  0% { opacity: 0; transform: translateX(-3rem); }
+  15% { opacity: 1; filter: blur(1px); }
+  85% { opacity: 1; filter: blur(1px); }
+  100% { opacity: 0; transform: translateX(3rem); }
+}
+
+.cutscene-rogue-dash {
+  animation: cutscene-rogue-dash 900ms ease-in-out both;
+}
+
+/* A hard cut standing in for a scene change — teal rather than the danger-red
+   .cutscene-glitch-overlay uses, so it doesn't read as "something is wrong"
+   the way that flash does. */
+@keyframes cutscene-whiteout {
+  0% { opacity: 0; }
+  55% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.cutscene-whiteout {
+  animation: cutscene-whiteout 900ms ease-in-out both;
+  background: var(--retro-teal);
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 6;
+}
+
+/* The terminal boot hand-off (last panel of P5.5): a full-bleed monospace
+   screen, deliberately not the ornate bordered frame every other panel
+   uses — this is the moment the cutscene becomes the game. */
+.cutscene-boot {
+  align-content: center;
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.cutscene-boot-lines {
+  display: grid;
+  gap: 0.5rem;
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+}
+
+.cutscene-boot-line {
+  color: var(--retro-teal);
+  font-size: clamp(0.6rem, 2vw, 0.85rem);
+  margin: 0;
+}
+
+.cutscene-boot-line:last-child {
+  color: var(--retro-amber);
 }
 
 /* P4.3 keyframes only — the rules that use them (.cutscene-frame,

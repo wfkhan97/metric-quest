@@ -4,7 +4,7 @@ import { CutsceneView } from './components/CutsceneView';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
-import { openingBeat, sectorBeats, type Beat } from './content/beats';
+import { mainframePullBeat, openingBeat, sectorBeats, type Beat } from './content/beats';
 import { chapterNumber, chapters } from './content/chapters';
 import { missions, type Mission } from './lib/missions';
 import {
@@ -74,7 +74,11 @@ export function App() {
   function proceedPastAvatar(mission: Mission, progressSnapshot: Progress) {
     if (!hasSeenOpening(progressSnapshot)) {
       setPendingMission(mission);
-      setPendingBeat(openingBeat);
+      // P5.5: the "pulled into the mainframe" beat plays first; its last
+      // panel chains straight into openingBeat in handleCutsceneFinish
+      // below, so the two read as one continuous intro, not two separately
+      // gated cutscenes.
+      setPendingBeat(mainframePullBeat);
       setCutsceneSkippable(false);
       setView('cutscene');
       return;
@@ -94,7 +98,7 @@ export function App() {
 
   function handleReplayOpening() {
     setPendingMission(null);
-    setPendingBeat(openingBeat);
+    setPendingBeat(mainframePullBeat);
     setCutsceneSkippable(true);
     setView('cutscene');
   }
@@ -102,6 +106,11 @@ export function App() {
   function handleCutsceneFinish() {
     const beat = pendingBeat;
     setPendingBeat(null);
+    if (beat?.id === 'mainframe-pull') {
+      setPendingBeat(openingBeat);
+      setView('cutscene');
+      return;
+    }
     if (beat?.id === 'opening') {
       const nextProgress = markOpeningSeen(progress);
       handleProgressChange(nextProgress);
@@ -169,7 +178,15 @@ export function App() {
   }
 
   if (view === 'cutscene' && pendingBeat) {
-    return <CutsceneView beat={pendingBeat} skippable={cutsceneSkippable} onFinish={handleCutsceneFinish} />;
+    return (
+      <CutsceneView
+        key={pendingBeat.id}
+        beat={pendingBeat}
+        avatar={progress.avatar}
+        skippable={cutsceneSkippable}
+        onFinish={handleCutsceneFinish}
+      />
+    );
   }
 
   if (view === 'sector-transition' && pendingMission) {

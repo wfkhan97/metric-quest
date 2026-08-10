@@ -5,7 +5,9 @@ section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
 2026-08-09 from the first real UAT playtest of the merged build; item 3
 still needs explicit product-owner approval per `AGENTS.md` before any
 implementation starts. P4.x and P5.x (items 5, 6, 9, and the P5.1 part of
-item 4) have all since landed on `main`. Item 2 was found fully shipped
+item 4) have all since landed on `main`; the P5.5 mainframe-pull cutscene
+(the rest of item 4) is built and checked on its own branch, not yet
+merged. Item 2 was found fully shipped
 2026-08-10 (an earlier status note here was stale — corrected). Item 8
 (multi-save) was un-deferred and designed 2026-08-10 and item 10 (public
 deployment) was opened the same day from real research — both scheduled
@@ -379,17 +381,16 @@ Split into two pieces, one buildable now and one not:
 - **Reorder only (buildable now):** avatar creator runs first, then the
   existing unchanged opening beat. No new copy, no new screen. Tracked as
   BUILD_ORDER.md P5.1.
-- **New "pulled into the mainframe" cutscene — script delivered
-  2026-08-10:** the product owner wrote the full script directly (an
-  Office-Space-toned beat: a CEO memo announcing an unsupervised AI
-  rollout, escalating office chaos, a pull into the mainframe, a corridor
-  of 9 sector doors, and a chase into Sector 1). Full storyboard, memo
-  text, Claude Design asset prompts, and Suno music prompts are in
-  `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`. **Scoped as Phase 2** (needs 5
-  new commissioned images), not the Phase 1 default this item originally
-  assumed. Tracked as BUILD_ORDER.md P5.5, now unblocked on content but
-  still blocked on a `CutsceneView` multi-panel playback change (today it
-  only ever renders `panels[0]`) and on the 5 new art assets landing.
+- **New "pulled into the mainframe" cutscene — built 2026-08-10, not yet
+  merged:** the
+  product owner wrote the full script directly (an Office-Space-toned
+  beat: a CEO memo announcing an unsupervised AI rollout, escalating
+  office chaos, a pull into the mainframe, a corridor of 9 sector doors,
+  and a chase into Sector 1). Built as **Phase 2** (`CutsceneView` now
+  supports multi-panel playback, not just `panels[0]`) once the 5
+  commissioned images landed. Full storyboard, memo text, and build notes
+  are in `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`; implementation detail in
+  BUILD_ORDER.md P5.5.
 
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
@@ -531,13 +532,17 @@ question.
 
 ## 7. Avatar sprite transparency fix
 
-### Status: 10 of 12 fixed (2026-08-10, PR #11) — 2 still broken, re-export needed
-`recruit-analyst`, `-archivist`, `-auditor`, `-cartographer`, `-consultant`,
-`-curator`, `-engineer`, `-registrar`, `-statistician`, and `-strategist`
-were re-exported with real alpha transparency and merged. **`recruit-broker.png`
-and `recruit-operator.png` are still defective** — see the correction
-below for why they were wrongly marked "already fine" earlier tonight.
-Tracked as BUILD_ORDER.md P4.5.
+### Status: fully fixed (2026-08-10) — all 12 sprites verified
+All 12 avatar sprites now have genuine alpha transparency. The first 10
+(`recruit-analyst`, `-archivist`, `-auditor`, `-cartographer`,
+`-consultant`, `-curator`, `-engineer`, `-registrar`, `-statistician`,
+`-strategist`) were re-exported and merged via PR #11; the remaining two
+(`recruit-broker.png`, `recruit-operator.png` — see the correction below
+for why they were wrongly marked "already fine" earlier) were fixed in
+the `codex/office-mainframe-backdrops` branch and merged directly to
+`main`. Re-verified directly against `main`: both now show 77.2% and
+87.4% transparent pixels respectively, in the same range as the other 10
+genuinely-fixed files. Nothing left to build here.
 
 ### Problem
 The 10 sprites listed above were fully opaque (`alpha=255` everywhere)
@@ -933,7 +938,8 @@ above to remove any "not built yet" caveat that no longer applies.
 | Sector backgrounds, Sectors 1-3 & 8 | Item 4 (Phase 2 cutscenes); general sector polish | **Wired in (2026-08-08).** All 9 sector backgrounds render behind `SectorTransitionView`, mapped by chapter number in `sectorBackgrounds.ts`; the interstitial frame is bottom-anchored into the open lower-middle third and stays fully opaque so contrast never depends on the art. Sector 8's body-horror lean — **resolved 2026-08-09:** product owner played it live and confirmed it reads fine; no touch-up pass needed, closing that open note. | `src/assets/backgrounds/sector-{1-9}.jpg` (compressed from the export at `~/Downloads/stage_backgrounds/`) |
 | Sector backgrounds, Sectors 4-7 & 9 | Item 4 (Phase 2 cutscenes); general sector polish | **Wired in (2026-08-08).** Same mechanism as above. Sector 9 (Boardroom Core) is a standout, exact match to brief. | Same as above |
 | ROGUE.exe illustrations (calm + corrupted) | Item 4 (opening/Sector 8 cutscene beats) | **Wired in (2026-08-08).** Both states live as a reusable `<RogueSprite state="calm" \| "corrupted" />` component (`src/components/RogueSprite.tsx`); `MissionView`'s m8-1 aside now renders `corrupted` in place of the CSS glitch-icon placeholder, which has been deleted. **Correction (2026-08-10):** this row previously said `calm` was "available for the P2.1 opening cutscene" — P2.1 has since shipped and its `openingBeat` panel in `src/content/beats.ts` uses `rogueState: 'corrupted'`, not `calm`. `calm` remains genuinely unused today; no shipped screen currently renders it. | `src/assets/rogue/rogue-{calm,corrupted}.png` (192×192, resized/compressed from the Claude Design export at `~/Downloads/rogue_sprites/`) |
-| Avatar sprite set | Not a backlog item here, but shared dependency | Shipped, but **defective — found 2026-08-09 (item 7).** All 12 sprites in `src/assets/avatars/` have a checkerboard pattern baked into opaque pixels instead of real alpha transparency (verified with PIL: `alpha=255` everywhere). Re-export prompt + verification method in `docs/GAME_DESIGN_BRIEF.md` §B Step 1c — blocked on the product owner running it. | `src/lib/avatarOptions.ts` |
+| Avatar sprite set | Not a backlog item here, but shared dependency | **Fully fixed (2026-08-10, item 7).** All 12 sprites in `src/assets/avatars/` re-exported with genuine alpha transparency and verified with PIL — no remaining defect. | `src/lib/avatarOptions.ts` |
+| "Corruption detected" icon (Step 4a redo) | UI chrome kit, error feedback in `MissionView` | **Wired in (2026-08-10).** Replaced the old cracked-panel design (illegible at the ~35px render size) with the redo — a warning-triangle glyph, resized from the 1024px export to 128x128, verified transparent and legible at actual size. | `src/assets/ui/icon-corruption.png` |
 | Sector 8/9 confrontation cinematic (multi-panel) | Item 4 (§A8 Phase 2) | Not yet requested — prompt drafted 2026-08-09 in `docs/GAME_DESIGN_BRIEF.md` §B Step 3b, ready to send whenever wanted. A CSS-only stand-in ships first (BUILD_ORDER.md P4.3/P4.4) so this isn't blocking. | — |
 | UI chrome kit (panels, buttons, status icons) | Optional polish for items 1 and 2's panels | **9 of 10 assets wired in (2026-08-08).** Points/badge/progress/restored icons live in `HomeView`/`MissionView`/`ProgressBar`. Buttons + panel-frame now wired via **Path B** (no touch-up request was made): cropped each source PNG to its hard-edged bounding box to remove the bloom that doesn't survive slicing, then applied as CSS `border-image`. Idle/hover still share one source image (they're genuinely near-identical, as originally flagged) — hover is differentiated with `brightness`+`translateY` instead; the amber `button-active.png` art is repurposed for the real `:active` press state, `button-disabled.png` for `:disabled`. `button-hover.png` was left unused (source-only) since it doesn't read as distinct from idle at UI size. Wiring scope: `.actions button`/`.start-button` (all action buttons) and `.sector-transition-frame` only — the many generic `.panel` surfaces app-wide were deliberately left on their existing CSS border, out of scope for a Path-B fallback pass. `icon-corruption.png` is still illegible and still needs regeneration; CSS glitch placeholder still used for the error feedback icon. | Cropped/resized assets in `src/assets/ui/{button-idle,button-active,button-disabled,panel-frame}.png`; original exports at `~/Downloads/metric-quest-design-system_8_6/project/pixel_art/assets/ui/` |
 | "Good AI" mentor/tutor character sprite | Item 3 | **Prompt drafted 2026-08-10** — not yet sent. `docs/GAME_DESIGN_BRIEF.md` §B Step 3c. Requesting the art does not approve or start item 3 itself, which is still blocked on the separate AI-tutor approval decision above. | — |

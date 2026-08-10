@@ -399,7 +399,9 @@ custom-fitted.
 ### Cue A — "Cubicle Fluorescence" (Act I, Panels 1-4)
 
 **Track:** ["Local Forecast – Elevator" by Kevin MacLeod](https://incompetech.com/wordpress/2013/02/local-forecast/)
-(incompetech.com) — `src/assets/audio/cue-a-cubicle-fluorescence.mp3`
+(incompetech.com) — `src/assets/audio/cue-a-cubicle-fluorescence.m4a` (re-encoded
+from the delivered 320kbps mp3 to 128kbps AAC during P5.5 CutsceneView
+wiring — 7.6MB to 3.0MB, no audible loss for background music)
 **License:** Creative Commons BY 3.0 — free for commercial use, **requires
 attribution**. This is the only one of the three cues that does.
 
@@ -429,14 +431,15 @@ screen).
 **License:** CC0 (public domain equivalent) — no attribution required, no
 credit line needed for this one.
 
-The glitch-zap "cutoff" sound under Panel 8 still isn't sourced — that's a
-sub-second sound effect, not a music cue, and Pixabay/Mixkit (the two
-candidates from before) both gate their actual download links behind a
-JS-driven flow that can't be fetched directly the way the two OpenGameArt
-files and the incompetech file could. Grab one manually from
-[Pixabay's glitch effects](https://pixabay.com/sound-effects/search/glitch/)
-(free, commercial use okay, no attribution) when this beat gets built, or
-pull one second of hard digital artifact out of this same track instead.
+**Sourced 2026-08-10:** the Panel 8 glitch-zap stinger is
+["zap1" from Kenney's Digital Audio pack](https://kenney.nl/assets/digital-audio)
+— `src/assets/audio/glitch-zap.ogg`, CC0, no attribution required. Pixabay
+and Mixkit (the two candidates from before) both still gate their actual
+download links behind a JS-driven flow that can't be fetched directly;
+Kenney's asset packs ship as a plain zip with a stable direct URL instead.
+Wired in as a one-shot `sfxSrc` on Panel 8 (`BeatPanel` in
+`src/content/beats.ts`) — separate from the looping `audioSrc` music
+channel, so it plays once over Cue B without interrupting it.
 
 Suno fallback prompt:
 
@@ -454,7 +457,9 @@ a clean ending.
 ### Cue C — "Mainframe Overture" (Act III, Panels 9-13)
 
 **Track:** ["The Adventure Begins" by Frenchyboy Studios](https://opengameart.org/content/the-adventure-begins)
-(OpenGameArt.org) — `src/assets/audio/cue-c-mainframe-overture.wav`
+(OpenGameArt.org) — `src/assets/audio/cue-c-mainframe-overture.m4a` (re-encoded
+from the delivered 6.1MB uncompressed wav to 128kbps AAC during P5.5
+CutsceneView wiring — 1.1MB)
 **License:** CC0 (public domain equivalent) — no attribution required.
 
 This is a first-pass pick, not a locked choice — of the three cues it's

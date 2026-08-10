@@ -716,37 +716,61 @@ region three times mid-flight, not because they must land in one commit.
 
 ---
 
-### P5.5 — New "pulled into the mainframe" cutscene (script delivered, not yet built)
+### P5.5 — New "pulled into the mainframe" cutscene (built 2026-08-10, not yet merged)
 
 **What:** BACKLOG.md item 4's second-round update. A new cutscene beat
 between avatar confirmation and the existing opening beat, showing the
-player's just-chosen avatar being pulled into the mainframe. **Script
-delivered 2026-08-10** — full storyboard (13 panels across 3 acts), the
-CEO memo text, Claude Design asset prompts, and Suno music prompts are in
-`docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`. Not yet implemented.
+player's just-chosen avatar being pulled into the mainframe. Full
+storyboard, the CEO memo text, and the asset/music sourcing are in
+`docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`.
 
-**Scope call: Phase 2, not the Phase 1 default this item originally
-assumed.** The script needs an office, a memo, a portal, and a corridor of
-9 sector doors — more than CSS effects on the existing avatar sprite can
-carry. 5 new commissioned images are requested (office calm/alarm pair,
-one portal/vortex burst, corridor calm/breached pair); everything else
-reuses the existing avatar sprite and the existing ROGUE.exe "corrupted"
-illustration, or is built as in-app UI/CSS with no commissioned art at all
-(the memo itself, and the boot-sequence hand-off into Sector 1).
+**Shipped as Phase 2**, not the Phase 1 default this item originally
+assumed — the script needed an office, a memo, a portal, and a corridor of
+9 sector doors, more than CSS effects on the existing avatar sprite alone
+could carry:
 
-**Music is sourced and done (2026-08-10):** all 3 cues are real,
-royalty-free tracks (2 CC0, 1 CC-BY requiring an on-screen credit line —
-text and placement specified in the Music section) committed at
-`src/assets/audio/`. No Suno generation needed; the prompts are kept in
-the doc only as a fallback if a track needs replacing later.
-
-**Blocked on, to actually build:**
-1. The 5 new art assets (prompts ready to send in
-   `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`).
-2. A `CutsceneView` change to support multi-panel playback — today it
-   only ever renders `panels[0]` (see the comment on `Beat` in
-   `src/content/beats.ts`); the `BeatPanel[]` data shape already supports
-   more, the renderer doesn't yet.
+- **`CutsceneView` now supports multi-panel playback.** It no longer
+  hardcodes `panels[0]` — `BeatPanel` gained `eyebrow`/`heading` (moved
+  from the beat level, since each panel needs its own), `background`,
+  `backgroundZoom`, `showAvatar`/`avatarMotion`, `rogueState`/
+  `rogueMotion`, `whiteoutTransition`, `audioSrc`, `creditLine`, and a
+  `layout: 'boot'` variant for the full-bleed terminal hand-off panel.
+  `openingBeat` was migrated to the new per-panel eyebrow/heading shape
+  (still one panel, unchanged content/behavior).
+- **`mainframePullBeat`** (`src/content/beats.ts`) is the 13-panel beat
+  itself, sequenced in `App.tsx` between avatar confirmation and
+  `openingBeat` — its last panel (the boot screen) chains straight into
+  `openingBeat` rather than the two being separately gated, so a player
+  sees them as one continuous intro. `App.tsx` now passes `avatar` into
+  `CutsceneView` and keys it by `beat.id` so panel state resets cleanly
+  when the beat changes (deliberately not a `useEffect` calling
+  `setPanelIndex(0)` — that trips the react-hooks
+  "no setState synchronously in an effect" lint rule).
+- **All 5 art assets landed** (office calm/alarm, portal burst, corridor
+  calm/breached) and were re-compressed from uncompressed PNG exports
+  (1.3-1.8MB each) to JPG matching the existing sector-background
+  convention (~200-400KB each) before wiring in — the raw exports would
+  have ~doubled the production bundle for no visual gain at this palette.
+- **Audio autoplay needed a real fix, not just a `<audio autoPlay>`
+  attempt:** Chrome only honors the first `play()` call as
+  gesture-attached if it runs inside the click handler's own call stack —
+  a `useEffect` firing after React's render/commit is one tick removed
+  and gets silently blocked. `CutsceneView`'s `syncAudio` helper is called
+  both from an effect (best-effort) and synchronously from
+  `handleContinue`/the mute toggle (guaranteed gesture-attached), so the
+  first real click in the cutscene reliably unlocks playback for the rest
+  of the session.
+- **The CEO memo panel needed frame-level scroll, not just a capped
+  copy block** — a `.cutscene-frame` `max-block-size` + `overflow-y:auto`
+  (`docs/../src/styles.css`), because the panel's total content (avatar +
+  heading + several paragraphs) exceeded the viewport even with the copy
+  block itself capped. Also needed `focus({ preventScroll: true })` on
+  the per-panel Continue/Next button — without it, the frame's own new
+  scroll container would auto-scroll to reveal the focused button and
+  hide the heading above it on every panel change.
+- Verified end-to-end in the Browser pane: fresh avatar → all 13 panels →
+  chains into the existing opening beat → sector transition → Sector 1
+  mission, no console errors. `npm run check` green throughout.
 
 **Depends on:** P5.1 (needs the reordered flow to have a slot for it).
 
