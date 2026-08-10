@@ -292,4 +292,55 @@ made — still waiting on the product owner.
 Both `main`-priority packets are now done and awaiting review. Moving to
 the original Lane A (diagnostics.ts tests) next since there is time left.
 
+## Entry — 2026-08-10, Lanes A+B shipped: diagnostics.ts and avatarOptions.ts test coverage
+
+Both `main`-priority packets (P6.2, P6.1) are up for review, so moved on
+to the original superseded-plan Lane A and Lane B together (independent
+files, small enough to bundle as one packet). Branch
+`claude/lane-a-b-diagnostics-avatar-tests`, PR
+[#4](https://github.com/wfkhan97/metric-quest/pull/4) open against
+`main`.
+
+**Lane A — `src/lib/diagnostics.test.ts` (new).** This file had zero
+coverage despite being a 25-mission mistake classifier. Went further than
+"a representative sample" per the original instruction's own "ideally all
+25" stretch goal: covers **all 43 signatures across all 25 missions**,
+not a subset.
+- For every signature, a hand-crafted SQL string built directly from
+  reading its `matches()` logic (not derived from `solutionSql`) confirms
+  it actually fires when it should.
+- For every signature, `mission.solutionSql` (the real correct answer)
+  confirms it does *not* fire — the exact check this session's own
+  handoff called out as "a real bug worth fixing, not a test to weaken"
+  if it ever failed. None did; nothing needed fixing.
+- `classifyAttempt`'s first-match-wins ordering and both `undefined`
+  branches (unknown mission id, no signature matches) are covered too.
+- Added one small export, `getMistakeSignatures(missionId)`, to
+  `diagnostics.ts` so individual signatures could be tested directly
+  rather than only through `classifyAttempt`'s first-match return value
+  (which would have made testing a mission's 2nd/3rd signature awkward).
+  `classifyAttempt` now calls it internally instead of duplicating the
+  lookup — pure refactor, no behavior change, verified by the
+  false-positive suite passing against the unchanged real mission data.
+
+**Lane B — `src/lib/avatarOptions.test.ts` (new).** Covers the exported
+sprite/color option data (unique non-empty ids, valid `SpriteShape`
+enum, valid `#rrggbb` hex colors, distinct `imageUrl` per sprite) and
+`getSpriteOption`/`getColorOption`'s match + unknown/empty-id fallback
+behavior. Note: the original handoff's phrasing ("every sprite has its
+declared recolors") doesn't quite match this file's actual shape —
+colors are a global 4-option list, not a per-sprite recolor set — so the
+tests validate what the file actually does rather than that
+possibly-imprecise description.
+
+**Checks:** `npm run check` passed — lint, **159 tests** (up from 48:
++92 diagnostics, +19 avatarOptions), `tsc --noEmit`, `vite build`. Every
+new test was run individually with `--reporter=verbose` first to confirm
+each crafted trigger SQL exercises the specific signature it's paired
+with (not a different one in the same mission that happened to also
+match).
+
+Four PRs now open and awaiting review: #2 (P6.2), #3 (P6.1), #4 (Lanes
+A/B). Moving to Lane C (accessibility audit) next.
+
 <!-- Append new entries below this line, most recent last. -->
