@@ -1,8 +1,8 @@
 # Metric Quest — Build Order
 
-Companion to `docs/BACKLOG.md`. The backlog says *what* the four ideas are
-and what's still undecided; this document says *in what order to build
-them, in what size chunks, and how to know each chunk is done*.
+Companion to `docs/BACKLOG.md`. The backlog says *what* each item is and
+what's still undecided; this document says *in what order to build them,
+in what size chunks, and how to know each chunk is done*.
 
 Nothing here overrides `AGENTS.md`, `docs/AI_WORKFLOW.md`, or
 `docs/GAME_DESIGN_BRIEF.md`. Nothing here authorizes starting a backlog
@@ -16,44 +16,39 @@ approval, per the git workflow in `docs/AI_WORKFLOW.md`.
 
 ---
 
-## Session status (2026-08-09) — read this first
+## Session status (2026-08-09, continued) — read this first
 
-Everything below is now built, merged, and pushed to **`claude/game-feel-polish`**
-on origin (`git log origin/claude/game-feel-polish` — HEAD is the "Add Sector 1
-... diagnostic signatures" commit). That branch is **not yet merged to `main`**
-— it needs the user's explicit approval first, per `docs/AI_WORKFLOW.md`. There
-is no other unmerged work anywhere: every `claude/*` feature branch used this
-session is fully merged into `game-feel-polish` (safe to ignore/delete).
+**`claude/game-feel-polish` is merged into `main` and pushed** (commit
+`79f8290`, "Merge claude/game-feel-polish into main"). Wave 0, Wave 1,
+P2.1, and P2.2 (all 9 sectors) are live on `main`. `npm run check` passed
+on `main` post-merge before the push. There is no unmerged work sitting
+anywhere else — this is a good sync point.
 
-**Done this session, in order:**
-- Wave 0 (P0.1, P0.2, P0.3) — sector backgrounds, ROGUE.exe sprites, UI chrome
-  buttons/panel frame. P0.4 (icon-corruption.png regen) explicitly **deferred
-  by the user**, still open, still blocked on a design request nobody has made.
-- Wave 1 (P1.1, P1.2, P1.3) — glossary data model + panel, 5 animated
-  diagrams, deep-link from a mission's concept tag into its entry.
-- P2.1 — opening cutscene + reusable between-sector beat mechanism.
-  `sectorBeats` in `src/content/beats.ts` is wired but **empty** — no
-  between-sector beat has been authored yet (see the still-open question
-  below).
-- P2.2 — mistake-aware diagnostic. **Done, all 9 sectors.** Classifier
-  plumbing plus signatures for every sector's missions
-  (`src/lib/diagnostics.ts`, 22 missions total, 1-2 signatures each). Every
-  signature was verified two ways before being kept: first against
-  `SQL Databases/iTunes.sqlite` with the `sqlite3` CLI (confirming the
-  described mistake actually produces a wrong executed result, not just a
-  stylistic difference), then live in the browser via seeded `localStorage`
-  progress (confirming the classifier actually fires the right label and
-  explanation on a real 2nd-wrong-attempt). Four dead-signature candidates
-  were caught this way and dropped rather than shipped: an unnecessary join
-  (Sector 1), `m6-2`'s CAST mistake (`Quantity` is already an INTEGER
-  column, so a missing CAST doesn't change the result), `m7-1`'s "forgot to
-  combine the Invoice side" (`Customer.Country` alone already covers all 24
-  countries), and one more from the original Sector-1 pass — see the
-  diagnostics.ts file comment. One pattern worth remembering if this file
-  is extended later: most missions want DESC ("highest/most first"), so the
-  generic signature flags *missing* DESC — but `m8-3` wants ascending
-  ("weakest first"), so its signature flags DESC *present* instead. Don't
-  assume the direction; check each mission's brief.
+**Then the product owner played the merged build live** (their own
+browser, `npm run dev` at `localhost:5173`, not the Browser-pane smoke
+test) and gave a full round of UAT feedback. That feedback is now fully
+processed: `docs/BACKLOG.md` has three new items (5, 6, 7) plus one
+explicitly deferred item (8), and this file has the P4.x packets below.
+Three product decisions were confirmed via direct questions rather than
+assumed:
+- Sector 8's `m8-1` confrontation and the opening cutscene both get a
+  **CSS-only escalation now**, real cinematic art **later** (prompt
+  already drafted, not commissioned) — not "wait for art."
+- "Back to sector map" becomes a **quiet text link, not removed outright**
+  — accessibility parity (keyboard/screen-reader) won out over full
+  removal, per `AGENTS.md`.
+
+One more thing worth flagging for whoever picks this up: **a real defect
+was found in shipped art**, not just a preference. All 12 avatar sprites
+(`src/assets/avatars/recruit-*.png`) were pixel-inspected with PIL and
+confirmed to have a checkerboard pattern baked into fully-opaque pixels
+(`alpha=255` everywhere) instead of real transparency — see BACKLOG.md
+item 7 and `docs/GAME_DESIGN_BRIEF.md` §B Step 1c for the fix prompt and
+a verification command. **Lesson for future asset drops:** don't trust
+that an asset "looks transparent" in a screenshot or design-tool preview
+— verify the actual alpha channel (`python3 -c "from PIL import Image;
+print(Image.open('PATH').convert('RGBA').getextrema())"`, alpha low end
+should be `0`, not `255`) before wiring anything in as final.
 
 **Still open / outstanding:**
 - P0.4 — blocked on a design request; deferred, not declined.
@@ -61,33 +56,19 @@ session is fully merged into `game-feel-polish` (safe to ignore/delete).
   question — still open, blocks writing the Sector 8→9 beat specifically.
 - Wave 3 (AI tutor, P3.1) — not a build packet, just a pending product
   decision. Don't prototype it.
-- **The end-to-end playthrough smoke test is now fully complete, no bugs
-  found.** Confirmed this session: cutscene → avatar creator → sector
-  transition → mission flow (multiple times), the glossary from both Home
-  and Mission headers and via concept-tag deep-links, 5 animated diagrams
-  under simulated reduced-motion, diagnostic signatures in Sectors 1/2/3,
-  the `m8-1` ROGUE.exe encounter (renders correctly, visually distinct
-  corrupted-state sprite), the "Sector cleared" milestone banner (fired
-  correctly completing `m8-3`), the "Campaign complete — mainframe restored"
-  banner (fired correctly completing `m9-2`, the last mission, with the
-  `Boardroom Analyst` badge unlocking alongside it), the Sector 9
-  transition screen (renders correctly with avatar + background art), and
-  the Home screen's 100%-complete state (25/25 terminals, both badges
-  listed, gracefully swaps "Resume: <mission>" for "Replay a sector" with
-  no crash). No console errors at any point. Verified live in-browser via
-  seeded `localStorage` progress (not just unit tests) — localStorage was
-  cleared afterward so it doesn't interfere with the user's own UAT pass.
-  Every mission's `solutionSql` was executed for real against the dataset
-  during this pass, not mocked.
+- BACKLOG.md item 8 (multi-save/state management) — explicitly deferred
+  to post-polish, not scheduled into any packet below.
+- P4.1's exact padding/sizing targets — the product owner said they'd
+  send a separate look-and-feel note (screenshots/annotations). Build the
+  directional guidance in P4.1 first; don't block on the note, but expect
+  a follow-up pass once it arrives.
 
 **How to continue:** read `AGENTS.md`, `docs/AI_WORKFLOW.md`, and
 `docs/GAME_DESIGN_BRIEF.md` first (standard project instruction, not new).
-Both the smoke test and P2.2 are done. Everything else still open (P0.4,
-the sector-transition beat-authoring question, Wave 3) is blocked on a
-product-owner decision this session can't make — so the next move is the
-user's: review this branch and approve (or send back) the merge to `main`.
-If the user instead wants more unprompted work, `docs/BACKLOG.md` is the
-place to look for anything not already covered by an open question above.
+The four packets below (P4.1-P4.4) are all unblocked and independent of
+each other — safe to parallelize across sessions/branches, one branch per
+packet per the git workflow. P4.5 (avatar sprite fix) isn't agent-buildable
+at all; it's waiting on the product owner to run a Claude Design prompt.
 
 ---
 
@@ -365,6 +346,135 @@ question of whether Monet's flow needs server-side code is exactly the
 question that determines whether this violates the browser-only rule or
 only the external-AI-call rule, and finding out by building is the wrong
 order.
+
+---
+
+## Wave 4 — First UAT feedback round (backlog items 5, 6, 7)
+
+Opened 2026-08-09 from the product owner's first playtest of the merged
+build. P4.1-P4.4 are independent of each other and of everything above —
+safe to parallelize across sessions, one branch each. P4.5 is not an agent
+packet at all; it's tracked here only so it isn't lost.
+
+### P4.1 — Chrome layout compaction & navigation cleanup
+
+**What:** BACKLOG.md item 5. Remove "Back to sector map" and "Concept
+glossary" from `MissionView`'s top header box. Reduce that header to a
+compact points/integrity readout. Re-add "Back to sector map" as a small
+text link (not a boxed button) somewhere lower-weight — it must stay a
+real, focusable, keyboard-operable control, not disappear outright (see
+the accessibility note in BACKLOG.md item 5; this was an explicit
+product decision, not an agent judgment call). Relocate "Concept
+glossary" next to the SQL editor's action row (Run query / Show hint /
+Reveal example query). Tighten padding across the brief/schema/editor
+panels so "Run query" is reachable without scrolling on a typical laptop
+viewport.
+
+**Done when:**
+- Top header is visually thinner and carries only the points/integrity
+  readout.
+- "Back to sector map" still exists, is keyboard-reachable (tab order,
+  visible focus state), and is visually de-emphasized vs. today's boxed
+  button.
+- "Concept glossary" opens from its new location next to the action row;
+  every existing way into the glossary (Home header, concept-tag
+  deep-links) still works unchanged.
+- On a typical laptop viewport, a mission's "Run query" button is
+  reachable without scrolling past the fold for at least the shorter
+  mission briefs (schema-heavy missions with many tables may still need
+  internal scroll on the schema panel itself — that's fine per §A7,
+  sub-panel scroll isn't the thing being fixed).
+- `npm run check` passes.
+
+**Blocked on:** Nothing for the directional changes above. Exact
+padding/sizing numbers are pending a separate look-and-feel note from
+the product owner — implement the directional guidance now; treat the
+note as a follow-up pass, not a blocker.
+
+**Watch out for:** don't reduce padding so far that panel-frame border
+art (P0.3) starts clipping content, and don't drop focus-visible styling
+while de-emphasizing the back-link visually.
+
+---
+
+### P4.2 — SQL editor syntax highlighting
+
+**What:** BACKLOG.md item 6. Replace the plain `<textarea>` SQL editor
+with CodeMirror 6 + its SQL language mode, themed to the terminal
+palette (`#0a1024`/`#0f1830`/`#1fd3c4`/`#eaf6f4`/`#ffd166`).
+
+**Done when:**
+- Keywords, strings, numbers, and comments are visually distinguished in
+  the editor.
+- The editor's content is still exactly what gets graded — no change to
+  the runner boundary or the temp-table two-statement allowance.
+- Fully keyboard-operable (typing, selection, and the existing
+  hint/reveal-example/run-query flow all still work with no mouse).
+- The "Placeholder — syntax highlighting and autocomplete are coming in
+  a later release" note is updated to drop the "syntax highlighting"
+  half (autocomplete stays a future item).
+- `npm run check` passes, and `npm run build`'s output size is checked
+  and noted in the handoff (new dependency — worth knowing the actual
+  cost, not just the estimate).
+
+**Blocked on:** Nothing. Approved 2026-08-09, no open questions.
+
+---
+
+### P4.3 — Onboarding cutscene CSS drama pass
+
+**What:** BACKLOG.md item 4's 2026-08-09 update. Extend the existing
+opening beat (P2.1) with stronger Phase 1 CSS effects — screen shake,
+glitch intensity ramping, harder scanline/typewriter emphasis — so it
+reads as more jarring/dramatic. No new art; reuses the existing
+sprites/panels already wired into `CutsceneView`.
+
+**Done when:** the opening cutscene visibly escalates (shake/glitch)
+rather than reading as a static panel with text; unskippable-on-first-
+viewing and "Replay opening" behavior from P2.1 are both unchanged;
+effects respect `prefers-reduced-motion` the same way the glossary's
+animated diagrams already do (don't introduce a new reduced-motion gap).
+
+**Blocked on:** Nothing.
+
+**Depends on:** P2.1 (extends it, doesn't replace it).
+
+---
+
+### P4.4 — Sector 8 boss-moment CSS escalation
+
+**What:** BACKLOG.md item 4's 2026-08-09 update. `m8-1`'s ROGUE.exe
+aside in `MissionView` currently reuses the same static-aside treatment
+as any other mission moment. Escalate it with CSS-only effects on the
+existing `rogue-corrupted` sprite (more aggressive glitch, shake, a
+harder verbal beat) so the first direct ROGUE.exe encounter reads as a
+confrontation. A real cinematic upgrade (multi-panel slideshow) is
+scoped and prompt-drafted in `docs/GAME_DESIGN_BRIEF.md` §B Step 3b but
+explicitly not part of this packet — send that prompt separately
+whenever the art is wanted, then this packet's CSS version is the
+fallback/transition state, not throwaway work.
+
+**Done when:** `m8-1`'s ROGUE.exe moment is visibly more dramatic than a
+standard mission aside; the existing `RogueSprite` component is reused,
+not forked; respects `prefers-reduced-motion`.
+
+**Blocked on:** Nothing.
+
+**Depends on:** P0.2 (RogueSprite component; landed).
+
+---
+
+### P4.5 — Avatar sprite transparency fix (not an agent packet)
+
+**What:** BACKLOG.md item 7. Not buildable by an agent — the fix is a
+Claude Design re-export, prompt already drafted in
+`docs/GAME_DESIGN_BRIEF.md` §B Step 1c.
+
+**Status:** waiting on the product owner to run the prompt and hand back
+the result. Once it lands, a small follow-up packet swaps the 12 files
+in `src/assets/avatars/` and verifies transparency landed for real (the
+verification command is in the same doc section) before treating it as
+done — don't just eyeball the new files.
 
 ---
 

@@ -1,12 +1,14 @@
 # Metric Quest — Feature Backlog
 
-Status: loose PRDs for four ideas, not yet scheduled into any sector's build
-order. None of this is authorized to start implementation — each item still
-needs the open questions below answered (some need explicit product-owner
-approval per `AGENTS.md`, called out where relevant) before an agent should
-turn it into a plan. Read `docs/GAME_DESIGN_BRIEF.md` and `docs/architecture.md`
-first; nothing here changes the grading contract, the SQL loop, or the
-browser-only boundary unless a section explicitly flags that it does.
+Status: items 1-4 are the original four ideas (mostly built now — see each
+section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
+2026-08-09 from the first real UAT playtest of the merged build. Items
+5-7 are unblocked and scheduled as BUILD_ORDER.md P4.x packets; item 8 is
+explicitly deferred (post-polish); item 3 still needs explicit
+product-owner approval per `AGENTS.md` before any implementation starts.
+Read `docs/GAME_DESIGN_BRIEF.md` and `docs/architecture.md` first; nothing
+here changes the grading contract, the SQL loop, or the browser-only
+boundary unless a section explicitly flags that it does.
 
 More assets are being generated on an ongoing basis via Claude Design (the
 same workflow as `docs/GAME_DESIGN_BRIEF.md` §B), so items below are not
@@ -336,6 +338,25 @@ reusable pattern for between-sector story beats elsewhere in the game.
   tone decisions needed, this is presentation of story already defined
   in §A1-A3.
 
+### Update (2026-08-09) — playtest feedback, two new sub-items scoped
+First real UAT pass (playing the merged build, not just unit tests) found
+two spots where the existing Phase 1 treatment reads as flat rather than
+dramatic. Both resolved to the same phased approach as everything else in
+this item — CSS-only now, real art later, per product direction:
+- **Opening cutscene needs more weight.** The intro establishes the pitch
+  but doesn't feel jarring/dramatic. Scoped as a CSS pass on the existing
+  beat (screen shake, glitch intensity ramping, scanline/typewriter
+  emphasis) — no new art, extends the same Phase 1 toolkit this item
+  already uses. Tracked as BUILD_ORDER.md P4.3.
+- **`m8-1` (ROGUE.exe's first direct appearance) doesn't land as a
+  confrontation.** It currently reuses the same static aside treatment as
+  any other mission. Scoped as a CSS-only escalation on the existing
+  `rogue-corrupted` sprite (more aggressive glitch, shake, a harder verbal
+  beat) for now; a real cinematic upgrade (multi-panel slideshow, per §A8
+  Phase 2) is scoped and prompt-drafted in `docs/GAME_DESIGN_BRIEF.md`
+  §B Step 3b, but not commissioned yet — send that prompt whenever the
+  real-art version is wanted. Tracked as BUILD_ORDER.md P4.4.
+
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
   just the Sector 8→9 case plus the opening) for v1, with the rest as
@@ -357,6 +378,174 @@ reusable pattern for between-sector story beats elsewhere in the game.
 
 ---
 
+## 5. Chrome layout compaction & navigation cleanup
+
+### Status
+New item, opened from the first real UAT playtest of the merged build
+(2026-08-09). Unblocked — no new art, no new dependency, pure layout/CSS
+and a small component reshuffle. Tracked as BUILD_ORDER.md P4.1.
+
+### Problem
+The mission screen's top header box carries "Back to sector map" and
+"Concept glossary" as explicit boxed buttons, duplicating navigation that's
+already available elsewhere (the sector map is permanently visible in the
+left pane) and crowding out the box that should just be a compact
+points/integrity readout. Below that, generous padding on the brief,
+schema, and editor panels pushes the actual SQL editor and its action
+buttons below the fold on a typical viewport — players report "losing the
+ability to see most of what I need," having to scroll to reach Run
+query/Show hint/Reveal example on almost every mission.
+
+### Goals
+- Remove "Back to sector map" and "Concept glossary" from the top header
+  box. Top header becomes just the compact points/integrity readout,
+  visually thinner than today.
+- "Back to sector map" becomes a small text link (not a boxed button),
+  relocated out of the header — kept as a real, focusable, keyboard-
+  operable control per `AGENTS.md`'s accessibility bar, just visually
+  quiet rather than removed outright. (Per product decision 2026-08-09:
+  accessibility parity wins over full removal.)
+- "Concept glossary" relocates next to the SQL editor's action row (Run
+  query / Show hint / Reveal example query) — closer to where a stuck
+  player actually is when they'd reach for it, which may also help with
+  the "glossary doesn't get much use" observation below.
+- Tighten padding/spacing across the mission workspace (brief, visible
+  schema, SQL editor, actions) so the fold reaches further down the
+  screen — goal is reaching "Run query" without scrolling on a typical
+  laptop viewport, not eliminating all internal scroll (§A7 already
+  allows sub-panel scroll for genuinely long content like a big result
+  table or the full mission list).
+
+### Non-goals
+- Not a redesign of the terminal visual system (§A6) — same palette,
+  same panel-frame/border language, just resized and rearranged.
+- Not touching the SQL loop, grading, or mission content.
+- Concept glossary underuse might also be a discoverability problem
+  beyond placement (naming, visual weight) — this item addresses
+  placement only; revisit if relocating it doesn't move the needle.
+
+### Open questions still to resolve before build
+- Exact padding/sizing targets — the product owner said they'd send a
+  separate note with specific look-and-feel observations (screenshots/
+  annotations). **Still open** — implement the directional guidance above
+  first, then do a follow-up pass once that note arrives rather than
+  guessing at exact pixel values now.
+
+---
+
+## 6. SQL editor syntax highlighting
+
+### Status
+New item, approved 2026-08-09. Unblocked to start, but adds the project's
+first non-trivial new dependency. Tracked as BUILD_ORDER.md P4.2.
+
+### Problem
+The SQL editor is a plain `<textarea>` — no syntax highlighting, no
+bracket matching, nothing that signals "this is a real code editor."
+Product direction: add real SQL syntax highlighting, both because it
+reduces friction writing queries and because matching the highlighting
+players may already know from SQLite tooling makes the editor feel more
+credible/professional.
+
+### Goals
+- Real SQL syntax highlighting in the query editor (keywords, strings,
+  numbers, comments at minimum).
+- Visually themed to match the existing terminal palette (§A6:
+  `#0a1024`/`#0f1830`/`#1fd3c4`/`#eaf6f4`/`#ffd166`) rather than a
+  library's stock theme.
+- Preserve every current behavior: the textarea's value is still the
+  thing graded, hints/reveal-example still work, keyboard operability is
+  not regressed (the editor must remain fully usable via keyboard, per
+  `AGENTS.md`).
+
+### Non-goals
+- Not adding autocomplete, linting, or schema-aware completions in this
+  pass — the "Placeholder — syntax highlighting and autocomplete are
+  coming in a later release" note can drop "syntax highlighting" once
+  this ships, but "autocomplete" stays a future item.
+- Not changing the grading/runner boundary — the editor is still a plain
+  text source for one read-only SELECT (or the temp-table two-statement
+  form); this is presentational only.
+
+### Rough scope
+- CodeMirror 6 (`@codemirror/*` packages) with its SQL language mode —
+  the standard client-side-only editor toolkit; no server/network
+  component, so it doesn't touch the browser-only constraint. This is a
+  real new dependency (first non-trivial one in `package.json`) and will
+  add real bundle weight (rough estimate 150-300KB) — acceptable given
+  `sql.js`'s WASM payload is already the app's biggest asset by far, but
+  worth checking `npm run build`'s output size after landing it.
+- Custom theme extension matching the terminal palette, not a stock
+  CodeMirror theme.
+
+### Open questions still to resolve before build
+None — scoped and approved. Implementation detail (exact CodeMirror
+package set, theme construction) is an implementation call, not a product
+question.
+
+---
+
+## 7. Avatar sprite transparency fix
+
+### Status
+New item, defect found during 2026-08-09 UAT playtest. Blocked on the
+product owner running a Claude Design prompt (already drafted) and
+handing back the result — not an agent-buildable item. Tracked as
+BUILD_ORDER.md P4.5.
+
+### Problem
+All 12 delivered avatar sprites (`src/assets/avatars/recruit-*.png`) were
+verified pixel-by-pixel and confirmed defective: fully opaque
+(`alpha=255` everywhere) with a checkerboard *pattern baked into the
+actual pixels* rather than a real alpha channel. It renders as a visible
+gray/white checkerboard behind every character — most noticeable on the
+avatar creator and sector-transition screens. Every other delivered
+asset (ROGUE.exe sprites, sector backgrounds, UI chrome) was checked the
+same way and confirmed to have genuine transparency — this defect is
+isolated to the avatar set.
+
+### Fix
+Not fixable in code — this is baked pixel content, not a CSS/rendering
+bug, and per `AGENTS.md` this project doesn't generate replacement
+character art directly. The re-export prompt and a verification method
+(so the fix can be confirmed before re-wiring, rather than trusted by
+eye) are in `docs/GAME_DESIGN_BRIEF.md` §B Step 1c.
+
+### Open questions still to resolve before build
+None — root cause confirmed, fix prompt drafted. Waiting on the product
+owner to run it and hand back the result.
+
+---
+
+## 8. Multi-save / new-game / profile state management
+
+### Status
+New item, explicitly deferred by product direction 2026-08-09 — **do
+not build now**. Logged so it isn't lost, not scheduled into
+BUILD_ORDER.md.
+
+### Problem
+Progress today is a single implicit save per browser (`localStorage`,
+see `src/lib/progress.ts`) — there's no way to start a new game, keep
+multiple save slots, or return to a previous game state once overwritten.
+For a single-player classroom exercise this is fine for now; it becomes
+a real gap if multiple students share a machine, or a player wants to
+replay from scratch without losing their current run.
+
+### Explicit product direction
+Revisit **post-polish** — after the current visual/UX polish pass (P4.x)
+and any remaining P2.2-style content work, not before. Not blocked on a
+missing decision so much as intentionally not prioritized yet.
+
+### Open questions (for whenever this gets picked up)
+- Save-slot model: named slots, a slot picker on Home, or something
+  simpler (just an explicit "New Game" that confirms before overwriting)?
+- Does this change the `localStorage` schema in `progress.ts` in a way
+  that needs a migration for existing single-save players, or is it
+  additive?
+
+---
+
 ## Design asset tracker
 
 Single source of truth for which art each backlog item needs and whether
@@ -366,10 +555,11 @@ above to remove any "not built yet" caveat that no longer applies.
 
 | Asset | Needed for | Status | Link / path |
 | --- | --- | --- | --- |
-| Sector backgrounds, Sectors 1-3 & 8 | Item 4 (Phase 2 cutscenes); general sector polish | **Wired in (2026-08-08).** All 9 sector backgrounds render behind `SectorTransitionView`, mapped by chapter number in `sectorBackgrounds.ts`; the interstitial frame is bottom-anchored into the open lower-middle third and stays fully opaque so contrast never depends on the art. Sector 8 still leans slightly more organic/body-horror (pulsing red veins) than the brief's "campy, not horror" target — shipped as-is per prior note; still a candidate for a touch-up pass, not a re-do. | `src/assets/backgrounds/sector-{1-9}.jpg` (compressed from the export at `~/Downloads/stage_backgrounds/`) |
+| Sector backgrounds, Sectors 1-3 & 8 | Item 4 (Phase 2 cutscenes); general sector polish | **Wired in (2026-08-08).** All 9 sector backgrounds render behind `SectorTransitionView`, mapped by chapter number in `sectorBackgrounds.ts`; the interstitial frame is bottom-anchored into the open lower-middle third and stays fully opaque so contrast never depends on the art. Sector 8's body-horror lean — **resolved 2026-08-09:** product owner played it live and confirmed it reads fine; no touch-up pass needed, closing that open note. | `src/assets/backgrounds/sector-{1-9}.jpg` (compressed from the export at `~/Downloads/stage_backgrounds/`) |
 | Sector backgrounds, Sectors 4-7 & 9 | Item 4 (Phase 2 cutscenes); general sector polish | **Wired in (2026-08-08).** Same mechanism as above. Sector 9 (Boardroom Core) is a standout, exact match to brief. | Same as above |
 | ROGUE.exe illustrations (calm + corrupted) | Item 4 (opening/Sector 8 cutscene beats) | **Wired in (2026-08-08).** Both states live as a reusable `<RogueSprite state="calm" \| "corrupted" />` component (`src/components/RogueSprite.tsx`); `MissionView`'s m8-1 aside now renders `corrupted` in place of the CSS glitch-icon placeholder, which has been deleted. `calm` is not yet used anywhere — it's available for the P2.1 opening cutscene. | `src/assets/rogue/rogue-{calm,corrupted}.png` (192×192, resized/compressed from the Claude Design export at `~/Downloads/rogue_sprites/`) |
-| Avatar sprite set | Not a backlog item here, but shared dependency | Built and shipped — 12 real sprites in `src/assets/avatars/`, wired into `avatarOptions.ts`. Exceeds the original 3-4-base-sprite ask. | `src/lib/avatarOptions.ts` |
+| Avatar sprite set | Not a backlog item here, but shared dependency | Shipped, but **defective — found 2026-08-09 (item 7).** All 12 sprites in `src/assets/avatars/` have a checkerboard pattern baked into opaque pixels instead of real alpha transparency (verified with PIL: `alpha=255` everywhere). Re-export prompt + verification method in `docs/GAME_DESIGN_BRIEF.md` §B Step 1c — blocked on the product owner running it. | `src/lib/avatarOptions.ts` |
+| Sector 8/9 confrontation cinematic (multi-panel) | Item 4 (§A8 Phase 2) | Not yet requested — prompt drafted 2026-08-09 in `docs/GAME_DESIGN_BRIEF.md` §B Step 3b, ready to send whenever wanted. A CSS-only stand-in ships first (BUILD_ORDER.md P4.3/P4.4) so this isn't blocking. | — |
 | UI chrome kit (panels, buttons, status icons) | Optional polish for items 1 and 2's panels | **9 of 10 assets wired in (2026-08-08).** Points/badge/progress/restored icons live in `HomeView`/`MissionView`/`ProgressBar`. Buttons + panel-frame now wired via **Path B** (no touch-up request was made): cropped each source PNG to its hard-edged bounding box to remove the bloom that doesn't survive slicing, then applied as CSS `border-image`. Idle/hover still share one source image (they're genuinely near-identical, as originally flagged) — hover is differentiated with `brightness`+`translateY` instead; the amber `button-active.png` art is repurposed for the real `:active` press state, `button-disabled.png` for `:disabled`. `button-hover.png` was left unused (source-only) since it doesn't read as distinct from idle at UI size. Wiring scope: `.actions button`/`.start-button` (all action buttons) and `.sector-transition-frame` only — the many generic `.panel` surfaces app-wide were deliberately left on their existing CSS border, out of scope for a Path-B fallback pass. `icon-corruption.png` is still illegible and still needs regeneration; CSS glitch placeholder still used for the error feedback icon. | Cropped/resized assets in `src/assets/ui/{button-idle,button-active,button-disabled,panel-frame}.png`; original exports at `~/Downloads/metric-quest-design-system_8_6/project/pixel_art/assets/ui/` |
 | "Good AI" mentor/tutor character sprite | Item 3 | Not yet requested — no Claude Design prompt drafted yet | — |
 | Glossary concept diagrams (join Venn diagram, grouping/filtering visuals, etc.) | Item 1 | Building as CSS/SVG in-house for v1; polished Claude Design versions are an optional later upgrade, not requested | — |
