@@ -712,6 +712,30 @@ anywhere the product owner can share a link to. Wanted: a public URL
   the moment it's approved — not applied yet, since switching the data
   source is itself the gated decision, not a prework step.
 
+### Update (2026-08-10) — derivative built for real and fully verified (BUILD_ORDER.md P6.1)
+The estimate above was a scratch proof-of-concept; this is the real
+artifact. Built at `src/assets/data/iTunes.min.sqlite` by copying only
+the `Customer`, `Genre`, `Invoice`, `InvoiceLine`, and `Track` tables
+(schema + data, `VACUUM`ed) out of `SQL Databases/iTunes.sqlite` — that
+source file was only read, never modified. Row counts match the source
+exactly for every one of the 5 tables (Customer 59, Genre 25, Track
+3503, Invoice 412, InvoiceLine 2240). Actual size: **528KB vs. 1,067KB
+(1,092,608 bytes) — a 51% reduction** (the earlier 356KB/67% figure was
+an unverified estimate; this measured number supersedes it, same
+"verify before trusting" rule as everywhere else in this project).
+**Verified against all 25 missions, not a spot check:** every mission's
+`solutionSql` was executed against both the source database and this
+derivative and both matched `mission.expected` exactly, columns and
+rows, including the two `allowsTempWorkspace` missions. Foreign keys to
+the 6 excluded tables (`Album`, `Artist`, `Employee`, `MediaType`,
+`Playlist`, `PlaylistTrack`) were dropped from the derivative's schema
+(the referencing columns like `Track.AlbumId` and
+`Customer.SupportRepId` are kept, just without a `FOREIGN KEY`
+constraint to a table that no longer exists) — no mission's
+`solutionSql` references any of those 6 tables, so this has no effect
+on grading. **Still not wired into `src/lib/sqlRunner.ts`** — that
+switch remains the gated decision above, not a prework step.
+
 ### Decision needed before deployment (yours, not an agent's)
 Per `docs/AI_WORKFLOW.md`'s course-data release gate, pick one:
 - Approve the current full `iTunes.sqlite` as a licensed/reviewed copy
