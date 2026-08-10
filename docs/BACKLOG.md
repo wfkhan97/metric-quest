@@ -379,13 +379,17 @@ Split into two pieces, one buildable now and one not:
 - **Reorder only (buildable now):** avatar creator runs first, then the
   existing unchanged opening beat. No new copy, no new screen. Tracked as
   BUILD_ORDER.md P5.1.
-- **New "pulled into the mainframe" cutscene (blocked):** a beat showing
-  the just-created avatar getting pulled into the computer, slotted
-  between avatar confirmation and the existing opening beat. **Waiting on
-  the product owner to script it** (copy, beat/panel count, whether it
-  needs anything beyond the existing Phase 1 CSS toolkit applied to the
-  avatar sprite the player just picked). Not started; no placeholder
-  dialogue will be invented for it. Tracked as BUILD_ORDER.md P5.5.
+- **New "pulled into the mainframe" cutscene — script delivered
+  2026-08-10:** the product owner wrote the full script directly (an
+  Office-Space-toned beat: a CEO memo announcing an unsupervised AI
+  rollout, escalating office chaos, a pull into the mainframe, a corridor
+  of 9 sector doors, and a chase into Sector 1). Full storyboard, memo
+  text, Claude Design asset prompts, and Suno music prompts are in
+  `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`. **Scoped as Phase 2** (needs 5
+  new commissioned images), not the Phase 1 default this item originally
+  assumed. Tracked as BUILD_ORDER.md P5.5, now unblocked on content but
+  still blocked on a `CutsceneView` multi-panel playback change (today it
+  only ever renders `panels[0]`) and on the 5 new art assets landing.
 
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
@@ -394,10 +398,9 @@ Split into two pieces, one buildable now and one not:
   general between-sector beat mechanism but only authored the opening;
   `sectorBeats` in `src/content/beats.ts` is empty, so this question still
   needs an answer before Sector 8→9 (or any other) beat gets written.
-- **New (2026-08-09, continued):** the "pulled into the mainframe" beat's
-  script — content, panel count, and whether it stays Phase 1 (CSS on
-  existing art) or needs something Phase 2-shaped. Blocks BUILD_ORDER.md
-  P5.5 outright; see the update above.
+- ~~The "pulled into the mainframe" beat's script~~ — **Resolved
+  2026-08-10:** product owner delivered the full script; see
+  `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md` and the update above.
 - ~~Should the opening cutscene run before or after the avatar creator~~ —
   **Resolved 2026-08-08:** before. Landed in P2.1.
 - ~~How is "skip" surfaced~~ — **Resolved 2026-08-08:** unskippable on
@@ -896,7 +899,7 @@ above to remove any "not built yet" caveat that no longer applies.
 | Avatar sprite set | Not a backlog item here, but shared dependency | Shipped, but **defective — found 2026-08-09 (item 7).** All 12 sprites in `src/assets/avatars/` have a checkerboard pattern baked into opaque pixels instead of real alpha transparency (verified with PIL: `alpha=255` everywhere). Re-export prompt + verification method in `docs/GAME_DESIGN_BRIEF.md` §B Step 1c — blocked on the product owner running it. | `src/lib/avatarOptions.ts` |
 | Sector 8/9 confrontation cinematic (multi-panel) | Item 4 (§A8 Phase 2) | Not yet requested — prompt drafted 2026-08-09 in `docs/GAME_DESIGN_BRIEF.md` §B Step 3b, ready to send whenever wanted. A CSS-only stand-in ships first (BUILD_ORDER.md P4.3/P4.4) so this isn't blocking. | — |
 | UI chrome kit (panels, buttons, status icons) | Optional polish for items 1 and 2's panels | **9 of 10 assets wired in (2026-08-08).** Points/badge/progress/restored icons live in `HomeView`/`MissionView`/`ProgressBar`. Buttons + panel-frame now wired via **Path B** (no touch-up request was made): cropped each source PNG to its hard-edged bounding box to remove the bloom that doesn't survive slicing, then applied as CSS `border-image`. Idle/hover still share one source image (they're genuinely near-identical, as originally flagged) — hover is differentiated with `brightness`+`translateY` instead; the amber `button-active.png` art is repurposed for the real `:active` press state, `button-disabled.png` for `:disabled`. `button-hover.png` was left unused (source-only) since it doesn't read as distinct from idle at UI size. Wiring scope: `.actions button`/`.start-button` (all action buttons) and `.sector-transition-frame` only — the many generic `.panel` surfaces app-wide were deliberately left on their existing CSS border, out of scope for a Path-B fallback pass. `icon-corruption.png` is still illegible and still needs regeneration; CSS glitch placeholder still used for the error feedback icon. | Cropped/resized assets in `src/assets/ui/{button-idle,button-active,button-disabled,panel-frame}.png`; original exports at `~/Downloads/metric-quest-design-system_8_6/project/pixel_art/assets/ui/` |
-| "Good AI" mentor/tutor character sprite | Item 3 | Not yet requested — no Claude Design prompt drafted yet | — |
+| "Good AI" mentor/tutor character sprite | Item 3 | **Prompt drafted 2026-08-10** — not yet sent. `docs/GAME_DESIGN_BRIEF.md` §B Step 3c. Requesting the art does not approve or start item 3 itself, which is still blocked on the separate AI-tutor approval decision above. | — |
 | Glossary concept diagrams (join Venn diagram, grouping/filtering visuals, etc.) | Item 1 | Building as CSS/SVG in-house for v1; polished Claude Design versions are an optional later upgrade, not requested | — |
 
 ---
