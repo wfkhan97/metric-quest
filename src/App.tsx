@@ -59,25 +59,30 @@ export function App() {
     goToMission(mission);
   }
 
-  function proceedToMission(mission: Mission, progressSnapshot: Progress) {
-    if (!progressSnapshot.avatar) {
-      setPendingMission(mission);
-      setAvatarMode('onboarding');
-      setView('avatar');
-      return;
-    }
-    enterMissionWithTransitionCheck(mission, progressSnapshot);
-  }
-
-  function handleSelectMission(mission: Mission) {
-    if (!hasSeenOpening(progress)) {
+  // P5.1: avatar creation now gates *before* the opening cutscene (was the
+  // other way around) so a new player's first-run order is avatar creator
+  // -> opening beat -> mission, not opening beat -> avatar creator. Called
+  // once the avatar is already known to be set, either because the player
+  // already had one or because handleAvatarConfirm just set it.
+  function proceedPastAvatar(mission: Mission, progressSnapshot: Progress) {
+    if (!hasSeenOpening(progressSnapshot)) {
       setPendingMission(mission);
       setPendingBeat(openingBeat);
       setCutsceneSkippable(false);
       setView('cutscene');
       return;
     }
-    proceedToMission(mission, progress);
+    enterMissionWithTransitionCheck(mission, progressSnapshot);
+  }
+
+  function handleSelectMission(mission: Mission) {
+    if (!progress.avatar) {
+      setPendingMission(mission);
+      setAvatarMode('onboarding');
+      setView('avatar');
+      return;
+    }
+    proceedPastAvatar(mission, progress);
   }
 
   function handleReplayOpening() {
@@ -96,7 +101,10 @@ export function App() {
       if (pendingMission) {
         const mission = pendingMission;
         setPendingMission(null);
-        proceedToMission(mission, nextProgress);
+        // Avatar is already set by this point (proceedPastAvatar only
+        // reaches the opening beat once it is), so continue straight into
+        // the normal sector-transition/mission-entry check.
+        enterMissionWithTransitionCheck(mission, nextProgress);
       } else {
         setView('home');
       }
@@ -120,7 +128,7 @@ export function App() {
     const nextProgress = setAvatar(progress, avatar);
     handleProgressChange(nextProgress);
     if (pendingMission) {
-      enterMissionWithTransitionCheck(pendingMission, nextProgress);
+      proceedPastAvatar(pendingMission, nextProgress);
     } else {
       setView('home');
     }
