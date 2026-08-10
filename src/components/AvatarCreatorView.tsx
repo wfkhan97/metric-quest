@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { AvatarPreview } from './AvatarPreview';
-import { colorOptions, defaultAvatar, defaultCallsign, getSpriteOption, spriteOptions } from '../lib/avatarOptions';
+import { defaultAvatar, defaultCallsign, spriteOptions } from '../lib/avatarOptions';
 import { type AvatarConfig } from '../lib/progress';
 
 type AvatarCreatorViewProps = {
@@ -13,7 +13,6 @@ type AvatarCreatorViewProps = {
 export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: AvatarCreatorViewProps) {
   const base = initialAvatar ?? defaultAvatar;
   const [spriteId, setSpriteId] = useState(base.spriteId);
-  const [colorId, setColorId] = useState(base.colorId);
   const [callsign, setCallsign] = useState(base.callsign === defaultCallsign ? '' : base.callsign);
 
   function submit(avatar: AvatarConfig) {
@@ -22,7 +21,11 @@ export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: 
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    submit({ spriteId, colorId, callsign: callsign.trim() || defaultCallsign });
+    // colorId is carried through unchanged: every sprite ships with real art
+    // now, so there is no player-facing color choice left to make (see
+    // AvatarPreview's imageUrl branch — colorId only affects the CSS
+    // placeholder shape used when a sprite has no real art yet).
+    submit({ spriteId, colorId: base.colorId, callsign: callsign.trim() || defaultCallsign });
   }
 
   function handleSkip() {
@@ -30,7 +33,6 @@ export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: 
   }
 
   const previewCallsign = callsign.trim() || defaultCallsign;
-  const hasImageSprite = Boolean(getSpriteOption(spriteId).imageUrl);
 
   return (
     <main className="app-shell avatar-creator" aria-labelledby="avatar-title">
@@ -53,7 +55,7 @@ export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: 
         <form id="avatar-form" className="home-content" onSubmit={handleSubmit}>
           <section className="panel avatar-preview-panel" aria-labelledby="avatar-preview-title">
             <h2 id="avatar-preview-title">Badge preview</h2>
-            <AvatarPreview spriteId={spriteId} colorId={colorId} size={128} label={`${previewCallsign} preview`} />
+            <AvatarPreview spriteId={spriteId} colorId={base.colorId} size={128} label={`${previewCallsign} preview`} />
             <p className="callsign-preview">{previewCallsign}</p>
           </section>
 
@@ -72,7 +74,7 @@ export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: 
                         checked={selected}
                         onChange={() => setSpriteId(option.id)}
                       />
-                      <AvatarPreview spriteId={option.id} colorId={colorId} size={48} label={option.label} />
+                      <AvatarPreview spriteId={option.id} colorId={base.colorId} size={48} label={option.label} />
                       <span>
                         {option.label}
                         {selected ? ' (selected)' : ''}
@@ -82,33 +84,6 @@ export function AvatarCreatorView({ initialAvatar, mode, onConfirm, onCancel }: 
                 })}
               </div>
             </fieldset>
-
-            {!hasImageSprite && (
-              <fieldset className="avatar-fieldset">
-                <legend>Choose a color</legend>
-                <div className="swatch-grid">
-                  {colorOptions.map((option) => {
-                    const selected = option.id === colorId;
-                    return (
-                      <label key={option.id} className={selected ? 'swatch-option selected' : 'swatch-option'}>
-                        <input
-                          type="radio"
-                          name="avatar-color"
-                          value={option.id}
-                          checked={selected}
-                          onChange={() => setColorId(option.id)}
-                        />
-                        <span className="color-chip" style={{ background: option.value }} aria-hidden="true" />
-                        <span>
-                          {option.label}
-                          {selected ? ' (selected)' : ''}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            )}
 
             <div className="avatar-callsign-field">
               <label htmlFor="callsign-input">Callsign</label>
