@@ -161,4 +161,75 @@ run in parallel. Same rules as before: one branch + one PR per packet,
 this branch, never touch `main`, never guess on a product decision — log
 it to `docs/OVERNIGHT_QUESTIONS.md` instead.
 
+## Entry — 2026-08-10, P6.2 shipped: multi-save / profile state management
+
+Picked up the superseded plan's #1 priority. Branch
+`claude/p6-2-multi-save`, PR
+[#2](https://github.com/wfkhan97/metric-quest/pull/2) open against `main`.
+
+**What shipped**, matching `docs/BACKLOG.md` item 8 / `docs/BUILD_ORDER.md`
+P6.2's design exactly, no re-derivation:
+- `src/lib/progress.ts`: new `metric-quest-saves-v1` `SaveStore` wrapping
+  the unchanged `Progress` shape into named/timestamped slots. One-time
+  non-destructive migration from the old `metric-quest-progress-v1` key
+  (only fires when the v2 key is absent; legacy key left in place, not
+  deleted). New exports: `listSaveSlots`, `createNewSave`,
+  `switchActiveSave`, `deleteSave`, `renameSave`, `getActiveSaveId`.
+  `loadProgress`/`saveProgress` keep their exact old signatures, now acting
+  on the active slot under the hood.
+- `src/components/SaveSlotPanel.tsx` (new): slot-picker overlay, reusing
+  `GlossaryPanel`'s backdrop/focus-trap/Escape/focus-return pattern
+  exactly. New Game is one-click (additive, no confirm). Delete is an
+  inline two-step confirm per row (not a native `confirm()` — matches the
+  pixel-art panel style and is easier to keyboard-drive). The last
+  remaining slot cannot be deleted.
+- `src/components/HomeView.tsx`: one new "Save slots" link next to
+  "Concept glossary", plus the new `onActiveProgressChange` prop.
+- `src/App.tsx`: one new handler (`handleActiveProgressChange`) wired to
+  that prop. No other component touched — confirms the `Progress`-shaped
+  API surface was preserved correctly, per the packet's own done-criteria.
+- `src/styles.css`: new `.save-slot-*` rules, same visual language as the
+  glossary panel (no new design tokens).
+
+**Tests:** `src/lib/progress.test.ts` gained a "multi-save (P6.2)" suite —
+cold start (fresh browser gets exactly one default slot), migration from a
+v1 save, migration not double-running, create/switch/rename/delete, delete
+refusing to remove the last slot, and delete-of-active falling back to
+another slot. 58 tests total now (was 47).
+
+**Checks:** `npm run check` passed — lint, all 58 tests, `tsc --noEmit`,
+`vite build`. Build still emits the pre-existing >500kB main-chunk warning
+(CodeMirror) — unrelated to this change, same warning as before, tracked
+as tonight's stretch goal if time remains.
+
+**Manual verification:** another chat session already held the fixed
+`:5173` dev port from `.claude/launch.json`, so I started a throwaway
+`vite --port 5199` instead of using `preview_start` (which is pinned to
+5173) and pointed the Browser pane at that. Confirmed in-browser: cold
+start shows one "Recruit" slot with no Delete button (last-slot
+protection); New Game creates and switches to a second slot; rename
+commits and updates the list; delete on the non-active slot requires the
+inline confirm step and leaves the active slot's data untouched; Escape
+closes the panel and returns focus to the "Save slots" trigger button.
+Killed the throwaway server afterward.
+
+**Not done / deferred, per the packet's own non-goals:** no hard cap on
+slot count (design explicitly calls this a non-goal — a soft, easily-
+changed default of 10, not enforcement).
+
+Next: P6.1 (deployment prework), same priority list, independent files —
+starting now on a fresh branch off `main`.
+
+## Entry — 2026-08-10, starting P6.1: deployment prework
+
+Branch `claude/p6-1-deployment-prework` cut from `main` (which already
+has P6.2's... no — P6.1 is independent of P6.2 and P6.2 is not yet merged,
+so this branches from `main` as it stood before P6.2, same as P6.2 did).
+Scope per `docs/BUILD_ORDER.md` P6.1 / `docs/BACKLOG.md` item 10: pin
+Node `engines`, add `vercel.json`, add a README "Deployment" section with
+the data-release gate stated inline, and build+verify the minimized
+5-table SQLite derivative against all 25 missions. Explicitly **not**
+wiring it into `sqlRunner.ts` and **not** deploying anything — both remain
+gated on the product owner's data-release decision.
+
 <!-- Append new entries below this line, most recent last. -->
