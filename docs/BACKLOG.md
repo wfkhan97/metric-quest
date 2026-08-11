@@ -15,6 +15,23 @@ is still open. **2026-08-11:** a live playtest session produced a second
 header-refinement pass on item 9 (P5.6/P7.4), a presentation-only revision
 to the P5.5 cutscene plus a real bug fix in it (both noted in item 4's
 update), and a wholly new item 11 (title screen) — all merged same-day.
+**Later 2026-08-11,** ahead of the first real deploy, a full-repo quality
+audit opened item 12 (a scoped, fully-buildable pre-launch hardening
+checklist) and item 13 (an unscoped UX/game-flow roadmap split between
+near-term polish for the current class and longer-run ideas for a future
+net-new-SQL-learner audience, the latter gated like item 3). **Same day,
+a doc-accuracy pass on items 1-11** closed out every stale or
+never-updated status line and open question: item 1's glossary copy-voice
+question was resolved (playful-retro but didactic — `src/content/glossary.ts`
+rewritten to match) and the item marked shipped; item 4's Sector 8→9 beat
+was authored (`sectorBeats[9]`) and its open question resolved; item 9's
+sector-map-interaction question was closed (it was settled by live
+playtest weeks ago, just never marked); items 5 and 6 were marked shipped
+(they'd merged but were never closed out); and item 10's status/open-
+questions text, which had gone stale and still described the data-release
+decision as an unresolved hard blocker after it was actually made, was
+corrected — nothing is outstanding there except your own go/no-go on
+actually deploying. Item 3 is paused, being handled separately.
 Read `docs/GAME_DESIGN_BRIEF.md` and
 `docs/architecture.md` first; nothing here changes the grading contract,
 the SQL loop, or the browser-only boundary unless a section explicitly
@@ -31,6 +48,12 @@ asset status drift out of sync with what's actually been generated.
 ---
 
 ## 1. Concept glossary / index with visuals & animations
+
+### Status: fully shipped
+P1.1 (data model/shell) and P1.3 (concept-tag deep-linking) landed
+2026-08-08; P1.2 (animated diagrams) followed. The one open question left
+after that (copy voice) was resolved and applied 2026-08-11 — see below.
+Nothing left to build here.
 
 ### Problem
 Players who get stuck mid-mission have no in-app reference for the SQL
@@ -97,11 +120,18 @@ or "what does `HAVING` do differently from `WHERE`" in the game's own voice.
 - ~~Overlay vs. leave the mission~~ — **Resolved 2026-08-08:** the glossary
   opens as an overlay on top of the active mission (or Home); closing it
   returns exactly where the player was. Landed in P1.1 as `GlossaryPanel`.
-- Copy voice: should glossary entries go through the same design-brief
+- ~~Copy voice: should glossary entries go through the same design-brief
   tone pass as mission copy (in-world, playful-retro), or is a more
   neutral "documentation" voice acceptable given this is reference
-  material rather than story content? (Sourcing itself is resolved above
-  — public sites for research/accuracy, rewritten in-house either way.)
+  material rather than story content?~~ — **Resolved 2026-08-11:**
+  playful-retro, matching mission copy, but didactic first — a light
+  in-world hook per entry, never at the expense of a precise, correct
+  explanation. `src/content/glossary.ts` previously committed to the
+  opposite call (a comment there explicitly chose neutral "documentation"
+  tone over in-world voice) — that comment and all 16 entries' `summary`/
+  `explanation` text were rewritten to match this decision. (Sourcing
+  itself was already resolved above — public sites for research/accuracy,
+  rewritten in-house either way.)
 
 ---
 
@@ -443,12 +473,21 @@ Split into two pieces, one buildable now and one not:
   script, sequencing, or art.
 
 ### Open questions still to resolve before build
-- Does every sector transition get an authored beat, or only some (e.g.
+- ~~Does every sector transition get an authored beat, or only some (e.g.
   just the Sector 8→9 case plus the opening) for v1, with the rest as
-  incremental follow-ups? **Still open** — P2.1 (2026-08-08) built the
-  general between-sector beat mechanism but only authored the opening;
-  `sectorBeats` in `src/content/beats.ts` is empty, so this question still
-  needs an answer before Sector 8→9 (or any other) beat gets written.
+  incremental follow-ups?~~ — **Resolved 2026-08-11:** product owner
+  delegated the choice of which beat to author to the agent ("I trust you
+  to pick a beat"). Sector 8→9 was authored — `sectorBeats[9]` in
+  `src/content/beats.ts` — as the highest-value single beat: it fulfils
+  §A5's "completing Sector 8 can trigger a short in-world beat introducing
+  the Sector 9 final-boss framing" and §A3's reserved ROGUE.exe voice slot
+  for "one line for the Sector 9 final-boss opening," using only
+  already-shipped assets (the Sector 8 background, `RogueSprite`'s
+  corrupted state — no new art). It plays as a short two-panel prelude
+  immediately before the existing (unchanged) Sector 9
+  `SectorTransitionView`, not a replacement for it. The rest of
+  `sectorBeats` stays empty by design — incremental authoring, not a
+  requirement that every sector get one.
 - ~~The "pulled into the mainframe" beat's script~~ — **Resolved
   2026-08-10:** product owner delivered the full script; see
   `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md` and the update above.
@@ -468,10 +507,12 @@ Split into two pieces, one buildable now and one not:
 
 ## 5. Chrome layout compaction & navigation cleanup
 
-### Status
-New item, opened from the first real UAT playtest of the merged build
-(2026-08-09). Unblocked — no new art, no new dependency, pure layout/CSS
-and a small component reshuffle. Tracked as BUILD_ORDER.md P4.1.
+### Status: fully shipped
+Opened from the first real UAT playtest of the merged build (2026-08-09).
+Shipped as BUILD_ORDER.md P4.1 and merged to `main`; superseded/extended
+by item 9's P5.4 and P5.6/P7.4 passes (also shipped). Nothing left to
+build here — this doc corrected 2026-08-11 to reflect that (was never
+marked closed at the time).
 
 ### Problem
 The mission screen's top header box carries "Back to sector map" and
@@ -523,9 +564,13 @@ query/Show hint/Reveal example on almost every mission.
 
 ## 6. SQL editor syntax highlighting
 
-### Status
-New item, approved 2026-08-09. Unblocked to start, but adds the project's
-first non-trivial new dependency. Tracked as BUILD_ORDER.md P4.2.
+### Status: fully shipped
+Approved 2026-08-09, shipped as BUILD_ORDER.md P4.2 and merged to `main`
+— CodeMirror 6 (`@codemirror/*`) is in `package.json` and wired in
+`src/components/SqlEditor.tsx` (lazy-loaded, per `MissionView.tsx`'s
+comment, since it's the largest dependency in the bundle). Nothing left
+to build here — this doc corrected 2026-08-11 to reflect that (was never
+marked closed at the time).
 
 ### Problem
 The SQL editor is a plain `<textarea>` — no syntax highlighting, no
@@ -737,16 +782,20 @@ it doesn't need to happen before the packet starts.
 
 ## 10. Public deployment (Vercel)
 
-### Status: prework shipped 2026-08-10 — going live is still blocked on you
+### Status: fully resolved 2026-08-10 — nothing left to build; going live is entirely your call, whenever
 All of BUILD_ORDER.md P6.1's prework merged to `main` (PR #3): the
 `engines` pin, `vercel.json`, the README Deployment section, and the real
 minimized 5-table derivative at `src/assets/data/iTunes.min.sqlite`
 (verified against all 25 missions' expected results, not just spot-checked
-— see the update below). **One specific finding below is still a hard
-blocker on actually going live**, not a checklist item to route around —
-see "Decision needed before deployment" further down. Nothing in this
-item's prework is left to build; the remaining step is your decision, not
-more agent work.
+— see the update below). **Correction (2026-08-11):** this line and the
+"Open questions" section below it previously still described the
+data-release decision as an open hard blocker — that was stale the moment
+it was written; the "Decision made" section further down in this same
+item records that the decision was actually made and wired into
+`sqlRunner.ts` the same day (2026-08-10). There is no outstanding
+technical or data-release question left on this item. The only things
+left are yours: whether/when to actually deploy, and, if so, custom
+domain vs. the default `*.vercel.app` URL (cosmetic).
 
 ### Problem
 The app runs locally (`npm run dev`/`npm run build`) but isn't deployed
@@ -877,22 +926,27 @@ per the release gate's own requirement:
   doesn't change the browser-only architecture.
 
 ### Open questions still to resolve before going live
-- ~~The data decision above.~~ **Resolved 2026-08-10** — see "Decision
-  made" above. This was a stale line left over from before that decision
-  was recorded further up in this same section; not a real remaining
-  blocker.
+- ~~**The data decision above.** Hard blocker.~~ — **Resolved 2026-08-10**
+  — see "Decision made" above. This bullet, and the "Status" line at the
+  top of this item, were both left stale after the fact (still describing
+  it as an open hard blocker); two independent sessions caught and fixed
+  this the same day (2026-08-11) — not a real remaining blocker either
+  way.
 - Custom domain, or the default `*.vercel.app` URL? Cosmetic, not
-  blocking prework.
+  blocking prework — genuinely the only open item here, and it's yours
+  to decide whenever you deploy.
 
 ---
 
 ## 9. Mission screen information density & hierarchy pass
 
-### Status
-New item, opened 2026-08-09 (continued) from a second UAT round on the
-merged build (P4.1-P4.4 all live). Unblocked — no new art, no new
-dependency, pure layout/CSS and small component reshuffles, same
-character as item 5. Scheduled as BUILD_ORDER.md P5.2-P5.4.
+### Status: fully shipped
+Opened 2026-08-09 (continued) from a second UAT round on the merged build
+(P4.1-P4.4 all live); no new art, no new dependency, pure layout/CSS and
+small component reshuffles, same character as item 5. P5.2-P5.4 landed
+2026-08-09/10, and the second header-refinement pass (P5.6/P7.4) landed
+2026-08-11 — both open questions below were settled the same day via live
+playtest. Nothing left to build here.
 
 ### Problem
 P4.1 thinned the header and moved controls around, but the mission
@@ -987,21 +1041,21 @@ written note) found more to tighten, landed as BUILD_ORDER.md P5.6/P7.4:
   into the Terminal Reward box next to it.
 
 ### Open questions still to resolve before build
-- **Sector-map slide-out interaction:** the product owner described
-  "put it into the top box and if someone clicks it then it slides out"
-  — read here as an overlay/drawer triggered from a header control
-  (similar pattern to the existing `GlossaryPanel` overlay), rather than
-  an inline-expanding accordion that would push mission content around.
-  This is a judgment call, not a confirmed decision — flagged for the
-  product owner to correct before or during P5.4 if the intended
-  interaction is different (e.g. an inline expand instead of an
-  overlay).
-- Exact visual treatment of the consolidated header (how the map
-  trigger, points/integrity readout, terminal reward, and badges toggle
-  share the header's width without becoming cramped again) is an
-  implementation call for whoever builds P5.4, in the same spirit as
-  item 5's deferred exact padding numbers — direction is clear, pixel
-  values aren't.
+- ~~**Sector-map slide-out interaction:** the product owner described "put
+  it into the top box and if someone clicks it then it slides out" — read
+  here as an overlay/drawer triggered from a header control, rather than
+  an inline-expanding accordion.~~ — **Resolved 2026-08-11:** the
+  overlay/drawer reading was correct. Confirmed via live playtest with the
+  product owner driving the browser directly (not just an agent's
+  interpretation) — see `BUILD_ORDER.md` Wave 7's P5.6 notes ("shipped —
+  verified live in the Browser pane across the flow"). This line was
+  never updated to reflect that at the time; corrected now.
+- ~~Exact visual treatment of the consolidated header...~~ — **Resolved**:
+  shipped and live-verified as part of P5.4 and the P5.6/P7.4 refinement
+  pass (scoreboard as a single row, badges moved into Terminal Reward,
+  etc. — see the update above). Implementation-call items like this don't
+  need a separate close-out; recorded here only for consistency with the
+  rest of this item now being marked closed.
 
 ---
 
@@ -1051,6 +1105,341 @@ None — shipped without any open product questions.
 
 ---
 
+## 12. Pre-launch code quality & hardening pass
+
+### Status
+New item, opened 2026-08-11 ahead of tonight's first real deploy, from a
+full-repo audit (not a playtest — a direct read of every `src/` file,
+`docs/BACKLOG.md`/`BUILD_ORDER.md`, `npm run check`'s live output, and a
+manual live check of the title screen in the Browser pane). Everything
+below is a verified, specific finding against the actual code as of this
+commit, not a generic "add more tests" wishlist. Unblocked — no design
+asset, no product decision, and no change to the SQL loop or grading
+contract is required for any item here.
+
+### Problem
+The codebase has been built across ~20 rapid sessions and is in genuinely
+good shape — `npm run check` (lint, 169 tests, typecheck, build) passes
+clean right now, there is no `dangerouslySetInnerHTML`/`innerHTML`/`eval`
+anywhere in `src/`, no secrets or env vars in the repo, no `TODO`/`FIXME`/
+stray `console.log` left behind, and the git-workflow/handoff discipline
+in `docs/AI_WORKFLOW.md` has clearly been followed throughout. Tonight is
+the first time this ships to a real audience, though, which is exactly the
+moment to close the gaps that don't show up in day-to-day feature work:
+missing test coverage on the highest-risk components, no failure-mode
+handling for a couple of realistic classroom conditions, and a small
+amount of copy-pasted logic worth deduplicating while it's still fresh.
+
+### Findings (each independently actionable)
+
+1. **Zero component-level test coverage.** All 169 existing tests live in
+   `src/lib/*.test.ts` (`grading`, `sqlRunner`, `missions`, `progress`,
+   `diagnostics`, `avatarOptions`) — there is not one `.test.tsx` file
+   anywhere in `src/components/`. `MissionView.tsx` (441 lines — the
+   grading flow, the hint/diagnostic/"see answer" attempt-count gating,
+   the sector-map drawer's focus trap) and `App.tsx` (258 lines — the
+   entire onboarding/routing state machine: title → avatar → cutscene →
+   home → mission, new-game-vs-resume, save-slot switching) are the two
+   most stateful, highest-blast-radius files in the app and have no
+   automated coverage at all. `SaveSlotPanel.tsx` has the one genuinely
+   destructive user-facing action in the whole app (delete a save) and is
+   also untested.
+2. **No top-level error boundary.** `App.tsx` has no `ErrorBoundary`
+   anywhere in its tree. An uncaught render exception in any component —
+   a malformed mission entry, a null-ref in a cutscene panel, anything —
+   currently blanks the entire app to a stock white screen with no
+   terminal chrome, no "reload" affordance, nothing in-world. For a
+   synchronous classroom session that is a materially worse failure mode
+   than a scoped fallback panel styled to the existing visual system
+   (§A6's palette) with a "Signal lost — reload to reconnect" message.
+3. **`pnpm audit` has never been run or recorded.** The project uses
+   pnpm (`pnpm-lock.yaml`, and the README's deployment section already
+   tells Vercel to auto-detect it), but every script and doc reference is
+   `npm run ...`, and `npm audit` fails outright against a pnpm lockfile
+   (confirmed live: `ENOLOCK`/"requires an existing shrinkwrap file").
+   No dependency-vulnerability check has ever actually succeeded and been
+   recorded anywhere in this repo's history, for a dependency tree that
+   includes `sql.js` (WASM), CodeMirror, React, and Vite. This is a
+   two-minute check (`pnpm audit`) that has simply never been run.
+4. **`localStorage` write failures are unhandled.** `src/lib/progress.ts`
+   already defends the read path (`JSON.parse` inside `try`/`catch`,
+   falling back safely on corrupt data — confirmed at lines 126-144), but
+   every `localStorage.setItem` call is unguarded. A write can throw for
+   real, ordinary reasons — quota exceeded, or a locked-down/shared
+   classroom machine with storage disabled in a school browser profile —
+   and today that throw is uncaught, so a player's completed mission or
+   new save could silently fail to persist with zero signal that anything
+   went wrong. Worth an explicit decision on behavior (retry, surface a
+   "your progress isn't saving" banner, or at minimum fail loudly in dev)
+   rather than leaving it as an unhandled exception path.
+5. **The overlay focus-trap implementation is duplicated three times,
+   verbatim.** `GlossaryPanel.tsx`, `SaveSlotPanel.tsx`, and
+   `MissionView.tsx`'s sector-map drawer each independently define the
+   exact same `FOCUSABLE_SELECTOR` constant (`'a[href], button:not(...),
+   textarea, input, select, summary, [tabindex]...'`) and near-identical
+   Tab/Escape keydown handling (confirmed by direct comparison of all
+   three files). This is exactly the kind of "reduce code, make it more
+   human" cleanup being asked for: extract one `useFocusTrap` hook (e.g.
+   `src/lib/useFocusTrap.ts`) that all three call sites share. Pure
+   refactor, zero intended behavior change — re-verify keyboard operability
+   at all three sites after extracting, since this is the project's most
+   accessibility-sensitive shared logic.
+6. **Bundle is 22MB, ~15MB of it audio across 12 files** (`sector-1.m4a`
+   through `sector-9`, plus 3 cutscene/title cues — sizes range 600KB to
+   3MB each, confirmed via `du`). This is not confirmed to be an actual
+   problem — Vite asset imports are URL references, not inlined bytes,
+   and `<audio>` doesn't force-fetch a full file on mount by default —
+   but two things are worth verifying rather than assuming fine before a
+   room of students opens the same link at once: (a) the title screen's
+   menu theme (1.1MB, `cue-c-mainframe-overture`) and the opening
+   cutscene's two cues (2.9MB/3MB) load at or near first paint on every
+   fresh session — confirm this doesn't stall time-to-interactive on
+   typical school wifi, not just fast home broadband; (b) whether
+   re-encoding the sector loop tracks at a lower bitrate (they're short
+   chiptune loops, not full mixes) meaningfully shrinks total payload
+   without audible quality loss.
+7. **Mission music mute doesn't persist across screens** — noted here
+   because it's as much a code-quality/state-management gap as a UX one
+   (cross-referenced in item 13 below): `TitleScreen`, `CutsceneView`, and
+   `MissionView` each hold their own independent `useState(false)` mute
+   flag (confirmed at each file's mute-toggle call site), so muting music
+   on the title screen has no effect once the player reaches a mission.
+8. **Verified clean, no action needed** (recording these so they aren't
+   re-litigated): no `dangerouslySetInnerHTML`/`innerHTML`/`eval` anywhere
+   in `src/`; SQL injection is structurally not applicable (grading
+   compares executed result tables from the player's own sandboxed,
+   per-run, in-memory SQLite database — see `sqlRunner.ts` — never
+   server-side string interpolation); no secrets, API keys, or `.env`
+   values anywhere in the repo; `npm run check` (lint at
+   `--max-warnings=0`, 169 tests, typecheck, build) passes clean as of
+   this writing; the title screen was spot-checked live in the Browser
+   pane at a 375px mobile viewport and reflows correctly with no
+   horizontal scroll or clipped content.
+
+### Non-goals
+- Not a rewrite of anything above — every finding here is additive
+  (tests, a boundary, a hook extraction, a defensive wrap) or a
+  verification step, never a redesign.
+- Not touching the SQL loop, grading contract, or syllabus coverage.
+- Not blocking tonight's deploy on all eight items landing — see the
+  priority split below for what's worth doing before vs. after going
+  live.
+
+### Rough scope / suggested priority
+**Before tonight's deploy (fast, low-risk, highest value if something
+goes wrong live):**
+- Run `pnpm audit`, record the result (clean, or triage any findings).
+- Wrap `localStorage.setItem` defensively in `progress.ts` (item 4).
+- Add the top-level `ErrorBoundary` (item 2) — the single highest
+  value-per-minute item here for a live classroom session.
+
+**This week, not blocking deploy:**
+- Extract the shared `useFocusTrap` hook (item 5).
+- Add component-level test coverage, starting with `MissionView`'s
+  grading/gating flow and `SaveSlotPanel`'s delete-confirm flow (item 1).
+- Audio bundle review (item 6) and the cross-screen mute persistence fix
+  (item 7, also tracked in item 13's MVP-audience list).
+
+### Who builds this
+Entirely buildable by Claude Code or Codex directly — no Claude Design
+asset and no product decision is needed for any of the eight findings
+above. Safe to just say "go" on the whole item, or pick individual
+findings by number.
+
+### Open questions still to resolve before build
+None — every finding above is either a direct fix or an explicit
+priority call already made in the "Rough scope" section.
+
+---
+
+## 13. Post-launch UX & game-flow enhancement roadmap
+
+### Status
+New item, opened 2026-08-11 alongside item 12, from the same full-repo
+read plus a live check of the shipped title screen. This item is
+deliberately a **roadmap of candidate ideas**, not a scoped, approved
+build packet the way items 1-11 are — several entries below need an
+explicit product-owner call (curriculum scope, tone/audience judgment) or
+a Claude Design asset before they could be scoped into a `BUILD_ORDER.md`
+packet. Each entry says which of those it needs, if any.
+
+Split in two, per direct product request: **Part A** is near-term polish
+for the audience playing tonight (the current class — already SQL-
+literate to some degree, playing on their own laptops, likely
+synchronously). **Part B** is longer-run investment aimed at a future
+public/net-new-SQL-learner audience, which has different needs than the
+current cohort in ways worth naming explicitly rather than assuming the
+two audiences want the same next features.
+
+---
+
+### Part A — Near-term polish for the current class
+
+#### A1. Cross-screen music mute should persist
+Same root cause as item 12 finding 7: `TitleScreen`, `CutsceneView`, and
+`MissionView` each own an independent, non-persisted mute flag. A player
+who mutes music on the title screen (reasonable in a shared classroom or
+library) gets full volume back the instant they reach a mission. Fix:
+lift mute state to `App.tsx` (or a small shared hook backed by one
+`localStorage` key, consistent with how everything else already persists)
+so one mute action holds for the whole session. **Buildable now, no
+design/product input needed.**
+
+#### A2. SQL editor keyboard shortcut: Cmd/Ctrl+Enter to run
+Confirmed via direct read of `SqlEditor.tsx`: CodeMirror is wired with
+only `defaultKeymap`/`historyKeymap` (standard text editing, undo/redo) —
+no custom "run query" binding exists. Cmd/Ctrl+Enter to execute is the
+near-universal convention across SQL tools (and notebooks generally); MBA
+students who've touched any query tool will reach for it reflexively.
+Small, low-risk addition to `SqlEditor`'s `keymap.of([...])` array that
+calls the same `runQuery` `MissionView` already wires to the button.
+**Buildable now, no design/product input needed.**
+
+#### A3. Player-initiated progress summary/export
+`AGENTS.md`'s no-telemetry rule means the game itself must never collect
+or transmit what a player did — that's non-negotiable and this item
+doesn't touch it. But nothing prevents a player-initiated, purely local
+"my progress" view: a summary screen (sectors cleared, points, badges
+earned) styled as an in-world terminal printout, screenshot-friendly or
+with a "copy summary" button, generated entirely client-side from data
+the player already has in their own `localStorage`. Useful for a
+classroom context specifically — a student showing an instructor "here's
+where I am" without the game reporting anything on its own. **Buildable
+now.** Copy/tone should stay in the terminal voice — a quick pass against
+`docs/GAME_DESIGN_BRIEF.md` §A2 keeps it consistent, no new design asset
+required.
+
+#### A4. Verify the in-mission screen at mobile/narrow widths
+The title screen was checked live at 375px and reflows cleanly (see item
+12). `MissionView` — schema explorer, SQL editor, and result table all
+visible at once — is the densest screen in the app and is where §A7's
+"320px through desktop" commitment is most likely to be under real
+pressure; it was not checked live in this pass (a dev server from another
+active session was already running against real save data, and mutating
+its state to walk through onboarding wasn't worth the risk). Worth a
+dedicated live check before assuming the commitment holds on whatever
+device mix the class actually uses. **Verification task, buildable now —
+no design/product input needed unless it turns up a real layout problem
+big enough to need new breakpoints.**
+
+#### A5. Confirm the deploy doesn't regress anything item 10 already decided
+Not a new idea — a reminder that item 10's data-source decision
+(`iTunes.min.sqlite`, not the full source file) is already made and wired
+in; tonight's deploy just needs to actually happen against `main` in its
+current state. Flagging here only because it's the one item in this list
+that **needs the product owner directly** — pushing to a live URL is
+exactly the kind of action this session won't take without explicit
+go-ahead each time, per the project's own risk posture.
+
+---
+
+### Part B — Longer-run investment for a future net-new-SQL-learner audience
+
+The current class already knows some SQL and is playing a game they were
+introduced to directly. A future public/net-new audience is a different
+design target: no prior context for the fiction, likely less SQL
+background, and no instructor in the room to unblock a stuck player.
+Items already tracked elsewhere are cited, not repeated, so this stays a
+genuinely new list:
+
+#### B1. A short guided "SQL basics" primer before Sector 1
+Already explicitly flagged as a future idea in `docs/BACKLOG.md` item 9's
+non-goals ("the product owner flagged a tutorial as a possible longer-run
+answer... materially bigger feature, out of scope") — restated here as
+the single highest-leverage net-new-learner gap: today the game assumes a
+player already knows what `SELECT`/`FROM`/`WHERE` mean before Mission
+1.1. A true beginner has no on-ramp before being handed a graded
+business question. **Needs a product-owner scoping decision** (how much
+primer, skippable for the current SQL-literate class or not, whether it's
+static copy or interactive) before it's buildable — this is a curriculum
+design call, not an engineering one.
+
+#### B2. Optional low-stakes "practice reps" before each graded mission
+For a true beginner, 25 graded missions across filter → aggregation →
+joins → subqueries/CTEs → dates → `CASE` → views is a steep climb with no
+repetition built in. A per-concept, ungraded scratch query (same schema,
+lower-stakes prompt, no points/badges on the line) before the graded
+mission would give repetition without new curriculum content — reusing
+`mission.visibleTables`/`relationships`, just against a practice prompt
+instead of a graded one. **Needs a product-owner decision**: this is real
+curriculum-authoring work (one practice prompt per mission, minimum), not
+just a code change, and changes pacing/session length.
+
+#### B3. A free-exploration sandbox/scratchpad mode
+Run arbitrary read-only SQL against the visible schema outside of any
+graded mission, for open-ended practice. Fits the runner's existing
+read-only-SELECT safety boundary in `sqlRunner.ts` with no change to that
+contract — the only real design question is in-fiction framing (e.g. "an
+unpurged terminal you can query freely without triggering a grade") and
+whether it's scoped to the whole database or per-sector. **Needs a
+product-owner decision** on scope and whether it fits the narrative frame
+before being buildable; the engineering itself is low-risk once scoped.
+
+#### B4. Just-in-time inline concept tips, distinct from the glossary
+Today's glossary (item 1) is entirely player-initiated — open it or don't.
+A true beginner hitting their first `NULL` in a result table, or their
+first cartesian-product row explosion from a missing join condition, may
+not know there's anything to look up. A small, dismissible, non-blocking
+inline tip (e.g. "first time seeing NULL? here's what it means," shown
+once, dismissible, never blocking the workspace) is a middle ground
+between "say nothing" and "force a tutorial." Overlaps somewhat with
+item 2's mistake-aware diagnostic (which already surfaces on repeated
+wrong attempts) — this would be a lighter, first-encounter-triggered
+version for correct-but-first-time moments the diagnostic doesn't cover.
+**Needs a product-owner decision** on tone/intrusiveness (the design
+brief's whole ethos is "player-initiated, nothing pops up uninvited" —
+this idea cuts against that by design, so it needs an explicit
+exception, not an agent's judgment call) — genuinely optional, flagged
+as a candidate rather than a recommendation.
+
+#### B5. A real screen-reader pass, not just code-level AA checks
+`AGENTS.md`'s accessibility bar (keyboard operability, semantic controls,
+visible focus, non-color feedback) has clearly been enforced throughout —
+confirmed via `aria-`/`role` usage across every component and the
+duplicated-but-present focus-trap pattern in item 12. What hasn't
+happened anywhere in the project history read here is an actual pass with
+a real screen reader (VoiceOver/NVDA), as opposed to code inspection. Low
+risk for the current class (a known, small audience); higher-stakes once
+this is a public link to an unknown audience with a wider range of
+assistive-tech needs. **Verification task** — buildable/testable now, no
+design or product input needed, just time with a screen reader running.
+
+#### B6. Tone/localization fit for an audience beyond the current class
+The satirical corporate-AI-pressure humor (§A1-A2 of the design brief) is
+specifically calibrated to a US-corporate-culture register ("Office
+Space"-style) that a known MBA cohort will read easily. A future public
+or more internationally diverse audience may not share that specific
+cultural reference frame as readily. Not a recommendation to change
+anything — the current tone is a deliberate, working creative choice —
+just a named consideration **for the product owner** to weigh if/when
+this ever reaches an audience beyond a class that's already met the
+material in person.
+
+#### B7. Desktop/laptop as the explicit primary target, decided not assumed
+The SQL editor, schema explorer, and result table together are a
+code-tool experience that's realistically desktop/laptop-first even
+though §A7 commits to a 320px reflow floor. Worth an explicit product
+decision — "mobile gets a readable, reflowed experience but isn't a
+primary target" vs. "mobile should be a first-class way to actually play
+missions" — since that decision changes how much future layout work (item
+A4 above, and beyond) is worth investing relative to other priorities.
+**Needs a product-owner decision**, informed by A4's verification pass.
+
+### Non-goals (whole item)
+- Nothing in Part B is scoped or approved to build — these are candidates
+  for the backlog, the same status item 3 (AI tutor) already has: real
+  ideas, not green-lit packets.
+- Nothing here proposes telemetry, analytics, accounts, or a backend, per
+  `AGENTS.md`'s standing rule — A3's export idea is deliberately
+  player-initiated and local-only for exactly this reason.
+- Doesn't touch the SQL loop, grading contract, or syllabus coverage.
+
+### Open questions still to resolve before build
+- Every Part B item names its own product-owner decision inline; Part A
+  items A1-A4 have none and are ready to build whenever prioritized.
+
+---
+
 ## Design asset tracker
 
 Single source of truth for which art each backlog item needs and whether
@@ -1081,20 +1470,34 @@ above to remove any "not built yet" caveat that no longer applies.
   numbered "P" packets) with acceptance criteria, and names which open
   question blocks each one. Read it before scoping any of this into a
   session.
-- Items 1, 2, 4, 8, 9, and 11 fit the current architecture with no
-  approval needed — they can be scoped into normal sector/session work
-  whenever prioritized. All are shipped as of 2026-08-11; item 4's
-  "pulled into the mainframe" beat (once the one exception waiting on the
-  product owner's script) landed 2026-08-10 and was revised once more
-  2026-08-11 — see its section above.
+- **Items 1, 2, 4, 5, 6, 7, 8, 9, and 11 are all fully shipped, with no
+  open questions left in any of them** — swept and corrected 2026-08-11
+  (several had drifted: item 1's copy-voice question, item 4's
+  beat-coverage question, and item 9's sector-map-interaction question
+  were all genuinely unresolved in the doc text despite being settled in
+  practice; items 5 and 6 had never been marked shipped at all despite
+  merging weeks earlier). Nothing in items 1-11 needs anyone's attention
+  right now except item 10 (below) and item 3 (also below).
 - Item 3 needs an explicit approval decision before any implementation
   work starts, per `AGENTS.md`. Treat it as a standing research item
-  until that decision is made.
-- Item 10 (deployment) is split: the prework, **including the data-source
-  decision itself, is done** (`sqlRunner.ts` has shipped the minimized
-  derivative since 2026-08-10) — what's left is only whether/where to
-  actually go live, which is a business decision, not a technical or
-  data-release blocker anymore.
+  until that decision is made — **paused as of 2026-08-11, being handled
+  in a separate thread**, not part of this session's or this doc's
+  active work.
+- **Item 10 (deployment) is fully resolved, including the data-source
+  decision** (`sqlRunner.ts` has shipped the minimized derivative since
+  2026-08-10) — corrected 2026-08-11, since the item's own "Status" and
+  "Open questions" text had drifted stale and still described the data
+  decision as an open hard blocker after it was actually made. What's
+  left is only whether/where to actually go live, which is entirely your
+  call, not a technical or data-release blocker.
+- **Item 12 (pre-launch hardening) and item 13 (post-launch UX roadmap)**,
+  opened 2026-08-11, are the newest items and read differently from 1-11:
+  item 12 is fully scoped and buildable now with an explicit priority
+  split (before tonight's deploy vs. this week); item 13 is deliberately
+  an unscoped roadmap like item 3, split into Part A (buildable now, for
+  the current class) and Part B (each entry names its own required
+  product-owner decision, for a future net-new-learner audience) — don't
+  treat Part B entries as approved work the way items 1-11 are.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.
