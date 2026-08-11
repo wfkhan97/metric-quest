@@ -188,14 +188,37 @@ pre,
   justify-items: start;
 }
 
-.terminal-hud-title .link-button {
-  font-size: 0.72rem;
-  padding-inline: 0;
+.mission-view .scoreboard {
+  flex: 1 1 11rem;
 }
 
-.mission-view .scoreboard,
 .header-reward {
-  flex: 1 1 13rem;
+  flex: 1 1 14rem;
+}
+
+/* P5.6: the mission-view scoreboard shrinks to just "integrity bar + points"
+   (badges moved into .header-reward below) — a compact horizontal row
+   instead of the general .scoreboard's stacked layout, with the points text
+   sized to match the progress bar's label rather than the taller pixel
+   font used elsewhere, so the two read as one narrow strip. */
+.mission-view .scoreboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding: 0.3rem 0.5rem;
+}
+
+.mission-view .scoreboard .progress-bar {
+  flex: 1 1 auto;
+  min-inline-size: 8rem;
+}
+
+.mission-view .scoreboard strong {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .map-toggle {
@@ -653,8 +676,15 @@ h3 {
   min-block-size: 0;
   min-inline-size: 0;
   overflow: auto;
-  padding: clamp(0.6rem, 1.3vw, 0.9rem);
+  padding: clamp(0.6rem, 1.3vw, 0.9rem) clamp(0.6rem, 1.3vw, 0.9rem) 0.35rem;
   scroll-padding: 0.85rem;
+}
+
+/* P5.6: mission-view boxes get a tighter, scoped padding than the base
+   .panel rule (used as-is by Home) — freed space goes to the schema
+   explorer and SQL editor below so both fit without scrolling. */
+.mission-view .panel {
+  padding: clamp(0.45rem, 1vw, 0.65rem);
 }
 
 .mission-workspace > .eyebrow {
@@ -681,9 +711,24 @@ h3 {
 }
 
 .schema-explorer {
-  max-block-size: 11rem;
+  max-block-size: min(30vh, 15rem);
   overflow: auto;
   scroll-padding: 0.5rem;
+}
+
+.schema-explorer-heading {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.schema-explorer-heading h3 {
+  margin-block-end: 0;
+}
+
+.schema-explorer-heading p {
+  margin: 0;
 }
 
 .subtle {
@@ -768,7 +813,7 @@ h3 {
   box-shadow: inset 0 0 16px rgba(31, 211, 196, 0.08);
   display: block;
   margin-block-start: 0.3rem;
-  min-block-size: clamp(7rem, 15vh, 10rem);
+  min-block-size: clamp(9rem, 22vh, 14rem);
   overflow: hidden;
   resize: vertical;
   width: 100%;
@@ -797,8 +842,12 @@ h3 {
 .sql-editor-actions button {
   border-image-width: 6px 5px 5px 5px;
   border-width: 6px 5px 5px 5px;
-  font-size: 0.8rem;
-  padding: 0.35rem 0.55rem;
+  font-size: 0.78rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.sql-editor-actions .link-button {
+  text-decoration: none;
 }
 
 .hints,
@@ -1292,13 +1341,10 @@ tbody tr {
 }
 
 
-.cutscene-progress {
-  margin: 0;
-}
-
 .cutscene-credit {
+  font-size: 0.6rem;
   margin: 0;
-  max-inline-size: 34ch;
+  max-inline-size: none;
 }
 
 .cutscene-mute-toggle {
@@ -1310,6 +1356,16 @@ tbody tr {
    first in DOM order so the frame, which follows it, layers on top without
    needing an explicit z-index fight. */
 .cutscene {
+  position: relative;
+}
+
+/* The title screen's frame doesn't carry .phase-scanline (no CRT-flicker
+   wanted on a static screen), which is what normally gives a cutscene frame
+   the `position: relative` it needs to paint above .cutscene-bg's absolute,
+   z-index:0 layer — without it the frame is non-positioned in-flow content,
+   which paints *below* a positioned z-index:0 sibling per the stacking spec,
+   regardless of DOM order. */
+.title-screen-frame {
   position: relative;
 }
 
@@ -1355,13 +1411,18 @@ tbody tr {
   animation: cutscene-avatar-run 700ms ease-in both;
 }
 
-@keyframes cutscene-avatar-dissolve {
-  0% { filter: blur(0); opacity: 1; transform: scale(1); }
-  100% { filter: blur(3px); opacity: 0; transform: scale(0.7) translateY(-0.5rem); }
+/* Panel 8 of the mainframe-pull beat, paired with the glitch-zap sfx: a
+   spin-and-shrink-to-a-point read as being sucked into the machine, rather
+   than the plain fade the old "dissolve" name implied. */
+@keyframes cutscene-avatar-pulled {
+  0% { filter: blur(0); opacity: 1; transform: scale(1) rotate(0deg) translateY(0); }
+  35% { filter: blur(1px); opacity: 1; transform: scale(0.8) rotate(20deg) translateY(0.1rem); }
+  70% { filter: blur(4px); opacity: 0.55; transform: scale(0.4) rotate(180deg) translateY(0.5rem); }
+  100% { filter: blur(9px); opacity: 0; transform: scale(0.05) rotate(340deg) translateY(0.9rem); }
 }
 
-.cutscene-avatar-dissolve {
-  animation: cutscene-avatar-dissolve 900ms ease-in both;
+.cutscene-avatar-pulled {
+  animation: cutscene-avatar-pulled 950ms cubic-bezier(0.55, 0, 0.85, 0.35) both;
 }
 
 @keyframes cutscene-rogue-dash {
@@ -1739,6 +1800,13 @@ tbody tr {
 @keyframes sector-map-slide-in {
   from { transform: translateX(-100%); }
   to { transform: translateX(0); }
+}
+
+.sector-map-drawer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: space-between;
 }
 
 .sector-map-drawer .chapter-map {

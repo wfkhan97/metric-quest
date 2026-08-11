@@ -4,6 +4,7 @@ import { CutsceneView } from './components/CutsceneView';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
+import { TitleScreen } from './components/TitleScreen';
 import { mainframePullBeat, openingBeat, sectorBeats, type Beat } from './content/beats';
 import { chapterNumber, chapters } from './content/chapters';
 import { missions, type Mission } from './lib/missions';
@@ -13,16 +14,17 @@ import {
   loadProgress,
   markOpeningSeen,
   markSectorSeen,
+  resetActiveSave,
   saveProgress,
   setAvatar,
   type AvatarConfig,
   type Progress,
 } from './lib/progress';
 
-type View = 'home' | 'avatar' | 'cutscene' | 'sector-transition' | 'mission';
+type View = 'title' | 'home' | 'avatar' | 'cutscene' | 'sector-transition' | 'mission';
 
 export function App() {
-  const [view, setView] = useState<View>('home');
+  const [view, setView] = useState<View>('title');
   const [activeMissionId, setActiveMissionId] = useState<Mission['id']>(missions[0].id);
   const [progress, setProgress] = useState<Progress>(loadProgress);
   const [pendingMission, setPendingMission] = useState<Mission | null>(null);
@@ -71,7 +73,12 @@ export function App() {
   // -> opening beat -> mission, not opening beat -> avatar creator. Called
   // once the avatar is already known to be set, either because the player
   // already had one or because handleAvatarConfirm just set it.
-  function proceedPastAvatar(mission: Mission, progressSnapshot: Progress) {
+  // `mission` is null for the title screen's "New game" path, which enters
+  // avatar creation with no specific mission queued up — the opening cutscene
+  // still needs to play, it just lands on Home afterward instead of chaining
+  // into a mission (see handleCutsceneFinish's own null check on the
+  // opening beat).
+  function proceedPastAvatar(mission: Mission | null, progressSnapshot: Progress) {
     if (!hasSeenOpening(progressSnapshot)) {
       setPendingMission(mission);
       // P5.5: the "pulled into the mainframe" beat plays first; its last
@@ -83,7 +90,11 @@ export function App() {
       setView('cutscene');
       return;
     }
-    enterMissionWithTransitionCheck(mission, progressSnapshot);
+    if (mission) {
+      enterMissionWithTransitionCheck(mission, progressSnapshot);
+    } else {
+      setView('home');
+    }
   }
 
   function handleSelectMission(mission: Mission) {
@@ -143,16 +154,28 @@ export function App() {
   function handleAvatarConfirm(avatar: AvatarConfig) {
     const nextProgress = setAvatar(progress, avatar);
     handleProgressChange(nextProgress);
-    if (pendingMission) {
-      proceedPastAvatar(pendingMission, nextProgress);
-    } else {
-      setView('home');
-    }
+    proceedPastAvatar(pendingMission, nextProgress);
   }
 
   function handleAvatarCancel() {
     setPendingMission(null);
     setView('home');
+  }
+
+  function handleResumeGame() {
+    setView('home');
+  }
+
+  function handleNewGame() {
+    setProgress(resetActiveSave());
+    setPendingMission(null);
+    setPendingBeat(null);
+    // Fresh progress has no avatar and hasn't seen the opening yet, so this
+    // goes straight into onboarding (avatar creator -> intro cutscene) rather
+    // than Home — Home's Incident Brief doesn't make sense to show before
+    // the cutscene has told the player what's happened.
+    setAvatarMode('onboarding');
+    setView('avatar');
   }
 
   function handleSectorTransitionContinue() {
@@ -164,6 +187,10 @@ export function App() {
     handleProgressChange(markSectorSeen(progress, chapterNumber(mission)));
     setPendingMission(null);
     goToMission(mission);
+  }
+
+  if (view === 'title') {
+    return <TitleScreen progress={progress} onResume={handleResumeGame} onNewGame={handleNewGame} />;
   }
 
   if (view === 'avatar') {
