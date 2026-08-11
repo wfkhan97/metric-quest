@@ -11,6 +11,7 @@ import {
   type Progress,
   type SaveSlot,
 } from '../lib/progress';
+import { useFocusTrap } from '../lib/useFocusTrap';
 
 type SaveSlotPanelProps = {
   onClose: () => void;
@@ -21,8 +22,6 @@ type SaveSlotPanelProps = {
    * it does not call this. */
   onActiveProgressChange: (progress: Progress) => void;
 };
-
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
 
 function formatDate(iso: string): string {
   const date = new Date(iso);
@@ -42,29 +41,7 @@ export function SaveSlotPanel({ onClose, activeSlotId, onActiveProgressChange }:
   useEffect(() => {
     closeButtonRef.current?.focus();
   }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab' || !panelRef.current) return;
-      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  useFocusTrap(panelRef, onClose);
 
   function refresh() {
     setSlots(listSaveSlots());

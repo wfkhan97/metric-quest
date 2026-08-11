@@ -4,6 +4,7 @@ import {
   createNewSave,
   deleteSave,
   getActiveSaveId,
+  hasProgressPersistenceFailure,
   hasSeenSector,
   listSaveSlots,
   loadProgress,
@@ -80,6 +81,23 @@ describe('loadProgress avatar handling', () => {
     };
     saveProgress(progress);
     expect(loadProgress()).toEqual(progress);
+  });
+});
+
+describe('storage write failures', () => {
+  it('does not throw when the browser blocks progress writes', () => {
+    const blockedStorage = new MemoryStorage();
+    blockedStorage.setItem = () => {
+      throw new DOMException('Storage is disabled', 'SecurityError');
+    };
+    vi.stubGlobal('localStorage', blockedStorage);
+
+    expect(() => saveProgress({ completedMissionIds: ['m1-1'], points: 50, badges: [] })).not.toThrow();
+    expect(hasProgressPersistenceFailure()).toBe(true);
+
+    vi.stubGlobal('localStorage', memoryStorage);
+    saveProgress({ completedMissionIds: [], points: 0, badges: [] });
+    expect(hasProgressPersistenceFailure()).toBe(false);
   });
 });
 
