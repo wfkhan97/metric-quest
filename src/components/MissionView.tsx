@@ -1,4 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AiTutorPanel } from './AiTutorPanel';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
@@ -9,6 +10,7 @@ import iconBadge from '../assets/ui/icon-badge.png';
 import iconCorruption from '../assets/ui/icon-corruption.png';
 import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
+import { type TutorContext } from '../lib/aiTutor';
 import { chapterNumber } from '../content/chapters';
 import { findGlossaryEntryForConcept } from '../content/glossary';
 import { sectorMusic } from '../content/sectorMusic';
@@ -103,6 +105,26 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   useEffect(() => {
     if (musicRef.current) musicRef.current.muted = musicMuted;
   }, [musicMuted]);
+
+  const [isAiTutorOpen, setIsAiTutorOpen] = useState(false);
+  const aiTutorButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Rebuilt whenever the player's SQL, last result, or diagnostic changes,
+  // so the tutor always sees the current state of their attempt rather than
+  // a stale snapshot from when the panel was first opened.
+  const tutorContext = useMemo<TutorContext>(
+    () => ({
+      missionTitle: mission.title,
+      missionBrief: mission.brief,
+      concept: mission.concept,
+      visibleTables: mission.visibleTables,
+      relationships: mission.relationships,
+      currentSql: sql,
+      lastResult: result,
+      diagnosticLabel: diagnostic?.label,
+    }),
+    [mission, sql, result, diagnostic],
+  );
 
   function openGlossary(entryId: string | undefined, trigger: HTMLButtonElement) {
     setGlossaryEntryId(entryId);
@@ -266,6 +288,16 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         />
       )}
 
+      {isAiTutorOpen && (
+        <AiTutorPanel
+          context={tutorContext}
+          onClose={() => {
+            setIsAiTutorOpen(false);
+            aiTutorButtonRef.current?.focus();
+          }}
+        />
+      )}
+
       {isMapOpen && (
         <div
           className="sector-map-backdrop"
@@ -355,6 +387,9 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               </button>
               <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
                 Concept glossary
+              </button>
+              <button type="button" className="link-button" onClick={() => setIsAiTutorOpen(true)} ref={aiTutorButtonRef}>
+                Friendly AI tutor
               </button>
               {/* P5.3: was an always-visible "Reveal example query" button. mission.solutionSql
                   is the actual reference answer, not a lighter "example," so it only becomes

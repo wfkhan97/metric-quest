@@ -5,19 +5,24 @@ import {
   fetchConnectionStatus,
   sendTutorMessage,
   type ConnectionStatus,
+  type TutorContext,
   type TutorMessage,
   type TutorProvider,
 } from '../lib/aiTutor';
 
 type AiTutorPanelProps = {
   onClose: () => void;
+  /** The active mission's schema, the player's current SQL, and their last
+   * result/diagnostic — sent to the tutor on every message so it can "fully
+   * help" rather than reason blind (product decision, 2026-08-11). */
+  context: TutorContext;
 };
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
 
 const providerLabel: Record<TutorProvider, string> = { openai: 'ChatGPT', anthropic: 'Claude' };
 
-export function AiTutorPanel({ onClose }: AiTutorPanelProps) {
+export function AiTutorPanel({ onClose, context }: AiTutorPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [status, setStatus] = useState<ConnectionStatus | 'loading'>('loading');
@@ -76,7 +81,7 @@ export function AiTutorPanel({ onClose }: AiTutorPanelProps) {
     setIsSending(true);
     setError(null);
     try {
-      const reply = await sendTutorMessage(nextMessages);
+      const reply = await sendTutorMessage(nextMessages, context);
       setMessages([...nextMessages, { role: 'assistant', content: reply }]);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The AI tutor is unavailable right now.');
@@ -113,8 +118,10 @@ export function AiTutorPanel({ onClose }: AiTutorPanelProps) {
                 through Monet. Aurora Music never sees or stores your login — Monet vaults it and proxies each request.
               </p>
               <p className="subtle">
-                Every question you ask here counts against your own plan&apos;s usage, the same as asking it directly.
-                You can revoke access any time from Monet or by disconnecting below.
+                To actually help, every message shares this mission&apos;s schema, your current SQL, and your last
+                query&apos;s real result with your connected AI — the same way it would if you pasted them in
+                yourself. Every question also counts against your own plan&apos;s usage. You can revoke access any
+                time from Monet or by disconnecting below.
               </p>
               <div className="save-slot-actions">
                 <a className="start-button" href={connectUrl('openai')}>
@@ -136,7 +143,7 @@ export function AiTutorPanel({ onClose }: AiTutorPanelProps) {
                 </button>
               </h3>
               <ul className="ai-tutor-messages" aria-live="polite">
-                {messages.length === 0 && <li className="subtle">Ask about a concept, a mission, or your query.</li>}
+                {messages.length === 0 && <li className="subtle">Ask about this mission or your query.</li>}
                 {messages.map((message, index) => (
                   <li key={index} className={`ai-tutor-message ai-tutor-message-${message.role}`}>
                     <strong>{message.role === 'user' ? 'You' : providerLabel[status.provider]}:</strong> {message.content}

@@ -15,7 +15,10 @@ export type MistakeSignature = {
 // regex here is a light keyword read, not a parser: e.g. does the string
 // contain a GROUP BY clause. This runs only after a query has *executed*
 // with a wrong result, on the player's 2nd+ such attempt on the mission —
-// see MissionView. Nothing here is sent anywhere or logged (AGENTS.md).
+// see MissionView. Stays local and unlogged by default; the one deliberate
+// exception is the classification's `label` (e.g. "wrong number of rows"),
+// which MissionView forwards to a player-connected AI tutor if they opt in
+// and ask for help — see docs/BACKLOG.md item 3's 2026-08-11 decision.
 const hasKeyword = (sql: string, keyword: RegExp) => keyword.test(sql);
 
 const noGroupBy = /\bgroup\s+by\b/i;

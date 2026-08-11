@@ -96,6 +96,69 @@ export async function exchangeCodeForToken(params: {
 
 export type ChatMessage = { role: string; content: string };
 
+export type TutorContextRow = (string | number | null)[];
+
+export type TutorContext = {
+  missionTitle: string;
+  missionBrief: string;
+  concept: string;
+  visibleTables: string[];
+  relationships?: string[];
+  currentSql: string;
+  /** The player's most recent executed query result, if they've run one this visit. */
+  lastResult?: { columns: string[]; rows: TutorContextRow[] };
+  /** Local mistake-classification label (e.g. "wrong number of rows"), if one fired. */
+  diagnosticLabel?: string;
+};
+
+/** Row cap so one wide result set (e.g. a 100+ row LIKE search) doesn't blow up the prompt. */
+const MAX_CONTEXT_ROWS = 25;
+
+/**
+ * Builds the system message that gives the tutor everything it needs to
+ * "fully help" (per product decision, 2026-08-11): the mission's schema and
+ * the player's actual query results, not just their SQL text. Hints-first,
+ * full-answer-if-asked is enforced here rather than left to the client, so
+ * it can't be bypassed by editing page JS.
+ */
+export function buildTutorSystemPrompt(context: TutorContext): ChatMessage {
+  const lines: string[] = [
+    'You are a friendly, patient SQL tutor inside Metric Quest, a browser-based SQL learning game. ' +
+      'The player is working on the mission described below. Default to hints and guiding questions that help ' +
+      'them reason through their OWN query, rather than solving it for them unprompted. If they explicitly ask ' +
+      'for the full answer or the complete query, give it to them directly — do not refuse or keep withholding ' +
+      'once they have clearly asked.',
+    '',
+    `Mission: ${context.missionTitle}`,
+    `Concept: ${context.concept}`,
+    `Business question: ${context.missionBrief}`,
+    '',
+    'Visible schema:',
+    ...context.visibleTables.map((table) => `- ${table}`),
+  ];
+
+  if (context.relationships?.length) {
+    lines.push('Table relationships:', ...context.relationships.map((relationship) => `- ${relationship}`));
+  }
+
+  lines.push('', "Player's current SQL:", context.currentSql.trim() || "(empty — they haven't written anything yet)");
+
+  if (context.lastResult) {
+    const { columns, rows } = context.lastResult;
+    lines.push('', `Their last query's actual result (${rows.length} row(s), columns: ${columns.join(', ')}):`);
+    lines.push(...rows.slice(0, MAX_CONTEXT_ROWS).map((row) => JSON.stringify(row)));
+    if (rows.length > MAX_CONTEXT_ROWS) {
+      lines.push(`… (${rows.length - MAX_CONTEXT_ROWS} more row(s) truncated)`);
+    }
+  }
+
+  if (context.diagnosticLabel) {
+    lines.push('', `Automated diagnostic on their last wrong attempt: ${context.diagnosticLabel}`);
+  }
+
+  return { role: 'system', content: lines.join('\n') };
+}
+
 export async function callMonetChatCompletions(params: {
   accessToken: string;
   provider: MonetProvider;

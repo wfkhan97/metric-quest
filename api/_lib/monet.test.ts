@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildAuthorizeUrl,
+  buildTutorSystemPrompt,
   decodeState,
   encodeState,
   isMonetProvider,
@@ -8,6 +9,7 @@ import {
   originFromHeaders,
   parseCookies,
   serializeCookie,
+  type TutorContext,
 } from './monet';
 
 describe('isMonetProvider', () => {
@@ -106,6 +108,72 @@ describe('parseCookies', () => {
 
   it('ignores malformed segments without throwing', () => {
     expect(parseCookies('a=1; malformed; b=2')).toEqual({ a: '1', b: '2' });
+  });
+});
+
+describe('buildTutorSystemPrompt', () => {
+  const baseContext: TutorContext = {
+    missionTitle: 'Priority invoices',
+    missionBrief: 'Return the five highest-value invoices billed to the United States.',
+    concept: 'Filter, sort, and limit',
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    currentSql: 'SELECT * FROM Invoice;',
+  };
+
+  it('returns a system-role message', () => {
+    expect(buildTutorSystemPrompt(baseContext).role).toBe('system');
+  });
+
+  it('includes the mission brief, concept, and schema', () => {
+    const content = buildTutorSystemPrompt(baseContext).content;
+    expect(content).toContain('Priority invoices');
+    expect(content).toContain('Return the five highest-value invoices billed to the United States.');
+    expect(content).toContain('Filter, sort, and limit');
+    expect(content).toContain('Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)');
+  });
+
+  it('instructs hints-first but a full answer once explicitly asked', () => {
+    const content = buildTutorSystemPrompt(baseContext).content;
+    expect(content.toLowerCase()).toContain('hint');
+    expect(content).toContain('If they explicitly ask for the full answer');
+  });
+
+  it('notes when the player has not written anything yet', () => {
+    const content = buildTutorSystemPrompt({ ...baseContext, currentSql: '   ' }).content;
+    expect(content).toContain("(empty — they haven't written anything yet)");
+  });
+
+  it('includes relationships when present', () => {
+    const content = buildTutorSystemPrompt({ ...baseContext, relationships: ['InvoiceLine.TrackId -> Track.TrackId'] }).content;
+    expect(content).toContain('InvoiceLine.TrackId -> Track.TrackId');
+  });
+
+  it('includes the last result set, row count, and columns', () => {
+    const content = buildTutorSystemPrompt({
+      ...baseContext,
+      lastResult: { columns: ['InvoiceId', 'Total'], rows: [[1, 9.99], [2, 4.5]] },
+    }).content;
+    expect(content).toContain('2 row(s), columns: InvoiceId, Total');
+    expect(content).toContain('[1,9.99]');
+    expect(content).toContain('[2,4.5]');
+  });
+
+  it('truncates result sets past the row cap', () => {
+    const rows = Array.from({ length: 30 }, (_, index) => [index]);
+    const content = buildTutorSystemPrompt({ ...baseContext, lastResult: { columns: ['n'], rows } }).content;
+    expect(content).toContain('… (5 more row(s) truncated)');
+    expect(content).not.toContain('[29]');
+  });
+
+  it('includes the diagnostic label when present', () => {
+    const content = buildTutorSystemPrompt({ ...baseContext, diagnosticLabel: 'wrong number of rows' }).content;
+    expect(content).toContain('Automated diagnostic on their last wrong attempt: wrong number of rows');
+  });
+
+  it('omits result and diagnostic sections when absent', () => {
+    const content = buildTutorSystemPrompt(baseContext).content;
+    expect(content).not.toContain('actual result');
+    expect(content).not.toContain('Automated diagnostic');
   });
 });
 

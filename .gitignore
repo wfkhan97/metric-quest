@@ -5,8 +5,13 @@ coverage/
 .pnpm-store/
 .claude/worktrees/
 
+# Vercel CLI project link metadata and local-only env files (secrets).
+.vercel
+.env*.local
+
 # Course database source material: only the dataset the app actually loads
 # (SQL Databases/iTunes.sqlite) is tracked. See docs/AI_WORKFLOW.md.
 SQL Databases/*
 !SQL Databases/iTunes.sqlite
 
+.env*
