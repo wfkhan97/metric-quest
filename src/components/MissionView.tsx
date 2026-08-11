@@ -172,13 +172,13 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
       </a>
       <header className="terminal-hud">
         <div className="terminal-hud-title">
-          <p className="eyebrow">Aurora Music mainframe · active terminal</p>
-          <h1 id="page-title">Metric Quest</h1>
-          <button type="button" className="link-button" onClick={onBackToHome}>
-            <span aria-hidden="true">← </span>Sector map
-          </button>
-        </div>
-        <section className="scoreboard" aria-label="Your progress">
+          <p className="eyebrow">
+            {mission.chapter} ·{' '}
+            <button type="button" className="concept-tag-link" onClick={(event) => openGlossary(conceptEntryId, event.currentTarget)}>
+              {mission.concept}
+            </button>
+          </p>
+          <h1 id="page-title">{mission.title}</h1>
           <button
             type="button"
             className="map-toggle"
@@ -189,11 +189,21 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           >
             Browse sectors
           </button>
+        </div>
+        <section className="scoreboard" aria-label="Your progress">
+          <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
           <strong className={pointsPulsing ? 'points-pulse' : undefined}>
             <img className="icon-inline" src={iconPoints} alt="" aria-hidden="true" />
             {progress.points} points
           </strong>
-          <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />
+        </section>
+        <section className="panel header-reward" aria-labelledby="rewards-title">
+          <h2 id="rewards-title">Terminal reward</h2>
+          <p>
+            <strong>{mission.points} points</strong>
+            {mission.badge ? ` · ${mission.badge} badge` : ''}
+          </p>
+          {completed && <p>Purged terminals can be replayed without changing your points.</p>}
           <details className="badges-disclosure">
             <summary>Badges{progress.badges.length ? ` (${progress.badges.length})` : ''}</summary>
             <div className="badges-list">
@@ -209,14 +219,6 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               )}
             </div>
           </details>
-        </section>
-        <section className="panel header-reward" aria-labelledby="rewards-title">
-          <h2 id="rewards-title">Terminal reward</h2>
-          <p>
-            <strong>{mission.points} points</strong>
-            {mission.badge ? ` · ${mission.badge} badge` : ''}
-          </p>
-          {completed && <p>Purged terminals can be replayed without changing your points.</p>}
         </section>
       </header>
 
@@ -238,9 +240,14 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           }}
         >
           <div id="sector-map-drawer" className="sector-map-drawer" role="dialog" aria-modal="true" aria-label="Sector map" ref={mapPanelRef}>
-            <button type="button" className="link-button" onClick={closeMap} ref={mapCloseButtonRef}>
-              <span aria-hidden="true">✕ </span>Close
-            </button>
+            <div className="sector-map-drawer-actions">
+              <button type="button" className="link-button" onClick={closeMap} ref={mapCloseButtonRef}>
+                <span aria-hidden="true">✕ </span>Close
+              </button>
+              <button type="button" className="link-button" onClick={onBackToHome}>
+                <span aria-hidden="true">← </span>Back to main screen
+              </button>
+            </div>
             <ChapterMap
               missions={missions}
               completedMissionIds={progress.completedMissionIds}
@@ -256,14 +263,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
       )}
 
       <div className="game-layout">
-        <section id="mission" className="mission-workspace" aria-labelledby="mission-title">
-          <p className="eyebrow">
-            {mission.chapter} ·{' '}
-            <button type="button" className="concept-tag-link" onClick={(event) => openGlossary(conceptEntryId, event.currentTarget)}>
-              {mission.concept}
-            </button>
-          </p>
-          <h2 id="mission-title">{mission.title}</h2>
+        <section id="mission" className="mission-workspace" aria-labelledby="page-title">
           <p className="brief type-reveal">{mission.brief}</p>
 
           {mission.id === 'm8-1' && (
@@ -284,7 +284,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                   removed from view (too much on-screen text) but the future item it
                   tracked is not dropped — see BACKLOG.md item 6's clarifying note. */}
             </div>
-            <span className="sql-label" id="sql-label">
+            <span className="sql-label sr-only" id="sql-label">
               Write a read-only SQL query
             </span>
             <Suspense fallback={<div className="sql-editor" aria-hidden="true" />}>

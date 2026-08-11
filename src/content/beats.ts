@@ -10,7 +10,7 @@ import cueC from '../assets/audio/cue-c-mainframe-overture.m4a';
 import glitchZap from '../assets/audio/glitch-zap.ogg';
 
 export type PanelLayout = 'frame' | 'boot';
-export type AvatarMotion = 'entrance' | 'shake' | 'run' | 'dissolve';
+export type AvatarMotion = 'entrance' | 'shake' | 'run' | 'pulled';
 export type RogueMotion = 'entrance' | 'dash';
 
 export type BeatPanel = {
@@ -81,7 +81,6 @@ export const mainframePullBeat: Beat = {
       eyebrow: 'Aurora Music · open-plan office',
       heading: 'Tuesday, 9:14 AM.',
       background: officeCalm,
-      showAvatar: true,
       audioSrc: cueA,
       creditLine: "Music: 'Local Forecast – Elevator' by Kevin MacLeod (incompetech.com), licensed under CC BY 3.0.",
       copy: ["Coffee's cold. Inbox has four unread, none of them urgent.", 'One more, from the top.'],
@@ -90,7 +89,6 @@ export const mainframePullBeat: Beat = {
       eyebrow: 'Aurora Music · open-plan office',
       heading: 'One more email.',
       background: officeCalm,
-      showAvatar: true,
       audioSrc: cueA,
       creditLine: "Music: 'Local Forecast – Elevator' by Kevin MacLeod (incompetech.com), licensed under CC BY 3.0.",
       copy: ['Subject: RE: RE: Exciting Update — Please Read!!!', 'From: Chad Renfro, CEO'],
@@ -99,7 +97,6 @@ export const mainframePullBeat: Beat = {
       eyebrow: 'Aurora Music · open-plan office',
       heading: 'RE: RE: Exciting Update — Please Read!!!',
       background: officeCalm,
-      showAvatar: true,
       audioSrc: cueA,
       creditLine: "Music: 'Local Forecast – Elevator' by Kevin MacLeod (incompetech.com), licensed under CC BY 3.0.",
       copy: [
@@ -115,8 +112,6 @@ export const mainframePullBeat: Beat = {
       eyebrow: 'Aurora Music · open-plan office',
       heading: 'Wait.',
       background: officeCalm,
-      showAvatar: true,
-      avatarMotion: 'shake',
       audioSrc: cueA,
       creditLine: "Music: 'Local Forecast – Elevator' by Kevin MacLeod (incompetech.com), licensed under CC BY 3.0.",
       copy: [
@@ -128,7 +123,6 @@ export const mainframePullBeat: Beat = {
       eyebrow: 'Aurora Music · something’s wrong',
       heading: 'Nobody else looks up.',
       background: officeAlarm,
-      showAvatar: true,
       audioSrc: cueB,
       copy: [
         'Somewhere behind you, the dashboard TV stutters and starts counting backward.',
@@ -140,7 +134,6 @@ export const mainframePullBeat: Beat = {
       heading: 'That door does not do that.',
       background: officeAlarm,
       backgroundZoom: true,
-      showAvatar: true,
       audioSrc: cueB,
       copy: ['The server closet door is doing something server closet doors do not do.'],
     },
@@ -156,7 +149,7 @@ export const mainframePullBeat: Beat = {
       heading: 'Pulled in.',
       background: pullIn,
       showAvatar: true,
-      avatarMotion: 'dissolve',
+      avatarMotion: 'pulled',
       audioSrc: cueB,
       sfxSrc: glitchZap,
       copy: [],

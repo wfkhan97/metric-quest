@@ -178,6 +178,15 @@ export function saveProgress(progress: Progress): void {
   writeStore({ ...store, activeSlotId: active.id, slots });
 }
 
+/** Resets the active save's progress in place (same slot, same name) —
+ * distinct from createNewSave, which adds a whole new slot. This is what the
+ * title screen's "New game" uses, since the player is told it overwrites
+ * what's there, not that it adds another save. */
+export function resetActiveSave(): Progress {
+  saveProgress(emptyProgress);
+  return emptyProgress;
+}
+
 export function listSaveSlots(): SaveSlot[] {
   return [...loadStore().slots].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
@@ -248,6 +257,14 @@ export function hasSeenSector(progress: Progress, chapterNumber: number): boolea
 export function markSectorSeen(progress: Progress, chapterNumber: number): Progress {
   if (hasSeenSector(progress, chapterNumber)) return progress;
   return { ...progress, seenSectors: [...(progress.seenSectors ?? []), chapterNumber] };
+}
+
+/** Whether the active save has anything worth resuming — the title screen
+ * (App.tsx) uses this to decide whether "Resume game" is even an option. A
+ * freshly created slot (cold start, or right after "New game") has none of
+ * these, so it correctly reads as no progress yet. */
+export function hasAnyProgress(progress: Progress): boolean {
+  return Boolean(progress.avatar) || Boolean(progress.seenOpening) || progress.completedMissionIds.length > 0 || progress.points > 0;
 }
 
 export function hasSeenOpening(progress: Progress): boolean {

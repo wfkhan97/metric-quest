@@ -17,7 +17,7 @@ const avatarMotionClass: Record<string, string> = {
   entrance: 'phase-slide',
   shake: 'cutscene-avatar-shake',
   run: 'cutscene-avatar-run',
-  dissolve: 'cutscene-avatar-dissolve',
+  pulled: 'cutscene-avatar-pulled',
 };
 
 const rogueMotionClass: Record<string, string> = {
@@ -36,7 +36,6 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
   const audioRef = useRef<HTMLAudioElement>(null);
   const sfxRef = useRef<HTMLAudioElement>(null);
   const lastAudioSrcRef = useRef<string | undefined>(undefined);
-  const [muted, setMuted] = useState(false);
 
   const panel = beat.panels[panelIndex];
   const isLastPanel = panelIndex === beat.panels.length - 1;
@@ -87,7 +86,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
     if (src && audioEl.paused) {
       void audioEl.play().catch(() => {
         // Still blocked (e.g. no gesture yet on this page at all) — the
-        // mute control at least reflects real state rather than a lie.
+        // next real click (handleContinue) retries from a gesture.
       });
     }
   }
@@ -95,11 +94,6 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
   useEffect(() => {
     syncAudio(panel.audioSrc);
   }, [panel.audioSrc]);
-
-  useEffect(() => {
-    if (audioRef.current) audioRef.current.muted = muted;
-    if (sfxRef.current) sfxRef.current.muted = muted;
-  }, [muted]);
 
   useEffect(() => {
     const audioEl = audioRef.current;
@@ -118,7 +112,6 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
     if (!sfxEl) return;
     sfxEl.src = src;
     sfxEl.currentTime = 0;
-    sfxEl.muted = muted;
     void sfxEl.play().catch(() => {});
   }
 
@@ -131,11 +124,6 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
     const nextPanel = beat.panels[panelIndex + 1];
     if (nextPanel.sfxSrc) playSfx(nextPanel.sfxSrc);
     setPanelIndex((index) => index + 1);
-  }
-
-  function handleToggleMute() {
-    setMuted((value) => !value);
-    syncAudio(panel.audioSrc);
   }
 
   const continueLabel = panel.continueLabel ?? (isLastPanel ? 'Continue' : 'Next');
@@ -178,11 +166,6 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
       )}
       <div key={panelIndex} className="sector-transition-frame cutscene-frame phase-scanline">
         {panel.whiteoutTransition && <div className="cutscene-whiteout" aria-hidden="true" />}
-        {beat.panels.length > 1 && (
-          <p className="subtle cutscene-progress">
-            Panel {panelIndex + 1} of {beat.panels.length}
-          </p>
-        )}
         <p className="eyebrow">{panel.eyebrow}</p>
         <h1 id="cutscene-title">{panel.heading}</h1>
         {(panel.showAvatar || panel.rogueState) && (
@@ -220,15 +203,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
             {continueLabel}
           </button>
         </div>
-        <p className="subtle sector-transition-hint">
-          {skippable ? 'Press Escape or Continue to proceed.' : 'Press Continue when you’re ready.'}
-        </p>
         {panel.creditLine && <p className="subtle cutscene-credit">{panel.creditLine}</p>}
-        {hasAnyAudio && (
-          <button type="button" className="link-button cutscene-mute-toggle" onClick={handleToggleMute}>
-            {muted ? 'Unmute music' : 'Mute music'}
-          </button>
-        )}
       </div>
     </main>
   );

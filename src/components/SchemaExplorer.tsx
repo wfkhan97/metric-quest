@@ -8,11 +8,13 @@ const tablePattern = /^(\w+)\((.*)\)$/;
 export function SchemaExplorer({ tables, relationships }: SchemaExplorerProps) {
   return (
     <section className="panel schema-explorer" aria-labelledby="schema-title">
-      <h3 id="schema-title">Visible schema</h3>
-      <p className="subtle">
-        The tables and columns available for this mission. A searchable, full-database schema browser is coming in a later
-        release.
-      </p>
+      <div className="schema-explorer-heading">
+        <h3 id="schema-title">Visible schema</h3>
+        <p className="subtle">
+          The tables and columns available for this mission. A searchable, full-database schema browser is coming in a
+          later release.
+        </p>
+      </div>
       <div className="schema-tables">
         {tables.map((table) => {
           const match = tablePattern.exec(table);
