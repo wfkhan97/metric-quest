@@ -28,20 +28,17 @@ Run `npm run check` before handing off any change.
 
 ## Deployment
 
-> **Course-data release gate — read this before deploying anywhere public.**
-> `SQL Databases/iTunes.sqlite` (~1.1 MB) ships as-is in every production
-> build today and is downloadable by anyone once deployed. Per the release
-> gate in [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md), publishing it
-> publicly requires an explicit, recorded decision to either (a) approve
-> the full dataset as a licensed/reviewed copy suitable for public
-> distribution, or (b) switch to the minimized 5-table derivative
-> (`Customer`, `Genre`, `Invoice`, `InvoiceLine`, `Track`;
-> `src/assets/data/iTunes.min.sqlite`, verified against all 25 missions —
-> see [docs/BACKLOG.md](docs/BACKLOG.md) item 10). That decision is not
-> made by this document or by any build step, and neither option is wired
-> into [`src/lib/sqlRunner.ts`](src/lib/sqlRunner.ts) yet — this section
-> only documents *how* a deploy would run once the decision is made, not
-> a signal that one has been.
+> **Course-data release gate — resolved 2026-08-10.** Per the release gate
+> in [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md), the product owner approved
+> shipping the minimized 5-table derivative (`Customer`, `Genre`, `Invoice`,
+> `InvoiceLine`, `Track`; `src/assets/data/iTunes.min.sqlite`, verified
+> against all 25 missions) rather than the full `SQL Databases/iTunes.sqlite`
+> reference copy. [`src/lib/sqlRunner.ts`](src/lib/sqlRunner.ts) loads the
+> derivative today, not the full file — see
+> [docs/BACKLOG.md](docs/BACKLOG.md) item 10 for the full decision record
+> and provenance. **What's still open is only whether/where to actually
+> deploy** — that decision itself hasn't been made yet; nothing has been
+> published publicly as of this writing.
 
 Metric Quest is a fully static site with no server-side component: `npm run build` produces `dist/`, and that directory is the entire deployable artifact.
 
@@ -62,14 +59,15 @@ Any static host that can serve a prebuilt `dist/` directory (Netlify, GitHub Pag
 
 ```text
 src/
-  App.tsx              # thin router between HomeView and MissionView
-  components/          # HomeView, MissionView, ChapterMap, ProgressBar, SchemaExplorer, ResultTable
+  App.tsx              # thin router between TitleScreen, HomeView, AvatarCreatorView, CutsceneView, SectorTransitionView, and MissionView
+  components/          # TitleScreen, HomeView, MissionView, CutsceneView, AvatarCreatorView, SectorTransitionView, ChapterMap, ProgressBar, SchemaExplorer, ResultTable, GlossaryPanel, SaveSlotPanel
   content/chapters.ts  # static curriculum outline (chapter titles for the chapter map)
+  content/beats.ts     # cutscene beat/panel data (opening + mainframe-pull intro)
   lib/
     grading.ts         # compares executed result tables (not SQL text)
     sqlRunner.ts        # browser-local, read-only SQLite execution
     missions.ts         # mission content and expected results
-    progress.ts         # versioned localStorage progress
+    progress.ts         # versioned localStorage progress, multi-save slots
 ```
 
 See [docs/architecture.md](docs/architecture.md) for the full product boundary, grading contract, and progress contract.

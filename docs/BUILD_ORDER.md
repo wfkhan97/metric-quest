@@ -136,6 +136,56 @@ owner's script.
   full research, including the tested 356KB/1,092KB minimized-derivative
   numbers.
 
+**Correction, same status block:** the data decision described above as
+still blocking was in fact made and wired in later the same day
+(2026-08-10) — see BACKLOG.md item 10's "Decision made" section.
+`sqlRunner.ts` has pointed at the minimized derivative, not the full file,
+since that day. What's still genuinely open is only *whether/where to
+actually deploy*, not which dataset to ship.
+
+---
+
+## Session status (2026-08-11) — read this first
+
+**PR #14 (fix, merged) and PR #15 (feature + refinement, merged) are both
+on `main`.** Both came out of one continuous live-playtest session — the
+product owner drove the browser directly across several rounds of
+feedback in one sitting, rather than sending a written note. `npm run
+check` passed before every commit and after both merges.
+
+- **PR #14 — a real bug in P5.5's memo panel**, not a preference: its
+  internal scroll (`overflow-y: auto`) never actually activated, because
+  `.phase-scanline`'s `overflow: hidden` shorthand silently won the
+  cascade at equal specificity — the exact same trap P4.3's own comment
+  already warns about for the `animation` property, just not applied to
+  this new rule. Fixed by moving the property into the block already
+  declared after `.phase-scanline`.
+- **PR #15 bundles four logically separate but simultaneously-shipped
+  pieces** (see Wave 7 below for the individual packets): a second
+  mission-header refinement pass (P5.6, extending P5.4), a new title
+  screen (P7.1, BACKLOG.md item 11), an onboarding-flow correction so
+  "New game" doesn't land on Home before the intro cutscene explains
+  anything (P7.2), and a presentation-only simplification of the P5.5
+  cutscene (P7.3) plus a title-screen centering fix found during
+  verification.
+- Doc pass done in the same session: corrected several stale claims found
+  while auditing all of this — README's Deployment section still implied
+  the data-release decision was unmade (it was resolved 2026-08-10, see
+  above), `docs/architecture.md`'s view list and data-source line
+  predated several shipped features, and `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`
+  still said "not yet built." See each doc's own change for detail — not
+  repeated here.
+
+**Still open / outstanding**, carried forward unchanged from prior status
+blocks: P0.4 (icon regeneration, blocked on a design request), the
+Sector 8→9 authored-beat question (BACKLOG.md item 4), Wave 3/P3.1 (AI
+tutor, pending a product decision, do not prototype), P4.5 (avatar sprite
+fix, waiting on the product owner — **note:** BACKLOG.md item 7 records
+this as fully fixed 2026-08-10; if still listed here it's for historical
+continuity, verify against item 7 before treating it as open), and item
+10's actual-deployment decision (data source itself is resolved; whether
+and where to deploy is not).
+
 ---
 
 ## The ordering principle
@@ -716,7 +766,7 @@ region three times mid-flight, not because they must land in one commit.
 
 ---
 
-### P5.5 — New "pulled into the mainframe" cutscene (built 2026-08-10, not yet merged)
+### P5.5 — New "pulled into the mainframe" cutscene (built and merged 2026-08-10; see Wave 7 for a 2026-08-11 bug fix and presentation revision)
 
 **What:** BACKLOG.md item 4's second-round update. A new cutscene beat
 between avatar confirmation and the existing opening beat, showing the
@@ -866,6 +916,169 @@ scratch).
 the remaining implementation-detail defaults (slot-naming default, soft
 10-slot cap, leaving the old v1 key in place indefinitely) are cheap to
 change later and don't need to block starting.
+
+---
+
+## Wave 7 — Third UAT round: title screen, onboarding fix, cutscene simplification (2026-08-11)
+
+Opened and shipped in one continuous live-playtest session — the product
+owner drove the browser directly and gave feedback across several rounds
+in one sitting, not a written note. All four packets below plus the P5.5
+correction landed together in PR #15 (the correction landed separately
+first, in PR #14) rather than as four separate branches, since they were
+discovered and fixed within one session rather than planned in advance —
+described separately here for traceability, not because they need
+separate future work.
+
+### P5.6 — Mission view header refinement, round 2
+
+**What:** BACKLOG.md item 9's 2026-08-11 update, extending P5.4. Merges
+the header's "Sector map" text link and "Browse sectors" drawer trigger
+into one control (the drawer gains a "Back to main screen" action to
+cover what the removed link did); swaps the header's generic app-branding
+eyebrow/title for the mission's own chapter/concept/title, letting the
+now-redundant duplicate in the workspace below be removed; enlarges the
+schema explorer and SQL editor and tightens box padding to make room;
+visually hides (not removes) the "Write a read-only SQL query" label; and
+moves the schema panel's description inline next to its heading.
+
+**Done when:** all of the above hold, `npm run check` passes, and no
+accessibility regression (the visually-hidden label keeps an
+`aria-labelledby` reference, the consolidated map control keeps
+`aria-expanded`/keyboard operability). **Shipped** — verified live in the
+Browser pane across the flow, screenshots taken at each step.
+
+**Blocked on:** Nothing.
+
+---
+
+### P7.1 — Title screen (Resume / New game gate)
+
+**What:** BACKLOG.md item 11, new. A new `TitleScreen` component gates
+`App.tsx`'s `view` state on first load (`'title'` instead of `'home'`).
+"Resume game" renders only when `hasAnyProgress` (a new `progress.ts`
+export: avatar set, opening seen, a mission completed, or points > 0) is
+true, and just sets `view: 'home'`. "New game" resets the active save in
+place (`resetActiveSave`, a new `progress.ts` export reusing
+`saveProgress`) rather than creating a new slot, and if there's real
+progress to lose, shows an inline warning with confirm/cancel before
+doing it. Reuses the mainframe-pull beat's corridor background, the
+existing panel/button chrome, and `cue-c-mainframe-overture` (already
+sourced, CC0) as a looping menu theme with a mute toggle — no new art.
+
+**Done when:**
+- A fresh browser sees only "New game"; a browser with real progress sees
+  both options.
+- "New game" with existing progress requires an explicit confirm before
+  touching anything; cancel returns to the two-option state with no
+  side effects.
+- "Resume game" is one click straight to Home with existing progress
+  intact.
+- The screen is centered like every other cutscene/transition panel (it
+  needs the `sector-transition` class for this — a real bug, found and
+  fixed the same session: without it, the panel rendered pinned to the
+  top-left).
+- `npm run check` passes.
+
+**Shipped** — verified live end-to-end: fresh-state and existing-save
+title screens, the warn/confirm/cancel flow, Resume landing on Home,
+audio autoplay's gesture-unlock behavior (same limitation/pattern as
+`CutsceneView`'s), and the centering fix, all via direct DOM inspection
+and screenshots in the Browser pane, not just code review.
+
+**Blocked on:** Nothing.
+
+---
+
+### P7.2 — Onboarding flow correction: New game skips Home
+
+**What:** A correction surfaced by P7.1 itself: "New game" originally
+just set `view: 'home'` after resetting progress, which meant a brand
+new player saw Home's Incident Brief before ever seeing the cutscene that
+explains what happened. Fixed by sending "New game" into avatar creation
+instead (`setAvatarMode('onboarding'); setView('avatar')`), and
+generalizing `proceedPastAvatar` to accept `mission: Mission | null` so
+the existing avatar-confirm -> intro-cutscene chain works with no mission
+queued up (lands on Home once the cutscene finishes, via the same
+already-existing null check in `handleCutsceneFinish`) instead of needing
+a special case.
+
+**Done when:** "New game" -> avatar creator -> intro cutscene -> Home,
+with no regression to "Redo your badge" (avatar edit, still lands on Home
+directly, unaffected by the generalization) or "Resume game" (unaffected,
+still direct to Home). `npm run check` passes.
+
+**Shipped** — verified live: New game reaches "Print your access badge"
+(not Home), and Resume still reaches Home directly with existing
+progress.
+
+**Blocked on:** Nothing.
+
+**Depends on:** P7.1 (this is a fix to behavior P7.1 introduced).
+
+---
+
+### P7.3 — Intro cutscene simplification (presentation only)
+
+**What:** Product feedback on the already-shipped P5.5 cutscene, applied
+without touching its script, sequencing, or art:
+- Avatar sprite removed from Panels 1-6 (`showAvatar: true` deleted from
+  each in `src/content/beats.ts`) — added clutter, no narrative value.
+  Panels 8+ unchanged, per explicit feedback that those already work.
+- `CutsceneView`'s panel counter ("Panel X of Y"), mute-music toggle, and
+  "Press Continue when you're ready" hint text removed — generally, not
+  scoped to this one beat. (`.cutscene-mute-toggle` and
+  `.sector-transition-hint` CSS stayed, since `TitleScreen` and
+  `SectorTransitionView` still use them respectively — checked before
+  deleting either rule.)
+- The CC-BY credit line for Cue A (the only one of the three cues that
+  needs attribution) resized to fit on one line instead of wrapping
+  across several padded ones.
+- Panel 8's avatar motion redesigned: `AvatarMotion`'s `'dissolve'` key
+  renamed to `'pulled'`, with new keyframes (spin + shrink-to-a-point,
+  increasing blur) reading as being sucked into the machine, rather than
+  a plain fade — paired with the existing glitch-zap sfx on the same
+  panel.
+
+**Done when:** all of the above hold with no change to the beat's copy,
+image assets, or panel sequence; `npm run check` passes.
+
+**Shipped** — verified live panel-by-panel through the full
+`mainframePullBeat` sequence, including confirming the new
+`.cutscene-avatar-pulled` class applies on Panel 8 via direct DOM
+inspection.
+
+**Blocked on:** Nothing.
+
+**Depends on:** P5.5 (revises it, doesn't replace it).
+
+---
+
+### P7.4 — Mission scoreboard reorg, round 2
+
+**What:** BACKLOG.md item 9's 2026-08-11 update, the other half (P5.6
+above covers the sector-map/eyebrow/schema-editor changes from earlier in
+the same session; this is the scoreboard/badges change from later in it).
+`MissionView`'s `.scoreboard` (integrity bar + points) stacked vertically
+and carried the badges disclosure too, both reading as taller/heavier
+than they needed to. Reordered to a single horizontal row (integrity bar
+to the left of points), unified the points `<strong>` to the same
+(non-pixel) font as the progress bar's label instead of a heavier
+Press-Start-2P treatment, and moved the badges disclosure out of the
+scoreboard into the Terminal Reward box beside it.
+
+**Done when:** the scoreboard renders as one narrow row, both pieces of
+text share a font, badges are reachable from Terminal Reward instead of
+the scoreboard, and nothing regresses keyboard operability on the
+`<details>` disclosure. `npm run check` passes.
+
+**Shipped** — verified live via screenshot: the scoreboard is a single
+row, "Mainframe integrity" and "0 points" match in font, and badges
+appear under "Terminal reward."
+
+**Blocked on:** Nothing.
+
+**Depends on:** P5.4 (reorganizes header real estate P5.4 established).
 
 ---
 
