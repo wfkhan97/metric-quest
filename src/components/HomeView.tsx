@@ -17,6 +17,8 @@ type HomeViewProps = {
   onEditAvatar: () => void;
   /** Undefined until the opening cutscene has been seen once — nothing to replay yet. */
   onReplayOpening?: () => void;
+  /** Always available once Home is reached, including on older saves. */
+  onReplayTutorial: () => void;
   /** Called after a save-slot switch, create, or delete-of-active changes
    * which progress is active — App owns `progress` state and needs to sync. */
   onActiveProgressChange: (progress: Progress) => void;
@@ -28,6 +30,7 @@ export function HomeView({
   onSelectMission,
   onEditAvatar,
   onReplayOpening,
+  onReplayTutorial,
   onActiveProgressChange,
 }: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
@@ -172,11 +175,16 @@ export function HomeView({
           <button type="button" className="start-button" onClick={() => onSelectMission(ctaMission)}>
             {allComplete ? 'Replay a sector' : hasStarted ? `Resume: ${ctaMission.title}` : `Enter Sector 1: ${ctaMission.title}`}
           </button>
-          {onReplayOpening && (
-            <button type="button" className="link-button" onClick={onReplayOpening}>
-              Replay opening
+          <div className="home-review-controls" aria-label="Review controls">
+            {onReplayOpening && (
+              <button type="button" className="link-button" onClick={onReplayOpening}>
+                Replay opening
+              </button>
+            )}
+            <button type="button" className="link-button" onClick={onReplayTutorial}>
+              Review controls
             </button>
-          )}
+          </div>
         </section>
 
         <ChapterMap

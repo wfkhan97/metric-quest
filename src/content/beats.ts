@@ -10,7 +10,8 @@ import cueB from '../assets/audio/cue-b-signal-interrupt.mp3';
 import cueC from '../assets/audio/cue-c-mainframe-overture.m4a';
 import glitchZap from '../assets/audio/glitch-zap.ogg';
 
-export type PanelLayout = 'frame' | 'boot';
+export type PanelLayout = 'frame' | 'boot' | 'tutorial';
+export type TutorialFocus = 'brief' | 'schema' | 'editor' | 'run' | 'feedback' | 'help';
 export type AvatarMotion = 'entrance' | 'shake' | 'run' | 'pulled';
 export type RogueMotion = 'entrance' | 'dash';
 
@@ -45,11 +46,16 @@ export type BeatPanel = {
   creditLine?: string;
   /** Overrides the default "Next" (or "Continue" on a beat's last panel). */
   continueLabel?: string;
+  /** Current region in the non-interactive terminal-orientation schematic. */
+  tutorialFocus?: TutorialFocus;
 };
 
 export type Beat = {
   id: string;
   panels: BeatPanel[];
+  /** Opt-in visible skip control. Story cutscenes keep their mandatory first
+   * viewing behavior; only the terminal orientation exposes this label. */
+  skipLabel?: string;
 };
 
 export const openingBeat: Beat = {
@@ -200,6 +206,81 @@ export const mainframePullBeat: Beat = {
       audioSrc: cueC,
       continueLabel: 'Enter Sector 1',
       copy: ['AURORA MUSIC MAINFRAME', 'SECTOR 1 — THE LEDGER VAULTS', 'INITIALIZING QUERY TERMINAL...', 'CONNECTION ESTABLISHED.'],
+    },
+  ],
+};
+
+/**
+ * Optional first-run terminal orientation (BACKLOG.md item 14). Its content
+ * is deliberately passive: CutsceneView renders a CSS/HTML schematic, never
+ * a live MissionView, so no query, grade, hint, answer, or progress mutation
+ * can occur from this beat.
+ */
+export const terminalOrientationBeat: Beat = {
+  id: 'terminal-orientation',
+  skipLabel: 'Skip tutorial',
+  panels: [
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'brief',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 1 OF 6',
+      heading: 'Start with the brief.',
+      copy: [
+        'Every terminal opens with a business brief: what ROGUE.exe scrambled, what Aurora needs back, and exactly what the result must contain. Read it before touching the editor.',
+        'The mainframe is dramatic. The request is precise.',
+      ],
+    },
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'schema',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 2 OF 6',
+      heading: 'Check what survived.',
+      copy: [
+        'The schema explorer lists the tables and columns this mission exposes. When more than one table is in play, relationship lines show which keys connect them.',
+        'It is the map of what exists, not a memory test. If a column is not listed, do not invent one.',
+      ],
+    },
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'editor',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 3 OF 6',
+      heading: 'This is your workbench.',
+      copy: [
+        'Write or edit your query in the SQL editor. The starter comments point at the task; keep them, replace them, or clear them when you are ready.',
+        'This walkthrough maps the controls. It will not solve the query for you.',
+      ],
+    },
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'run',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 4 OF 6',
+      heading: 'Run the result, not the wording.',
+      copy: [
+        "Run query sends the editor's current text to the database in your browser. Use the button, or press Cmd/Ctrl+Enter.",
+        'The mainframe grades the table your SQL returns—not whether your query looks like a memorized answer.',
+      ],
+    },
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'feedback',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 5 OF 6',
+      heading: 'Read what came back.',
+      copy: [
+        'If the rows or columns are still off, the terminal marks the result as corrupted and explains what did not line up. The returned table stays visible so you can inspect it and try again.',
+        'When the result matches, the panel changes to Terminal restored, shows the lesson, and awards any new points or badge. A wrong run does not erase your progress.',
+      ],
+    },
+    {
+      layout: 'tutorial',
+      tutorialFocus: 'help',
+      eyebrow: 'QUERY TERMINAL ORIENTATION · 6 OF 6',
+      heading: 'Stuck is a status, not a dead end.',
+      copy: [
+        'Show hint reveals one clue at a time. Concept glossary opens a reference without taking you out of the mission.',
+        'After two executed wrong results, feedback may flag a likely cause. After three, See answer appears. It is hidden before then on purpose.',
+        'Brief. Schema. Editor. Run. Inspect. Adjust. That is the whole terminal loop. You can replay this orientation from the main screen.',
+      ],
+      continueLabel: 'Continue',
     },
   ],
 };

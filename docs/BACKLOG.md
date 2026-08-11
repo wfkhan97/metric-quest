@@ -1463,18 +1463,17 @@ deliberately narrower than B1** — see Non-goals — and is opened
 separately rather than replacing B1, which stays on the roadmap as its
 own, bigger, still-gated idea.
 
-**Scoping plan complete 2026-08-11:** see
-[`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md). It recommends a
-skippable six-panel passive walkthrough using the existing cutscene
-sequencing pattern, with a code-rendered mission-screen schematic. No new
-Claude Design art is needed; implementation remains pending product-owner
-approval.
+**Implemented 2026-08-11; awaiting product-owner approval to merge:** see
+[`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md). The approved
+skippable six-panel passive walkthrough now uses the existing cutscene
+sequencing pattern with a code-rendered, non-interactive mission-screen
+schematic. It adds no Claude Design art, SQL instruction, SQL execution,
+grading behavior, or new network behavior.
 
-**Scoping-first, not build-first.** Unlike items 1-13's Part A, this
-item's screen-by-screen plan, copy, sequencing, and asset decision now
-live in the linked scoping document rather than being repeated here.
-Nothing is approved to build yet; product-owner review of that plan is
-still required before this becomes a `BUILD_ORDER.md` packet.
+The implementation preserves first-run routing through the normal Sector 1
+transition, records a per-save additive tutorial flag when the automatic
+tutorial opens, keeps legacy saves unprompted, and exposes **Review controls**
+beside **Replay opening** on Home.
 
 ### Problem
 A brand-new player who has never touched a SQL tool (or this specific
@@ -1619,12 +1618,11 @@ above to remove any "not built yet" caveat that no longer applies.
   the current class) and Part B (each entry names its own required
   product-owner decision, for a future net-new-learner audience) — don't
   treat Part B entries as approved work the way items 1-11 are.
-- **Item 14 (first-run tutorial)**, opened 2026-08-11, is not buildable
-  yet at all — it's mid a scoping pass (see the item's own "How this gets
-  built" section). Don't start implementing it from a fresh read of this
-  file alone; check whether a scoping-pass plan exists first (it would be
-  linked from this item once delivered) and build from that, not from
-  this section's Goals/Non-goals directly.
+- **Item 14 (first-run tutorial)** was implemented from its approved
+  scoping plan on `codex/tutorial-mode-implementation`; it awaits
+  product-owner approval to merge. Future changes should continue to use
+  [`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md) as the source of
+  truth and keep the scope separate from item 13 Part B1's SQL primer.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.

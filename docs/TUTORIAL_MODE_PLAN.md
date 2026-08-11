@@ -1,8 +1,9 @@
 # Optional first-run tutorial — screen/mechanics orientation plan
 
-Status: **planning complete; awaiting product-owner review before implementation.**
-This document scopes `docs/BACKLOG.md` item 14 only. It does not approve a
-build, and it does not expand item 13 Part B1's separate SQL-basics primer.
+Status: **implemented on `codex/tutorial-mode-implementation`; awaiting
+product-owner approval to merge.**
+This document scopes and records `docs/BACKLOG.md` item 14 only. It does not
+expand item 13 Part B1's separate SQL-basics primer.
 
 ## Decision summary
 
@@ -370,11 +371,31 @@ Required verification:
 7. `npm run check` passes, followed by a human keyboard pass and the three
    viewport checks above.
 
-## Product-owner approval gate
+## Product-owner decision record
 
-Approve the following before Claude Code implementation begins:
+The product owner approved the following before implementation began:
 
 1. Passive six-panel format rather than a live sandbox.
 2. Skippable from the first panel.
 3. **Review controls** as the Home replay label/location.
 4. No new art or Claude Design commission.
+
+## Implementation closeout (2026-08-11)
+
+- Shipped as `terminalOrientationBeat`, a data-driven six-panel `Beat` using
+  a CSS/HTML `TutorialMissionPreview`. The preview reads M1.1's title, brief,
+  visible schema, and starter comments from the existing mission definition;
+  it contains no interactive controls and does not mount `MissionView`.
+- `CutsceneView` gained an opt-in visible skip label for this tutorial only.
+  Story beats retain their mandatory first-view behavior.
+- Progress adds the optional, per-save `seenTutorial` flag. The automatic
+  route records it as soon as the tutorial opens, preserves a queued mission
+  through `enterMissionWithTransitionCheck`, and does not interrupt existing
+  saves that have already seen the opening. Home now offers **Review controls**
+  beside **Replay opening** for every save.
+- Automated coverage verifies tutorial routing, queued-mission finish/skip,
+  replay behavior, legacy/current review access, parsing, inert-preview DOM,
+  and tutorial skip/Escape behavior. Browser checks covered the first-run
+  route, review/skip return, normal Sector 1 transition, and 1280×800,
+  375×812, and 320×568 outer-overflow checks. A human screen-reader pass
+  remains advisable before public release.

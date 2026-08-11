@@ -19,6 +19,9 @@ export type Progress = {
   /** Optional and additive, same rule as `avatar`: whether the opening
    * cutscene has played once. Missing means "not seen yet," not corrupt. */
   seenOpening?: boolean;
+  /** Optional and additive: whether this save has been offered the terminal
+   * orientation. Missing on an older save is valid and means "not offered." */
+  seenTutorial?: boolean;
 };
 
 /** One save slot (P6.2 multi-save). `progress` is exactly today's `Progress`
@@ -64,13 +67,15 @@ function parseProgress(value: unknown): Progress {
     ? parsed.seenSectors.filter((n): n is number => typeof n === 'number')
     : undefined;
   const seenOpening = typeof parsed.seenOpening === 'boolean' ? parsed.seenOpening : undefined;
+  const seenTutorial = typeof parsed.seenTutorial === 'boolean' ? parsed.seenTutorial : undefined;
   return {
     completedMissionIds: parsed.completedMissionIds.filter((id): id is string => typeof id === 'string'),
     badges: parsed.badges.filter((badge): badge is string => typeof badge === 'string'),
     points: Math.max(0, parsed.points),
     ...(avatar ? { avatar } : {}),
     ...(seenSectors ? { seenSectors } : {}),
-    ...(seenOpening ? { seenOpening } : {}),
+    ...(seenOpening !== undefined ? { seenOpening } : {}),
+    ...(seenTutorial !== undefined ? { seenTutorial } : {}),
   };
 }
 
@@ -291,4 +296,16 @@ export function hasSeenOpening(progress: Progress): boolean {
 export function markOpeningSeen(progress: Progress): Progress {
   if (hasSeenOpening(progress)) return progress;
   return { ...progress, seenOpening: true };
+}
+
+export function hasSeenTutorial(progress: Progress): boolean {
+  return progress.seenTutorial ?? false;
+}
+
+/** Records that the automatic terminal orientation was offered. This is
+ * deliberately separate from completion so a refresh midway through cannot
+ * reopen it automatically. */
+export function markTutorialSeen(progress: Progress): Progress {
+  if (hasSeenTutorial(progress)) return progress;
+  return { ...progress, seenTutorial: true };
 }
