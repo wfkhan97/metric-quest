@@ -1463,12 +1463,18 @@ deliberately narrower than B1** — see Non-goals — and is opened
 separately rather than replacing B1, which stays on the roadmap as its
 own, bigger, still-gated idea.
 
+**Scoping plan complete 2026-08-11:** see
+[`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md). It recommends a
+skippable six-panel passive walkthrough using the existing cutscene
+sequencing pattern, with a code-rendered mission-screen schematic. No new
+Claude Design art is needed; implementation remains pending product-owner
+approval.
+
 **Scoping-first, not build-first.** Unlike items 1-13's Part A, this
-item's actual screen-by-screen plan, copy, sequencing, and asset needs
-are not decided here — they're the deliverable of a dedicated scoping
-pass (see "How this gets built" below), done before any implementation
-starts. Nothing in this section is approved to build yet; the scoping
-output is what turns this into a real `BUILD_ORDER.md` packet.
+item's screen-by-screen plan, copy, sequencing, and asset decision now
+live in the linked scoping document rather than being repeated here.
+Nothing is approved to build yet; product-owner review of that plan is
+still required before this becomes a `BUILD_ORDER.md` packet.
 
 ### Problem
 A brand-new player who has never touched a SQL tool (or this specific
@@ -1514,7 +1520,7 @@ current class mostly has that; a future net-new audience won't.
 ### How this gets built: scoping first, then implementation
 Per direct product direction, this item runs through two separate passes
 with two different tools, not the usual single-session build:
-1. **Scoping (Codex, next).** A dedicated session works out the actual
+1. **Scoping (Codex, complete 2026-08-11).** A dedicated session worked out the actual
    experience: what it shows, in what sequence, what the copy says (in
    the established playful-retro-but-didactic voice — see item 1's
    resolved copy-voice decision as the reference point), whether it's a
@@ -1531,8 +1537,9 @@ with two different tools, not the usual single-session build:
    actually been requested/delivered through the normal Claude Design
    workflow (or the plan confirms no new art is needed).
 
-### Open questions
-Deliberately left for the scoping pass rather than guessed at here:
+### Scoping questions
+Resolved by the completed scoping pass; retained here as the original
+decision checklist, with answers and reasoning in the linked plan:
 - Passive multi-panel walkthrough vs. an interactive "try it live"
   tutorial mission — meaningfully different build complexity and
   different asset needs; the scoping pass should recommend one with
