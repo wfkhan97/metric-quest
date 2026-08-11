@@ -5,6 +5,8 @@ import { hasAnyProgress, type Progress } from '../lib/progress';
 
 type TitleScreenProps = {
   progress: Progress;
+  isMusicMuted: boolean;
+  onToggleMusicMute: () => void;
   onResume: () => void;
   onNewGame: () => void;
 };
@@ -12,10 +14,9 @@ type TitleScreenProps = {
 // The very first screen on a fresh page load — reuses the sector-transition
 // frame/background chrome wholesale (same as the opening cutscenes do) so it
 // costs no new visual language, just new copy and two buttons.
-export function TitleScreen({ progress, onResume, onNewGame }: TitleScreenProps) {
+export function TitleScreen({ progress, isMusicMuted, onToggleMusicMute, onResume, onNewGame }: TitleScreenProps) {
   const canResume = hasAnyProgress(progress);
   const [confirmingNewGame, setConfirmingNewGame] = useState(false);
-  const [muted, setMuted] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const primaryButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -24,8 +25,8 @@ export function TitleScreen({ progress, onResume, onNewGame }: TitleScreenProps)
   }, []);
 
   useEffect(() => {
-    if (audioRef.current) audioRef.current.muted = muted;
-  }, [muted]);
+    if (audioRef.current) audioRef.current.muted = isMusicMuted;
+  }, [isMusicMuted]);
 
   // Cold-start autoplay is blocked until the page has had a user gesture —
   // same limitation CutsceneView's music has. Attempting play() on every
@@ -53,7 +54,7 @@ export function TitleScreen({ progress, onResume, onNewGame }: TitleScreenProps)
 
   return (
     <main className="app-shell sector-transition cutscene title-screen" aria-labelledby="title-screen-heading" onClickCapture={tryPlay}>
-      <audio ref={audioRef} src={cueMainframeOverture} loop aria-hidden="true" />
+      <audio ref={audioRef} src={cueMainframeOverture} loop muted={isMusicMuted} aria-hidden="true" />
       <div className="cutscene-bg" style={{ backgroundImage: `url(${corridorCalm})` }} aria-hidden="true" />
       <div className="sector-transition-frame title-screen-frame">
         <p className="eyebrow">Aurora Music mainframe · analyst access</p>
@@ -92,8 +93,8 @@ export function TitleScreen({ progress, onResume, onNewGame }: TitleScreenProps)
           </>
         )}
 
-        <button type="button" className="link-button cutscene-mute-toggle" onClick={() => setMuted((value) => !value)}>
-          {muted ? 'Unmute music' : 'Mute music'}
+        <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
+          {isMusicMuted ? 'Unmute music' : 'Mute music'}
         </button>
       </div>
     </main>

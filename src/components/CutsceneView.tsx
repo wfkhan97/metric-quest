@@ -10,6 +10,8 @@ type CutsceneViewProps = {
   avatar?: AvatarConfig;
   /** False on a beat's mandatory first viewing — no skip control, Escape does nothing. */
   skippable: boolean;
+  isMusicMuted: boolean;
+  onToggleMusicMute: () => void;
   onFinish: () => void;
 };
 
@@ -30,7 +32,7 @@ const rogueMotionClass: Record<string, string> = {
 // panelIndex to 0 for the new beat; there is deliberately no effect that
 // calls setPanelIndex(0) on a `beat` change, since that pattern trips the
 // react-hooks "no setState synchronously in an effect" rule.
-export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneViewProps) {
+export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMusicMute, onFinish }: CutsceneViewProps) {
   const [panelIndex, setPanelIndex] = useState(0);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -104,6 +106,10 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
     };
   }, []);
 
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.muted = isMusicMuted;
+  }, [isMusicMuted]);
+
   // One-shot sound effect, separate from the looping audioSrc music channel
   // above — fired from handleContinue (a real click), not an effect, for
   // the same gesture-attachment reason syncAudio is.
@@ -134,7 +140,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
         <h1 id="cutscene-boot-title" className="sr-only">
           Terminal boot sequence
         </h1>
-        {hasAnyAudio && <audio ref={audioRef} aria-hidden="true" />}
+        {hasAnyAudio && <audio ref={audioRef} muted={isMusicMuted} aria-hidden="true" />}
         <div key={panelIndex} className="cutscene-boot-lines">
           {panel.copy.map((line, index) => (
             <p key={index} className="cutscene-boot-line type-reveal" style={{ animationDelay: `${index * 400}ms` }}>
@@ -146,6 +152,11 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
           <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
             {continueLabel}
           </button>
+          {hasAnyAudio && (
+            <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
+              {isMusicMuted ? 'Unmute music' : 'Mute music'}
+            </button>
+          )}
         </div>
       </main>
     );
@@ -154,7 +165,7 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
   return (
     <main className="app-shell sector-transition cutscene" aria-labelledby="cutscene-title">
       <div className="cutscene-glitch-overlay" aria-hidden="true" />
-      {hasAnyAudio && <audio ref={audioRef} aria-hidden="true" />}
+      {hasAnyAudio && <audio ref={audioRef} muted={isMusicMuted} aria-hidden="true" />}
       {hasAnySfx && <audio ref={sfxRef} aria-hidden="true" />}
       {panel.background && (
         <div
@@ -202,6 +213,11 @@ export function CutsceneView({ beat, avatar, skippable, onFinish }: CutsceneView
           <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
             {continueLabel}
           </button>
+          {hasAnyAudio && (
+            <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
+              {isMusicMuted ? 'Unmute music' : 'Mute music'}
+            </button>
+          )}
         </div>
         {panel.creditLine && <p className="subtle cutscene-credit">{panel.creditLine}</p>}
       </div>

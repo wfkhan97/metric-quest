@@ -40,18 +40,24 @@ type SqlEditorProps = {
   id: string;
   value: string;
   onChange: (value: string) => void;
+  onRunQuery: () => void;
   ariaLabelledBy: string;
   ariaDescribedBy?: string;
 };
 
-export function SqlEditor({ id, value, onChange, ariaLabelledBy, ariaDescribedBy }: SqlEditorProps) {
+export function SqlEditor({ id, value, onChange, onRunQuery, ariaLabelledBy, ariaDescribedBy }: SqlEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
+  const onRunQueryRef = useRef(onRunQuery);
 
   useEffect(() => {
     onChangeRef.current = onChange;
   }, [onChange]);
+
+  useEffect(() => {
+    onRunQueryRef.current = onRunQuery;
+  }, [onRunQuery]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -60,7 +66,17 @@ export function SqlEditor({ id, value, onChange, ariaLabelledBy, ariaDescribedBy
         doc: value,
         extensions: [
           history(),
-          keymap.of([...defaultKeymap, ...historyKeymap]),
+          keymap.of([
+            {
+              key: 'Mod-Enter',
+              run: () => {
+                onRunQueryRef.current();
+                return true;
+              },
+            },
+            ...defaultKeymap,
+            ...historyKeymap,
+          ]),
           sql(),
           syntaxHighlighting(highlightStyle),
           terminalTheme,
