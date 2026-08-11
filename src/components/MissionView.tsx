@@ -53,12 +53,23 @@ type MissionViewProps = {
   mission: Mission;
   missions: Mission[];
   progress: Progress;
+  isMusicMuted: boolean;
+  onToggleMusicMute: () => void;
   onProgressChange: (next: Progress) => void;
   onSelectMission: (mission: Mission) => void;
   onBackToHome: () => void;
 };
 
-export function MissionView({ mission, missions, progress, onProgressChange, onSelectMission, onBackToHome }: MissionViewProps) {
+export function MissionView({
+  mission,
+  missions,
+  progress,
+  isMusicMuted,
+  onToggleMusicMute,
+  onProgressChange,
+  onSelectMission,
+  onBackToHome,
+}: MissionViewProps) {
   const [sql, setSql] = useState(mission.starterSql);
   const [result, setResult] = useState<QueryResult>();
   const [feedback, setFeedback] = useState<Feedback>();
@@ -87,7 +98,6 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   const [diagnostic, setDiagnostic] = useState<MistakeSignature | undefined>(undefined);
   const sectorTrack = sectorMusic[chapterNumber(mission)];
   const musicRef = useRef<HTMLAudioElement>(null);
-  const [musicMuted, setMusicMuted] = useState(false);
 
   // Same cold-start autoplay limitation as TitleScreen/CutsceneView: the
   // first play() on a page needs a user gesture in its own call stack, so
@@ -110,8 +120,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   }, []);
 
   useEffect(() => {
-    if (musicRef.current) musicRef.current.muted = musicMuted;
-  }, [musicMuted]);
+    if (musicRef.current) musicRef.current.muted = isMusicMuted;
+  }, [isMusicMuted]);
 
   const [isAiTutorOpen, setIsAiTutorOpen] = useState(false);
   const aiTutorButtonRef = useRef<HTMLButtonElement>(null);
@@ -201,7 +211,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
 
   return (
     <main className="app-shell mission-view" aria-labelledby="page-title" onClickCapture={tryPlayMusic}>
-      {sectorTrack && <audio ref={musicRef} src={sectorTrack} loop aria-hidden="true" />}
+      {sectorTrack && <audio ref={musicRef} src={sectorTrack} loop muted={isMusicMuted} aria-hidden="true" />}
       <a className="skip-link" href="#mission">
         Skip to active mission
       </a>
@@ -225,8 +235,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
             Browse sectors
           </button>
           {sectorTrack && (
-            <button type="button" className="link-button cutscene-mute-toggle" onClick={() => setMusicMuted((value) => !value)}>
-              {musicMuted ? 'Unmute music' : 'Mute music'}
+            <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
+              {isMusicMuted ? 'Unmute music' : 'Mute music'}
             </button>
           )}
         </div>
@@ -342,6 +352,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
                 id="sql-editor"
                 value={sql}
                 onChange={setSql}
+                onRunQuery={() => void runQuery()}
                 ariaLabelledBy="sql-label"
                 ariaDescribedBy={mission.allowsTempWorkspace ? 'runner-note' : undefined}
               />

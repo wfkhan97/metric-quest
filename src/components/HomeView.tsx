@@ -3,6 +3,7 @@ import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
 import { ProgressBar } from './ProgressBar';
+import { ProgressSummaryPanel } from './ProgressSummaryPanel';
 import { SaveSlotPanel } from './SaveSlotPanel';
 import iconBadge from '../assets/ui/icon-badge.png';
 import iconPoints from '../assets/ui/icon-points.png';
@@ -31,8 +32,10 @@ export function HomeView({
 }: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false);
+  const [isProgressSummaryOpen, setIsProgressSummaryOpen] = useState(false);
   const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const saveSlotsButtonRef = useRef<HTMLButtonElement>(null);
+  const progressSummaryButtonRef = useRef<HTMLButtonElement>(null);
 
   // Monet's OAuth callback redirects back here with ?connected=<provider>
   // once the connection is live (the tutor itself lives in MissionView, not
@@ -65,6 +68,9 @@ export function HomeView({
           <button type="button" className="link-button" onClick={() => setIsSaveSlotsOpen(true)} ref={saveSlotsButtonRef}>
             Save slots
           </button>
+          <button type="button" className="link-button" onClick={() => setIsProgressSummaryOpen(true)} ref={progressSummaryButtonRef}>
+            Progress report
+          </button>
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <strong>
@@ -93,6 +99,17 @@ export function HomeView({
           onClose={() => {
             setIsSaveSlotsOpen(false);
             saveSlotsButtonRef.current?.focus();
+          }}
+        />
+      )}
+
+      {isProgressSummaryOpen && (
+        <ProgressSummaryPanel
+          missions={missions}
+          progress={progress}
+          onClose={() => {
+            setIsProgressSummaryOpen(false);
+            progressSummaryButtonRef.current?.focus();
           }}
         />
       )}

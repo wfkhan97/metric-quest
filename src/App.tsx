@@ -26,6 +26,16 @@ import {
 
 type View = 'title' | 'home' | 'avatar' | 'cutscene' | 'sector-transition' | 'mission';
 
+const musicMuteStorageKey = 'metric-quest-music-muted-v1';
+
+function loadMusicMuted(): boolean {
+  try {
+    return localStorage.getItem(musicMuteStorageKey) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export function App() {
   const [view, setView] = useState<View>('title');
   const [activeMissionId, setActiveMissionId] = useState<Mission['id']>(missions[0].id);
@@ -35,6 +45,19 @@ export function App() {
   const [pendingBeat, setPendingBeat] = useState<Beat | null>(null);
   const [cutsceneSkippable, setCutsceneSkippable] = useState(false);
   const [avatarMode, setAvatarMode] = useState<'onboarding' | 'edit'>('onboarding');
+  const [isMusicMuted, setIsMusicMuted] = useState(loadMusicMuted);
+
+  function toggleMusicMute() {
+    setIsMusicMuted((current) => {
+      const next = !current;
+      try {
+        localStorage.setItem(musicMuteStorageKey, String(next));
+      } catch {
+        // Keep the setting for this session even if storage is unavailable.
+      }
+      return next;
+    });
+  }
 
   function goToMission(mission: Mission) {
     setActiveMissionId(mission.id);
@@ -200,7 +223,15 @@ export function App() {
   let content;
 
   if (view === 'title') {
-    content = <TitleScreen progress={progress} onResume={handleResumeGame} onNewGame={handleNewGame} />;
+    content = (
+      <TitleScreen
+        progress={progress}
+        isMusicMuted={isMusicMuted}
+        onToggleMusicMute={toggleMusicMute}
+        onResume={handleResumeGame}
+        onNewGame={handleNewGame}
+      />
+    );
   } else if (view === 'avatar') {
     content = (
       <AvatarCreatorView
@@ -217,6 +248,8 @@ export function App() {
         beat={pendingBeat}
         avatar={progress.avatar}
         skippable={cutsceneSkippable}
+        isMusicMuted={isMusicMuted}
+        onToggleMusicMute={toggleMusicMute}
         onFinish={handleCutsceneFinish}
       />
     );
@@ -249,6 +282,8 @@ export function App() {
         mission={activeMission}
         missions={missions}
         progress={progress}
+        isMusicMuted={isMusicMuted}
+        onToggleMusicMute={toggleMusicMute}
         onProgressChange={handleProgressChange}
         onSelectMission={handleSelectMission}
         onBackToHome={() => setView('home')}

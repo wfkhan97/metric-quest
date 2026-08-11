@@ -1845,6 +1845,112 @@ tbody tr {
   padding: 0.4rem 0.5rem;
 }
 
+/* Player-initiated, screenshot-friendly local report. It shares the existing
+   overlay/focus mechanics while treating progress as a terminal printout,
+   never as a record sent to an instructor or service. */
+.progress-summary-panel {
+  block-size: min(46rem, 90vh);
+}
+
+.progress-summary-body {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.progress-summary-note {
+  color: var(--retro-muted);
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.progress-summary-printout {
+  background: #070d1d;
+  border: 1px solid var(--retro-teal);
+  box-shadow: inset 0 0 16px rgba(31, 211, 196, 0.08);
+  padding: clamp(0.65rem, 1.6vw, 1rem);
+}
+
+.progress-summary-stamp {
+  color: var(--retro-teal);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.62rem;
+  margin: 0 0 0.75rem;
+}
+
+.progress-summary-totals {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.progress-summary-totals > div {
+  background: var(--retro-panel-raised);
+  border-inline-start: 3px solid var(--retro-amber);
+  min-inline-size: 0;
+  padding: 0.45rem 0.55rem;
+}
+
+.progress-summary-totals dt {
+  color: var(--retro-muted);
+  font-size: 0.72rem;
+}
+
+.progress-summary-totals dd {
+  color: var(--retro-amber);
+  font-family: 'Press Start 2P', ui-monospace, monospace;
+  font-size: 0.7rem;
+  margin: 0.2rem 0 0;
+}
+
+.progress-summary-printout h3 {
+  color: var(--retro-amber);
+  font-size: 0.78rem;
+  margin: 1rem 0 0.45rem;
+}
+
+.progress-summary-sectors {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-summary-sectors li {
+  display: grid;
+  gap: 0.15rem 0.5rem;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  padding-block-end: 0.4rem;
+}
+
+.progress-summary-sectors li:not(:last-child) {
+  border-block-end: 1px solid rgba(159, 179, 200, 0.35);
+}
+
+.progress-summary-sectors strong {
+  color: var(--retro-text);
+}
+
+.progress-summary-sectors span {
+  color: var(--retro-muted);
+  font-size: 0.82rem;
+}
+
+.progress-summary-badges {
+  color: var(--retro-text);
+  margin: 0;
+}
+
+.progress-summary-actions {
+  align-items: center;
+  margin-block-start: 0;
+}
+
+.progress-summary-actions .subtle {
+  margin: 0;
+}
+
 /* AI tutor panel (Monet OAuth relay). Reuses .glossary-panel/.glossary-backdrop
    overlay mechanics, same as the save slot panel above. */
 .ai-tutor-messages {
