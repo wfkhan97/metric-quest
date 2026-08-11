@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AvatarCreatorView } from './components/AvatarCreatorView';
 import { CreditsButton } from './components/CreditsButton';
 import { CutsceneView } from './components/CutsceneView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
@@ -12,6 +13,7 @@ import { missions, type Mission } from './lib/missions';
 import {
   hasSeenOpening,
   hasSeenSector,
+  hasProgressPersistenceFailure,
   loadProgress,
   markOpeningSeen,
   markSectorSeen,
@@ -28,6 +30,7 @@ export function App() {
   const [view, setView] = useState<View>('title');
   const [activeMissionId, setActiveMissionId] = useState<Mission['id']>(missions[0].id);
   const [progress, setProgress] = useState<Progress>(loadProgress);
+  const [hasProgressStorageWarning, setHasProgressStorageWarning] = useState(hasProgressPersistenceFailure);
   const [pendingMission, setPendingMission] = useState<Mission | null>(null);
   const [pendingBeat, setPendingBeat] = useState<Beat | null>(null);
   const [cutsceneSkippable, setCutsceneSkippable] = useState(false);
@@ -39,8 +42,9 @@ export function App() {
   }
 
   function handleProgressChange(next: Progress) {
-    setProgress(next);
     saveProgress(next);
+    setProgress(next);
+    setHasProgressStorageWarning(hasProgressPersistenceFailure());
   }
 
   // P6.2: switching/creating/deleting a save slot already persists the new
@@ -48,6 +52,7 @@ export function App() {
   // lives here, without re-persisting (which would only bump timestamps).
   function handleActiveProgressChange(next: Progress) {
     setProgress(next);
+    setHasProgressStorageWarning(hasProgressPersistenceFailure());
   }
 
   function enterMissionWithTransitionCheck(mission: Mission, progressSnapshot: Progress) {
@@ -168,7 +173,9 @@ export function App() {
   }
 
   function handleNewGame() {
-    setProgress(resetActiveSave());
+    const nextProgress = resetActiveSave();
+    setProgress(nextProgress);
+    setHasProgressStorageWarning(hasProgressPersistenceFailure());
     setPendingMission(null);
     setPendingBeat(null);
     // Fresh progress has no avatar and hasn't seen the opening yet, so this
@@ -250,9 +257,14 @@ export function App() {
   }
 
   return (
-    <>
+    <ErrorBoundary>
       {content}
+      {hasProgressStorageWarning && (
+        <p className="progress-storage-warning" role="status">
+          Progress is available for this session only — this browser is not saving it.
+        </p>
+      )}
       <CreditsButton />
-    </>
+    </ErrorBoundary>
   );
 }

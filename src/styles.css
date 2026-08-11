@@ -146,6 +146,50 @@ pre,
   z-index: -1;
 }
 
+.error-boundary {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+}
+
+.error-boundary-panel {
+  background: var(--retro-panel);
+  border: 2px solid var(--retro-teal);
+  box-shadow: 0 0 28px rgba(31, 211, 196, 0.22), inset 0 0 0 1px rgba(234, 246, 244, 0.06);
+  display: grid;
+  gap: 0.85rem;
+  max-inline-size: 34rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  text-align: center;
+}
+
+.error-boundary-panel h1 {
+  color: var(--retro-amber);
+  margin: 0;
+}
+
+.error-boundary-panel p {
+  margin: 0;
+}
+
+.error-boundary-panel .start-button {
+  justify-self: center;
+}
+
+.progress-storage-warning {
+  background: var(--retro-panel-raised);
+  border: 1px solid var(--retro-amber);
+  bottom: 0.75rem;
+  box-shadow: 0 0 16px rgba(255, 209, 102, 0.24);
+  color: var(--retro-text);
+  margin: 0;
+  max-inline-size: min(34rem, calc(100% - 1.5rem));
+  padding: 0.55rem 0.7rem;
+  position: fixed;
+  right: 0.75rem;
+  z-index: 25;
+}
+
 .home-view,
 .mission-view {
   display: grid;

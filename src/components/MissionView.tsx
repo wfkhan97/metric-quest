@@ -19,6 +19,7 @@ import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
 import { runMissionQuery } from '../lib/sqlRunner';
+import { useFocusTrap } from '../lib/useFocusTrap';
 
 // CodeMirror (via SqlEditor) is the single largest dependency in the main
 // bundle. Every other screen (Home, avatar creator, cutscenes) never needs
@@ -48,8 +49,6 @@ type MissionViewProps = {
   onSelectMission: (mission: Mission) => void;
   onBackToHome: () => void;
 };
-
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
 
 export function MissionView({ mission, missions, progress, onProgressChange, onSelectMission, onBackToHome }: MissionViewProps) {
   const [sql, setSql] = useState(mission.starterSql);
@@ -150,30 +149,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   useEffect(() => {
     if (isMapOpen) mapCloseButtonRef.current?.focus();
   }, [isMapOpen]);
-
-  useEffect(() => {
-    if (!isMapOpen) return;
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        closeMap();
-        return;
-      }
-      if (event.key !== 'Tab' || !mapPanelRef.current) return;
-      const focusable = Array.from(mapPanelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMapOpen, closeMap]);
+  useFocusTrap(mapPanelRef, closeMap, isMapOpen);
 
   async function runQuery() {
     setIsRunning(true);

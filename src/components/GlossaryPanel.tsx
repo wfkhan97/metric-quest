@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { chapters } from '../content/chapters';
 import { glossary, type GlossaryEntry } from '../content/glossary';
+import { useFocusTrap } from '../lib/useFocusTrap';
 import {
   FilterSortLimitDiagram,
   GroupByDiagram,
@@ -22,8 +23,6 @@ type GlossaryPanelProps = {
   /** Entry id to auto-expand and scroll into view on open (P1.3 deep link). */
   initialEntryId?: string;
 };
-
-const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
 
 function groupBySector(entries: GlossaryEntry[]): Map<number, GlossaryEntry[]> {
   const groups = new Map<number, GlossaryEntry[]>();
@@ -55,29 +54,7 @@ export function GlossaryPanel({ onClose, initialEntryId }: GlossaryPanelProps) {
     details.open = true;
     details.scrollIntoView({ block: 'start' });
   }, [initialEntryId]);
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab' || !panelRef.current) return;
-      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  useFocusTrap(panelRef, onClose);
 
   return (
     <div

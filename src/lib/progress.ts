@@ -42,6 +42,7 @@ type SaveStore = {
 const legacyStorageKey = 'metric-quest-progress-v1';
 const savesStorageKey = 'metric-quest-saves-v1';
 const emptyProgress: Progress = { completedMissionIds: [], points: 0, badges: [] };
+let progressPersistenceFailed = false;
 
 function parseAvatar(value: unknown): AvatarConfig | undefined {
   if (!value || typeof value !== 'object') return undefined;
@@ -133,7 +134,23 @@ function readStore(): SaveStore | null {
 }
 
 function writeStore(store: SaveStore): void {
-  localStorage.setItem(savesStorageKey, JSON.stringify(store));
+  // Browser storage can be unavailable in shared or locked-down classroom
+  // profiles, and quota can be exhausted. Keep the current interaction alive
+  // rather than turning a progress write into an uncaught app-wide exception.
+  try {
+    localStorage.setItem(savesStorageKey, JSON.stringify(store));
+    progressPersistenceFailed = false;
+  } catch {
+    progressPersistenceFailed = true;
+    // Progress remains available in the current React state for this session,
+    // but cannot be restored after a reload while browser storage is blocked.
+  }
+}
+
+/** Lets the UI warn a player when browser storage is unavailable, while the
+ * current in-memory session continues to work. */
+export function hasProgressPersistenceFailure(): boolean {
+  return progressPersistenceFailed;
 }
 
 function readLegacyProgress(): Progress | null {
