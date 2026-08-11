@@ -159,7 +159,7 @@ The app is a fixed single viewport per screen: no scrolling the whole page
 up/down/left/right to see progress, read the brief, or run a query. In
 practice that means:
 
-- Each screen (Home, Mission, Avatar Creator, Sector Transition) is laid
+- Each screen (Title, Home, Mission, Avatar Creator, Cutscene, Sector Transition) is laid
   out as fixed zones inside one viewport-height shell — e.g. a persistent
   top status bar, a compact side/chapter nav, and a main content area —
   rather than a long stacked page.
@@ -193,6 +193,14 @@ blocking everything on art that doesn't exist yet:
   through Claude Design that hasn't been sent yet — do not start building
   this until that art exists, per the project rule that visual assets come
   from the external design tool, not agent-generated images.
+
+**Title screen (shipped 2026-08-11).** Reuses this same toolkit and existing
+art rather than introducing a new visual language: the corridor-of-doors
+background from the mainframe-pull beat, the same panel/button chrome, and
+`cue-c-mainframe-overture` looping as the menu theme — closing the loop
+`docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`'s music section flagged that track
+as a title-screen candidate for. "Resume game"/"New game" gate the app on
+first load; "New game" warns before overwriting existing progress.
 
 ---
 

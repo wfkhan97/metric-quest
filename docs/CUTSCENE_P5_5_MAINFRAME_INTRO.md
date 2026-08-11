@@ -1,7 +1,45 @@
 # P5.5 — "Pulled Into the Mainframe" cutscene script
 
-Status: **script delivered 2026-08-10 by the product owner.** This unblocks
-`docs/BUILD_ORDER.md` P5.5 / `docs/BACKLOG.md` item 4. Not yet built.
+Status: **shipped 2026-08-10** (built same day the script was delivered,
+merged to `main` via PR #13). **Revised 2026-08-11** — see "Post-ship
+revisions" below before treating the storyboard section as the current
+shipped state; the copy/sequence/art are unchanged, but several
+presentation details described below no longer match what's in
+`src/content/beats.ts`/`src/components/CutsceneView.tsx`.
+
+## Post-ship revisions (2026-08-11)
+
+Two rounds of live-playtest feedback changed presentation details after the
+initial ship, both on top of the same beat/art/copy described below —
+nothing in the storyboard's content, sequencing, or asset list changed:
+
+- **A real bug, found and fixed (PR #14):** the memo panel's internal
+  scroll (added because its content — avatar + heading + several
+  paragraphs — could exceed the viewport) never actually activated.
+  `.phase-scanline` sets the `overflow` shorthand to `hidden`, which at
+  equal CSS specificity silently won over an earlier `overflow-y: auto` on
+  the same element — the same cascade trap this file's engineering notes
+  should have flagged given P4.3 already hit it once for the `animation`
+  property. Fixed by moving the property into the block already declared
+  after `.phase-scanline` for that reason.
+- **Presentation simplified (PR #15), per product feedback:** the avatar
+  sprite no longer renders on Panels 1-6 (the office scenes before the
+  pull) — it added visual clutter without adding anything, and reads fine
+  without it. Panels 8 onward (the pull itself through the corridor run)
+  are unchanged. The "Panel X of 13" counter, the mute-music toggle, and
+  the "Press Continue when you're ready" hint text are gone from
+  `CutsceneView` generally (not specific to this beat). The CC-BY credit
+  line for Cue A is now sized to fit on one line instead of wrapping across
+  several padded ones. Panel 8's avatar motion was redesigned from a plain
+  fade (`dissolve`) to a spin-and-shrink-to-a-point read as actually being
+  sucked into the machine (`pulled` in `AvatarMotion`,
+  `.cutscene-avatar-pulled` in `styles.css`) — paired with the existing
+  glitch-zap sfx.
+- **Confirmed indirectly:** the title screen (new, see
+  `docs/GAME_DESIGN_BRIEF.md` §A8) reuses `cue-c-mainframe-overture` as its
+  menu theme — exactly the reuse this document's Cue C section flagged as
+  a candidate below, arrived at independently rather than by cross-
+  referencing this doc at the time.
 
 **Where this sits in the flow:** after avatar confirmation, before the
 existing `openingBeat` in `src/content/beats.ts` (per the P5.1 reordering —

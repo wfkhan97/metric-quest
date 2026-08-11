@@ -5,13 +5,17 @@ section's status line and `docs/BUILD_ORDER.md`); items 5-8 were opened
 2026-08-09 from the first real UAT playtest of the merged build; item 3
 still needs explicit product-owner approval per `AGENTS.md` before any
 implementation starts. P4.x and P5.x (items 5, 6, 9, and the P5.1 part of
-item 4) have all since landed on `main`; the P5.5 mainframe-pull cutscene
-(the rest of item 4) is built and checked on its own branch, not yet
-merged. Item 2 was found fully shipped
-2026-08-10 (an earlier status note here was stale — corrected). Item 8
-(multi-save) was un-deferred and designed 2026-08-10 and item 10 (public
-deployment) was opened the same day from real research — both scheduled
-as BUILD_ORDER.md P6.x. Read `docs/GAME_DESIGN_BRIEF.md` and
+item 4) have all since landed on `main`, as has the P5.5 mainframe-pull
+cutscene (the rest of item 4, merged 2026-08-10). Item 2 was found fully
+shipped 2026-08-10 (an earlier status note here was stale — corrected).
+Item 8 (multi-save) was un-deferred and designed 2026-08-10 and item 10
+(public deployment) was opened the same day from real research — both
+shipped as BUILD_ORDER.md P6.x, though item 10's actual deploy decision
+is still open. **2026-08-11:** a live playtest session produced a second
+header-refinement pass on item 9 (P5.6/P7.4), a presentation-only revision
+to the P5.5 cutscene plus a real bug fix in it (both noted in item 4's
+update), and a wholly new item 11 (title screen) — all merged same-day.
+Read `docs/GAME_DESIGN_BRIEF.md` and
 `docs/architecture.md` first; nothing here changes the grading contract,
 the SQL loop, or the browser-only boundary unless a section explicitly
 flags that it does.
@@ -381,8 +385,8 @@ Split into two pieces, one buildable now and one not:
 - **Reorder only (buildable now):** avatar creator runs first, then the
   existing unchanged opening beat. No new copy, no new screen. Tracked as
   BUILD_ORDER.md P5.1.
-- **New "pulled into the mainframe" cutscene — built 2026-08-10, not yet
-  merged:** the
+- **New "pulled into the mainframe" cutscene — built 2026-08-10, merged
+  2026-08-10 (PR #13):** the
   product owner wrote the full script directly (an Office-Space-toned
   beat: a CEO memo announcing an unsupervised AI rollout, escalating
   office chaos, a pull into the mainframe, a corridor of 9 sector doors,
@@ -391,6 +395,18 @@ Split into two pieces, one buildable now and one not:
   commissioned images landed. Full storyboard, memo text, and build notes
   are in `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`; implementation detail in
   BUILD_ORDER.md P5.5.
+- **Update (2026-08-11):** a real cascade bug in the memo panel's scroll
+  (never actually activated — `.phase-scanline`'s `overflow: hidden`
+  silently won over an earlier `overflow-y: auto` at equal specificity)
+  was found and fixed (PR #14). Separately, two rounds of live playtest
+  feedback simplified the beat's presentation (PR #15): the avatar sprite
+  no longer shows on Panels 1-6 (office scenes before the pull; Panels 8+
+  unchanged), the panel counter/mute toggle/"press Continue" hint text are
+  gone from `CutsceneView` generally, the CC-BY credit line fits one line,
+  and Panel 8's motion is a spin-and-shrink "pulled" effect instead of a
+  plain fade. See `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`'s "Post-ship
+  revisions" section for the full record. None of this changed the
+  script, sequencing, or art.
 
 ### Open questions still to resolve before build
 - Does every sector transition get an authored beat, or only some (e.g.
@@ -907,6 +923,32 @@ See the three BUILD_ORDER.md packets (P5.2-P5.4) referenced under each
 goal above — split so the cheap, low-risk copy trims can land and be
 reviewed independently from the larger header-layout change.
 
+### Update (2026-08-11) — second header pass, from a live playtest session
+P5.4's collapsible sector map and header consolidation shipped, but a
+follow-up live playtest (product owner driving the browser directly, not a
+written note) found more to tighten, landed as BUILD_ORDER.md P5.6/P7.4:
+- The header's "Sector map" text link (went straight to Home) and the
+  "Browse sectors" drawer trigger read as two overlapping ways to do
+  similar things. Consolidated into one "Browse sectors" control in the
+  header title position; the drawer itself now offers both "Close" (stay
+  on this mission) and "Back to main screen" (go to Home) instead of
+  needing a separate top-level control for the latter.
+- The header's eyebrow/title showed generic app branding ("Aurora Music
+  mainframe · active terminal" / "Metric Quest") that duplicated nothing
+  useful — replaced with the mission's own chapter/concept/title (e.g.
+  "1 · The Ledger Vaults · Filter, sort, and limit" / "Priority
+  invoices"), which let the now-redundant eyebrow/heading in the workspace
+  below be removed entirely, moving the mission brief to the top of the
+  box.
+- Schema explorer and SQL editor boxes are bigger, with tighter box
+  padding throughout to make room, and the "Write a read-only SQL query"
+  label is visually hidden (kept for screen readers) rather than taking a
+  visible row.
+- The scoreboard (integrity bar + points) is a single narrow row instead
+  of a tall stack, with both in the same font instead of the points using
+  a heavier pixel font; the badges disclosure moved out of the scoreboard
+  into the Terminal Reward box next to it.
+
 ### Open questions still to resolve before build
 - **Sector-map slide-out interaction:** the product owner described
   "put it into the top box and if someone clicks it then it slides out"
@@ -923,6 +965,52 @@ reviewed independently from the larger header-layout change.
   implementation call for whoever builds P5.4, in the same spirit as
   item 5's deferred exact padding numbers — direction is clear, pixel
   values aren't.
+
+---
+
+## 11. Title screen (Resume / New game gate)
+
+### Status: shipped 2026-08-11 (PR #15)
+New item, opened and built in the same live playtest session that produced
+item 9's second-round update above. Tracked as BUILD_ORDER.md P7.1-P7.3.
+Nothing left to build here.
+
+### Problem
+The app landed straight on Home on every page load, with no way to
+deliberately start over — "New game" only existed inside the Save Slots
+overlay, and it's *additive* (creates another slot) rather than the
+overwrite-with-warning behavior a title screen's "New game" implies.
+There was also no gate distinguishing "I have progress, let me back in"
+from "I'm starting fresh."
+
+### What shipped
+- A new screen gates the app on first load: "Resume game" (shown only if
+  the active save has real progress — an avatar set, the opening seen, a
+  mission completed, or points earned) and "New game."
+- "New game" resets the active save **in place** (not a new slot) and,
+  if there's existing progress to lose, requires an inline confirm
+  ("Starting a new game will overwrite your current progress. This can't
+  be undone.") before doing it — kept deliberately distinct from Save
+  Slots' own additive "+ New game."
+- "New game" then proceeds into avatar creation and the intro cutscene,
+  not Home — Home's Incident Brief doesn't make sense to a player who
+  hasn't seen the cutscene that explains what happened yet. "Resume game"
+  goes straight to Home, one click, unchanged for a returning player.
+- Reuses existing assets only, per `AGENTS.md`: the corridor-of-doors
+  background and panel/button chrome already used by the mainframe-pull
+  cutscene, and `cue-c-mainframe-overture` (already sourced, CC0, no
+  attribution needed) looping as the menu theme with a mute toggle.
+
+### Non-goals
+- Not a new save-management UI — Save Slots (item 8) still owns
+  multi-slot switching/rename/delete; this is just the first-load gate on
+  top of whichever slot is active.
+- No new art commissioned — if a more bespoke title-screen treatment is
+  wanted later, that's a future Claude Design request, not part of this
+  item.
+
+### Open questions still to resolve before build
+None — shipped without any open product questions.
 
 ---
 
@@ -951,23 +1039,25 @@ above to remove any "not built yet" caveat that no longer applies.
 
 - **Sequencing lives in `docs/BUILD_ORDER.md`.** This document is the
   *what*; that one is the *in what order, in what size chunks, and how to
-  know a chunk is done*. It splits these four items (plus the unwired art
-  in the tracker above) into branch-sized packets with acceptance
-  criteria, and names which open question blocks each one. Read it before
-  scoping any of this into a session.
-- Items 1, 2, 4, 8, and 9 fit the current architecture with no approval
-  needed — they can be scoped into normal sector/session work whenever
-  prioritized. Item 4's new "pulled into the mainframe" beat is the one
-  exception inside an otherwise-unblocked item: it's waiting on the
-  product owner's script, not an approval decision.
+  know a chunk is done*. It splits these items (plus the unwired art in
+  the tracker above) into branch-sized packets ("waves," each with
+  numbered "P" packets) with acceptance criteria, and names which open
+  question blocks each one. Read it before scoping any of this into a
+  session.
+- Items 1, 2, 4, 8, 9, and 11 fit the current architecture with no
+  approval needed — they can be scoped into normal sector/session work
+  whenever prioritized. All are shipped as of 2026-08-11; item 4's
+  "pulled into the mainframe" beat (once the one exception waiting on the
+  product owner's script) landed 2026-08-10 and was revised once more
+  2026-08-11 — see its section above.
 - Item 3 needs an explicit approval decision before any implementation
   work starts, per `AGENTS.md`. Treat it as a standing research item
   until that decision is made.
-- Item 10 (deployment) is split: the prework (config, docs, preparing a
-  minimized data derivative) needs no approval and fits the current
-  architecture; actually going live needs an explicit data-release
-  decision first, per `docs/AI_WORKFLOW.md`'s course-data gate — the same
-  standing rule item 3 references, not a new one invented for this item.
+- Item 10 (deployment) is split: the prework, **including the data-source
+  decision itself, is done** (`sqlRunner.ts` has shipped the minimized
+  derivative since 2026-08-10) — what's left is only whether/where to
+  actually go live, which is a business decision, not a technical or
+  data-release blocker anymore.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.
