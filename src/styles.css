@@ -1702,6 +1702,39 @@ tbody tr {
   margin-block-start: 0;
 }
 
+/* Always-present, deliberately unobtrusive — rendered once in App.tsx
+   alongside whichever screen is active, not per-screen, so it floats above
+   cutscenes/backgrounds/overlays too (z-index above the highest existing
+   overlay backdrop, 30). */
+.credits-trigger {
+  background: rgba(10, 16, 36, 0.7);
+  border: 1px solid var(--retro-border);
+  bottom: 0.5rem;
+  color: var(--retro-muted);
+  font-size: 0.62rem;
+  padding: 0.2rem 0.45rem;
+  position: fixed;
+  right: 0.5rem;
+  z-index: 40;
+}
+
+.credits-trigger:hover {
+  background: rgba(31, 211, 196, 0.16);
+  color: var(--retro-text);
+}
+
+.credits-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.credits-list a {
+  color: var(--retro-teal);
+}
+
 /* Save slot panel (P6.2) — reuses .glossary-panel/.glossary-backdrop's
    overlay mechanics (fixed backdrop, trapped focus, Escape closes, focus
    returns to the trigger) rather than a new interaction paradigm. */
