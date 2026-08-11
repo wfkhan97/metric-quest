@@ -28,6 +28,14 @@ import { useFocusTrap } from '../lib/useFocusTrap';
 // props, same DOM shape once loaded.
 const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
+// Release plan (docs/RELEASE_2026-08-11.md), Track A: the tutor's api/
+// routes need MONET_CLIENT_ID/MONET_CLIENT_SECRET configured in Vercel,
+// which hasn't happened yet — a visible control with no working backend is
+// release-blocking. Flip this back on once those secrets are set and the
+// Track B smoke test has run (see BACKLOG.md item 3). No tutor code below
+// was removed, just gated off.
+const AI_TUTOR_ENABLED = false;
+
 type Feedback =
   | { tone: 'error'; heading: string; text: string }
   | {
@@ -264,7 +272,7 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
         />
       )}
 
-      {isAiTutorOpen && (
+      {AI_TUTOR_ENABLED && isAiTutorOpen && (
         <AiTutorPanel
           context={tutorContext}
           onClose={() => {
@@ -364,9 +372,11 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
               <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
                 Concept glossary
               </button>
-              <button type="button" className="link-button" onClick={() => setIsAiTutorOpen(true)} ref={aiTutorButtonRef}>
-                Friendly AI tutor
-              </button>
+              {AI_TUTOR_ENABLED && (
+                <button type="button" className="link-button" onClick={() => setIsAiTutorOpen(true)} ref={aiTutorButtonRef}>
+                  Friendly AI tutor
+                </button>
+              )}
               {/* P5.3: was an always-visible "Reveal example query" button. mission.solutionSql
                   is the actual reference answer, not a lighter "example," so it only becomes
                   available after 3 consecutive wrong attempts on this mission visit (reuses the

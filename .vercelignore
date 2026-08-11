@@ -1,0 +1,9 @@
+# Track A release (docs/RELEASE_2026-08-11.md): the optional Monet AI
+# tutor's serverless routes need MONET_CLIENT_ID/MONET_CLIENT_SECRET
+# configured in Vercel, which hasn't happened yet. Excluding api/ from
+# the deploy is the actual enforcement for "no tutor API route remains
+# reachable in the release candidate" — the UI entry point is separately
+# gated off in src/components/MissionView.tsx (AI_TUTOR_ENABLED). Source
+# stays in the repo untouched; remove this line for the Track B release
+# once the secrets and callback URLs are set up.
+api
