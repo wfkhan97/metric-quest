@@ -189,7 +189,19 @@ scoped as its own item, phased behind the same approval gate as item 3.
 
 ## 3. Player-connected AI subscriptions → in-game SQL tutor ("good AI" character)
 
-### Status: approved and built (2026-08-11) — on branch `claude/monet-oauth-relay`, not yet merged
+### Status: built, then paused (2026-08-11) — on branch `claude/monet-oauth-relay`, not merged
+Approved and built this session (see "Decision made" below), but the
+product owner hit a recurring device-code authorization error trying to
+complete a live end-to-end connect test and paused here rather than debug
+it live. **Treat this as a future enhancement, not active work:** the
+code is saved on `claude/monet-oauth-relay` (pushed to origin) and the
+checks (lint/typecheck/tests/build) all pass, but it is not merged, not
+deployed, and not currently being pursued. Do not resume building,
+testing, or merging this without a fresh explicit go-ahead — if picking
+up planned work from this file, treat item 3 as off the table for now,
+the same way `BUILD_ORDER.md`'s Wave 3 used to say before this session,
+just for a different reason (paused mid-build, not pre-approval).
+
 This was the one idea that structurally conflicted with `AGENTS.md`'s "no
 accounts, servers, external AI calls... without explicit approval" rule.
 Product owner explicitly approved the exception this session, scoped as an
