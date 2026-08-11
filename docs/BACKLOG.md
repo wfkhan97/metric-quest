@@ -31,7 +31,12 @@ playtest weeks ago, just never marked); items 5 and 6 were marked shipped
 questions text, which had gone stale and still described the data-release
 decision as an unresolved hard blocker after it was actually made, was
 corrected — nothing is outstanding there except your own go/no-go on
-actually deploying. Item 3 is paused, being handled separately.
+actually deploying. Item 3 is paused, being handled separately. **Same
+day, once more:** item 14 (an optional first-run tutorial orienting new
+players to the screen/mechanics, not a SQL primer — that stays item 13's
+Part B1) was opened, scoped narrower than B1 on purpose, and routed
+through a scoping pass (a dedicated Codex session producing a plan and
+any needed Claude Design prompts) before implementation starts.
 Read `docs/GAME_DESIGN_BRIEF.md` and
 `docs/architecture.md` first; nothing here changes the grading contract,
 the SQL loop, or the browser-only boundary unless a section explicitly
@@ -1352,7 +1357,12 @@ player already knows what `SELECT`/`FROM`/`WHERE` mean before Mission
 business question. **Needs a product-owner scoping decision** (how much
 primer, skippable for the current SQL-literate class or not, whether it's
 static copy or interactive) before it's buildable — this is a curriculum
-design call, not an engineering one.
+design call, not an engineering one. **Split 2026-08-11:** the narrower
+"orient the player to the screen and controls, don't teach SQL concepts"
+version of this idea has been opened as its own item 14 below, since it's
+scopable/buildable independent of the bigger curriculum question this
+entry is actually about. B1 stays open as the (still bigger, still gated)
+"actually teach SQL basics" idea — item 14 is not a substitute for it.
 
 #### B2. Optional low-stakes "practice reps" before each graded mission
 For a true beginner, 25 graded missions across filter → aggregation →
@@ -1440,6 +1450,110 @@ A4 above, and beyond) is worth investing relative to other priorities.
 
 ---
 
+## 14. Optional first-run tutorial: screen/mechanics orientation for new players
+
+### Status
+New item, opened 2026-08-11 per direct product request. Grows out of two
+things already on record: item 9's non-goals floated a tutorial as "a
+possible longer-run answer to the same 'too much text' problem... scope
+it as its own backlog item" rather than folding it into that density
+pass, and item 13's Part B1 flagged "a short guided SQL basics primer" as
+the single highest-leverage net-new-learner gap. **This item is
+deliberately narrower than B1** — see Non-goals — and is opened
+separately rather than replacing B1, which stays on the roadmap as its
+own, bigger, still-gated idea.
+
+**Scoping-first, not build-first.** Unlike items 1-13's Part A, this
+item's actual screen-by-screen plan, copy, sequencing, and asset needs
+are not decided here — they're the deliverable of a dedicated scoping
+pass (see "How this gets built" below), done before any implementation
+starts. Nothing in this section is approved to build yet; the scoping
+output is what turns this into a real `BUILD_ORDER.md` packet.
+
+### Problem
+A brand-new player who has never touched a SQL tool (or this specific
+game) reaches Sector 1's first mission immediately after the opening
+cutscene with zero orientation to what's on screen — the schema explorer,
+the SQL editor, the Run query/Show hint/Concept glossary controls, or what
+a correct vs. incorrect result even looks like. The game currently assumes
+baseline familiarity with "a SQL tool" as a category of software. The
+current class mostly has that; a future net-new audience won't.
+
+### Goals
+- A short, optional, clearly-labeled-as-skippable walkthrough shown once,
+  positioned after the opening cutscene and before the player reaches
+  Sector 1's first mission — onboarding to the terminal interface itself,
+  not a new story beat.
+- Orients the player to the mission screen's actual UI and mechanics:
+  what the business brief is, what the schema explorer shows, where to
+  write SQL, what Run query does, what a correct/incorrect result looks
+  like, and where hints/glossary/see-answer live.
+- Reuses the existing terminal visual system (§A6) and, where possible,
+  existing component/interaction patterns rather than inventing a new
+  visual language — exactly which pattern (see Open questions) is what
+  the scoping pass resolves.
+- Skippable at every step. A player who's seen it (or explicitly skips
+  it) is never forced through it again, and it should be re-triggerable
+  later for someone who wants a refresher (mirrors "Replay opening" on
+  Home) — exact mechanism is a scoping-pass decision, not assumed here.
+
+### Non-goals
+- **Not a SQL primer.** Does not teach what `SELECT`/`WHERE`/`JOIN` mean
+  or any SQL concept — that's item 13 Part B1, a separate, bigger idea
+  that still needs its own product-owner scoping decision and stays out
+  of scope here. This item teaches "what you're looking at and how to
+  use it," not "what SQL is."
+- Not item 13 Part B2's "practice reps" (ungraded practice queries per
+  concept before each graded mission) — a different problem, a different
+  still-open item.
+- Doesn't change the SQL loop, grading contract, mission content, or
+  sector ordering.
+- Not a pre-deploy blocker — this is a forward-looking accessibility
+  investment for a future audience, not something tonight's launch needs.
+
+### How this gets built: scoping first, then implementation
+Per direct product direction, this item runs through two separate passes
+with two different tools, not the usual single-session build:
+1. **Scoping (Codex, next).** A dedicated session works out the actual
+   experience: what it shows, in what sequence, what the copy says (in
+   the established playful-retro-but-didactic voice — see item 1's
+   resolved copy-voice decision as the reference point), whether it's a
+   passive multi-panel walkthrough (`CutsceneView`-style) or an
+   interactive one overlaid on a real or sandboxed `MissionView`, and —
+   critically — what new visual assets, if any, it would need, drafting
+   the actual Claude Design prompt(s) for them the same way
+   `docs/GAME_DESIGN_BRIEF.md` §B does for every existing asset. This is
+   a planning/spec deliverable (a written plan), not code — nothing gets
+   implemented in this pass.
+2. **Implementation (Claude Code, after the plan exists).** Builds
+   exactly what the scoping pass specifies, once the product owner has
+   reviewed and approved the plan, and once any newly-identified art has
+   actually been requested/delivered through the normal Claude Design
+   workflow (or the plan confirms no new art is needed).
+
+### Open questions
+Deliberately left for the scoping pass rather than guessed at here:
+- Passive multi-panel walkthrough vs. an interactive "try it live"
+  tutorial mission — meaningfully different build complexity and
+  different asset needs; the scoping pass should recommend one with
+  reasoning, not leave it open.
+- Exact sequence/count of things it covers, and where "short" stops being
+  short.
+- Whether it needs any new art at all, or can ship entirely with existing
+  terminal-chrome CSS (the way item 1's glossary did) — if new art is
+  recommended, the scoping pass should draft the Claude Design prompt for
+  it, same shape as the existing §B steps, and this item's row should be
+  added to the Design asset tracker below once that happens.
+- Exactly where it's re-triggerable from for a player who skipped it and
+  wants it back later (Home menu, alongside "Replay opening"?).
+- Skippable-on-first-viewing or not — the opening story cutscene is
+  deliberately unskippable the first time (§ item 4), but this is
+  mechanical orientation, not story; the scoping pass should confirm
+  whether that same unskippable-once pattern actually fits here or
+  whether it should be skippable from the very first viewing.
+
+---
+
 ## Design asset tracker
 
 Single source of truth for which art each backlog item needs and whether
@@ -1498,6 +1612,12 @@ above to remove any "not built yet" caveat that no longer applies.
   the current class) and Part B (each entry names its own required
   product-owner decision, for a future net-new-learner audience) — don't
   treat Part B entries as approved work the way items 1-11 are.
+- **Item 14 (first-run tutorial)**, opened 2026-08-11, is not buildable
+  yet at all — it's mid a scoping pass (see the item's own "How this gets
+  built" section). Don't start implementing it from a fresh read of this
+  file alone; check whether a scoping-pass plan exists first (it would be
+  linked from this item once delivered) and build from that, not from
+  this section's Goals/Non-goals directly.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.
