@@ -189,17 +189,27 @@ scoped as its own item, phased behind the same approval gate as item 3.
 
 ## 3. Player-connected AI subscriptions → in-game SQL tutor ("good AI" character)
 
-### Status: research/prototype scoping only — not approved to build
-This is the one idea that structurally conflicts with current project
-rules: `AGENTS.md` says *"The app is browser-only. Do not add accounts,
-servers, telemetry, external AI calls, or network-dependent query
-execution without explicit approval."* A tutor backed by a player's own
-ChatGPT/Claude subscription requires exactly that — an account-connect
-flow and live external API calls. Per product direction, this PRD is
-scoped as a **privacy-limited prototype concept** to keep flushing out,
-not a green light to implement. Building it for real needs an explicit,
-separate approval decision, tracked the same way the course-data release
-gate is tracked in `docs/AI_WORKFLOW.md`.
+### Status: built, then paused (2026-08-11) — on branch `claude/monet-oauth-relay`, not merged
+Approved and built this session (see "Decision made" below), but the
+product owner hit a recurring device-code authorization error trying to
+complete a live end-to-end connect test and paused here rather than debug
+it live. **Treat this as a future enhancement, not active work:** the
+code is saved on `claude/monet-oauth-relay` (pushed to origin) and the
+checks (lint/typecheck/tests/build) all pass, but it is not merged, not
+deployed, and not currently being pursued. Do not resume building,
+testing, or merging this without a fresh explicit go-ahead — if picking
+up planned work from this file, treat item 3 as off the table for now,
+the same way `BUILD_ORDER.md`'s Wave 3 used to say before this session,
+just for a different reason (paused mid-build, not pre-approval).
+
+This was the one idea that structurally conflicted with `AGENTS.md`'s "no
+accounts, servers, external AI calls... without explicit approval" rule.
+Product owner explicitly approved the exception this session, scoped as an
+**OAuth relay only**: a small Vercel serverless layer (`api/oauth/*`,
+`api/chat.ts`) holds the Monet `client_secret` and proxies chat calls;
+save/progress state stays exactly as it was (localStorage, no accounts).
+See "Decision made (2026-08-11)" below for the two open questions this
+section originally left unresolved.
 
 ### What Monet.gg is (researched 2026-08-06)
 Monet positions itself as "OAuth for AI subscriptions" — a service that
@@ -241,19 +251,17 @@ pattern as every other not-yet-illustrated surface in this game.
 - Entirely opt-in: players who don't connect anything see zero change to
   the current experience.
 
-### Privacy-limited scope (per product decision)
-To respect the course-data release gate in `docs/AI_WORKFLOW.md` (the
-original course database is instructional source material, not a public
-asset), the tutor should be scoped so it **never receives the underlying
-dataset, schema contents, or query results** — only:
-- The mission's business question (already player-facing copy).
-- The player's own submitted SQL attempt and the error/mismatch category
-  from grading (e.g. "wrong number of rows," "syntax error near X") —
-  not the actual row data returned.
-This keeps the course data itself from ever leaving the browser, even
-though the tutor call itself leaves the browser. This scoping is a
-starting assumption for the PRD, not a final security review — a real
-build would still need a privacy/security pass before shipping.
+### Privacy scope — superseded 2026-08-11, see "Decision made" below
+This section originally scoped the tutor so it would **never receive the
+underlying dataset, schema contents, or query results** — only the
+mission's business question and the player's own SQL/error category. The
+product owner explicitly reversed that on 2026-08-11: the tutor now does
+receive the visible schema and the player's actual last query result, so
+it can fully help rather than reason blind. Left here, struck through in
+spirit rather than deleted, so the reasoning that motivated the original
+limit (the course-data release gate) is still visible next to the
+decision that superseded it — see "Decision made" below for why this was
+judged acceptable.
 
 ### Non-goals (for now)
 - Not a general-purpose chatbot — scoped tightly to the current mission's
@@ -265,23 +273,49 @@ build would still need a privacy/security pass before shipping.
   BYOK/subscription costs apply, they're between the player and their AI
   provider/Monet, never routed through the game.
 
-### Open questions still to resolve before build
-- **Approval:** does the product owner want to formally approve the
-  external-AI-call exception for this feature, and under what conditions
-  (e.g. prototype/flagged-off first, or full review before any code)?
-- Does Monet's flow require Metric Quest to run any server-side code, or
-  can the browser call Monet directly? This changes whether it violates
-  the "browser-only" rule or just the "no external AI calls" rule.
-- How much should the tutor be allowed to say — hints only, or full
-  answers if asked? (Affects both pedagogy and scope.)
-- What happens to a player's connected account/session — reconnect every
-  visit, or persisted somehow? (Progress today is localStorage-only and
-  per-browser; an account connection is a different kind of state.)
-- Cost/support exposure: if Monet's proxy has usage-based pricing, who
-  is expected to pay — the player via their own subscription, or does
-  Metric Quest need its own Monet developer account and bill?
-- Does this need its own explicit consent/disclosure screen (what data
-  leaves the browser, to whom) before a player connects anything?
+### Decision made (2026-08-11)
+Per product direction, all of the open questions below are resolved:
+
+- **Approval:** granted. The external-AI-call/server exception is
+  approved for this feature specifically, scoped as an OAuth relay only
+  (see the Status line above) — not a blanket exception for other
+  features.
+- **Server-side code is required.** Monet's `client_secret` must be
+  exchanged server-side (their own dashboard says so: "Store it
+  server-side"), so this does cross the "browser-only" rule, not just
+  "no external AI calls." Implemented as Vercel serverless functions
+  (`api/oauth/*`, `api/chat.ts`) alongside the existing static build —
+  the rest of the app (grading, progress, everything else) stays
+  browser-only and unchanged.
+- **Hints first, full answer if asked.** Enforced server-side in
+  `api/chat.ts` via a system prompt built from the mission context
+  (`api/_lib/monet.ts`'s `buildTutorSystemPrompt`), not left to the
+  client, so it can't be bypassed by editing page JS.
+- **Schema and query results are now in scope** (reverses the privacy
+  limit above) — the tutor receives the mission's visible schema, the
+  player's current SQL, and their last query's actual result (capped at
+  25 rows to bound prompt size), plus the local mistake-diagnostic label
+  if one fired. See `diagnostics.ts`'s updated comment — its "never sent
+  anywhere" invariant now has one deliberate, scoped exception.
+- **Session persistence:** reconnect-per-session, not persisted long-term
+  — the connection lives in an httpOnly cookie for 8 hours, separate from
+  and unrelated to `progress.ts`'s localStorage saves.
+- **Cost/support exposure:** the player pays, via their own connected
+  subscription's usage — confirmed via Monet's own model (`Connect
+  ChatGPT Plus/Team` or `Claude Pro/Team`), consistent with the Non-goals
+  above. One nuance worth flagging: Monet's flow connects the player's
+  actual consumer ChatGPT/Claude account, not a bare API key, so each
+  player's own account-level data-training terms apply — that's between
+  them and their provider, not something Metric Quest controls.
+- **Explicit consent/disclosure screen:** built. The tutor panel states
+  before connecting that it shares the current mission's schema and
+  query results, that usage counts against the player's own plan, and
+  that access can be revoked any time.
+
+### Where it actually lives
+The connect/chat UI is scoped to `MissionView`, not `HomeView` — it needs
+live mission context (schema, current SQL, last result) to be useful at
+all, which only exists inside an active mission.
 
 ---
 
@@ -843,7 +877,10 @@ per the release gate's own requirement:
   doesn't change the browser-only architecture.
 
 ### Open questions still to resolve before going live
-- **The data decision above.** Hard blocker.
+- ~~The data decision above.~~ **Resolved 2026-08-10** — see "Decision
+  made" above. This was a stale line left over from before that decision
+  was recorded further up in this same section; not a real remaining
+  blocker.
 - Custom domain, or the default `*.vercel.app` URL? Cosmetic, not
   blocking prework.
 

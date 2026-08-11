@@ -1801,6 +1801,49 @@ tbody tr {
   padding: 0.4rem 0.5rem;
 }
 
+/* AI tutor panel (Monet OAuth relay). Reuses .glossary-panel/.glossary-backdrop
+   overlay mechanics, same as the save slot panel above. */
+.ai-tutor-messages {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0.75rem 0;
+  padding: 0;
+}
+
+.ai-tutor-message {
+  border: 1px solid var(--retro-border);
+  padding: 0.5rem 0.6rem;
+}
+
+.ai-tutor-message-assistant {
+  border-color: var(--retro-amber);
+}
+
+.ai-tutor-error {
+  color: var(--retro-danger);
+  font-weight: 800;
+}
+
+.ai-tutor-form {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.ai-tutor-form label {
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.ai-tutor-form textarea {
+  background: #070d1d;
+  border: 1px solid var(--retro-border);
+  color: var(--retro-text);
+  font: inherit;
+  padding: 0.4rem 0.5rem;
+  resize: vertical;
+}
+
 /* Sector map drawer (P5.4). Collapsed by default, opened from a header
    trigger — same overlay mechanics as the glossary panel above (fixed
    backdrop, trapped focus, Escape closes, focus returns to the trigger),

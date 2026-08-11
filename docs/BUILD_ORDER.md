@@ -54,8 +54,10 @@ should be `0`, not `255`) before wiring anything in as final.
 - P0.4 — blocked on a design request; deferred, not declined.
 - BACKLOG.md item 4's "does every sector transition get an authored beat"
   question — still open, blocks writing the Sector 8→9 beat specifically.
-- Wave 3 (AI tutor, P3.1) — not a build packet, just a pending product
-  decision. Don't prototype it.
+- Wave 3 (AI tutor, P3.1) — approval was granted and a working prototype
+  was built 2026-08-11 (branch `claude/monet-oauth-relay`, not merged),
+  but it's now paused per the product owner, not active work. See
+  BACKLOG.md item 3's status line before touching this.
 - BACKLOG.md item 8 (multi-save/state management) — explicitly deferred
   to post-polish, not scheduled into any packet below.
 - P4.1's exact padding/sizing targets — the product owner said they'd
@@ -451,19 +453,22 @@ landed and used.
 
 ## Wave 3 — Standing research (backlog item 3)
 
-### P3.1 — AI tutor: approval decision, not implementation
+### P3.1 — AI tutor: built 2026-08-11, then paused — not a build packet right now
 
-Not a build packet. The only next step is a product-owner decision on
-whether to grant the external-AI-call exception and under what
-conditions, tracked the way the course-data release gate is tracked.
+This section originally said "approval decision, not implementation" —
+superseded. The product owner granted the exception and a working
+prototype was built this session on `claude/monet-oauth-relay` (Vercel
+serverless OAuth relay + mission-context-aware tutor in `MissionView`;
+Monet's flow does need server-side code, resolving the question below
+that used to be open). All checks pass; it is not merged.
 
-Until that decision exists, an agent's correct action on this item is to
-keep the PRD current — not to prototype, not to add a feature flag, not
-to "just try the browser-direct call to see if it works." The unresolved
-question of whether Monet's flow needs server-side code is exactly the
-question that determines whether this violates the browser-only rule or
-only the external-AI-call rule, and finding out by building is the wrong
-order.
+The product owner then hit a recurring device-code authorization error
+trying to complete a live end-to-end test and paused the work rather
+than debug it live — see BACKLOG.md item 3's status line for the current
+state. **Until told otherwise, an agent's correct action on this item is
+the same as before, just for a different reason: don't resume building,
+testing, or merging it.** The code and its branch are saved; picking
+this back up needs an explicit go-ahead, not just an idle cycle.
 
 ---
 
