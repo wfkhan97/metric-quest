@@ -7,16 +7,18 @@ import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
 import { TitleScreen } from './components/TitleScreen';
-import { mainframePullBeat, openingBeat, sectorBeats, type Beat } from './content/beats';
+import { mainframePullBeat, openingBeat, sectorBeats, terminalOrientationBeat, type Beat } from './content/beats';
 import { chapterNumber, chapters } from './content/chapters';
 import { missions, type Mission } from './lib/missions';
 import {
   hasSeenOpening,
+  hasSeenTutorial,
   hasSeenSector,
   hasProgressPersistenceFailure,
   loadProgress,
   markOpeningSeen,
   markSectorSeen,
+  markTutorialSeen,
   resetActiveSave,
   saveProgress,
   setAvatar,
@@ -143,6 +145,13 @@ export function App() {
     setView('cutscene');
   }
 
+  function handleReplayTutorial() {
+    setPendingMission(null);
+    setPendingBeat(terminalOrientationBeat);
+    setCutsceneSkippable(true);
+    setView('cutscene');
+  }
+
   function handleCutsceneFinish() {
     const beat = pendingBeat;
     setPendingBeat(null);
@@ -152,7 +161,21 @@ export function App() {
       return;
     }
     if (beat?.id === 'opening') {
-      const nextProgress = markOpeningSeen(progress);
+      // A replay begins with an already-seen opening. Only the mandatory
+      // first completion can offer the orientation; replaying the story must
+      // continue to Home exactly as it did before the tutorial existed.
+      const isFirstOpeningCompletion = !hasSeenOpening(progress);
+      let nextProgress = markOpeningSeen(progress);
+      if (isFirstOpeningCompletion && !hasSeenTutorial(nextProgress)) {
+        // Persist on opening, rather than on panel 6, so a refresh midway
+        // through cannot automatically reopen the walkthrough in a loop.
+        nextProgress = markTutorialSeen(nextProgress);
+        handleProgressChange(nextProgress);
+        setPendingBeat(terminalOrientationBeat);
+        setCutsceneSkippable(true);
+        setView('cutscene');
+        return;
+      }
       handleProgressChange(nextProgress);
       if (pendingMission) {
         const mission = pendingMission;
@@ -161,6 +184,18 @@ export function App() {
         // reaches the opening beat once it is), so continue straight into
         // the normal sector-transition/mission-entry check.
         enterMissionWithTransitionCheck(mission, nextProgress);
+      } else {
+        setView('home');
+      }
+      return;
+    }
+    if (beat?.id === 'terminal-orientation') {
+      if (pendingMission) {
+        const mission = pendingMission;
+        setPendingMission(null);
+        // Keep the existing transition path authoritative. Calling goToMission
+        // here would skip Sector 1's first-view interstitial.
+        enterMissionWithTransitionCheck(mission, progress);
       } else {
         setView('home');
       }
@@ -271,6 +306,7 @@ export function App() {
         onSelectMission={handleSelectMission}
         onEditAvatar={handleEditAvatar}
         onReplayOpening={hasSeenOpening(progress) ? handleReplayOpening : undefined}
+        onReplayTutorial={handleReplayTutorial}
         onActiveProgressChange={handleActiveProgressChange}
       />
     );

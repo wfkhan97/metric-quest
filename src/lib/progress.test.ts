@@ -6,9 +6,11 @@ import {
   getActiveSaveId,
   hasProgressPersistenceFailure,
   hasSeenSector,
+  hasSeenTutorial,
   listSaveSlots,
   loadProgress,
   markSectorSeen,
+  markTutorialSeen,
   renameSave,
   saveProgress,
   setAvatar,
@@ -140,6 +142,27 @@ describe('sector transition tracking', () => {
     const progress: Progress = { completedMissionIds: [], points: 0, badges: [], seenSectors: [1, 2] };
     saveProgress(progress);
     expect(loadProgress()).toEqual(progress);
+  });
+});
+
+describe('tutorial tracking', () => {
+  it.each([
+    ['missing', undefined, undefined],
+    ['true', true, true],
+    ['false', false, false],
+    ['malformed', 'yes', undefined],
+  ])('parses a %s tutorial flag safely', (_label, seenTutorial, expected) => {
+    setStored({ completedMissionIds: [], points: 0, badges: [], ...(seenTutorial === undefined ? {} : { seenTutorial }) });
+    const progress = loadProgress();
+    expect(progress.seenTutorial).toBe(expected);
+    expect(hasSeenTutorial(progress)).toBe(expected ?? false);
+  });
+
+  it('marks the tutorial as offered without disturbing other progress', () => {
+    const progress: Progress = { completedMissionIds: ['m1-1'], points: 20, badges: ['Revenue Scout'], seenOpening: true };
+    const next = markTutorialSeen(progress);
+    expect(next).toEqual({ ...progress, seenTutorial: true });
+    expect(markTutorialSeen(next)).toBe(next);
   });
 });
 
