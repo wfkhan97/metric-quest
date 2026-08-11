@@ -11,6 +11,7 @@ import iconPoints from '../assets/ui/icon-points.png';
 import iconRestored from '../assets/ui/icon-restored.png';
 import { chapterNumber } from '../content/chapters';
 import { findGlossaryEntryForConcept } from '../content/glossary';
+import { sectorMusic } from '../content/sectorMusic';
 import { classifyAttempt, type MistakeSignature } from '../lib/diagnostics';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
@@ -75,6 +76,33 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   // an executed result to read.
   const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
   const [diagnostic, setDiagnostic] = useState<MistakeSignature | undefined>(undefined);
+  const sectorTrack = sectorMusic[chapterNumber(mission)];
+  const musicRef = useRef<HTMLAudioElement>(null);
+  const [musicMuted, setMusicMuted] = useState(false);
+
+  // Same cold-start autoplay limitation as TitleScreen/CutsceneView: the
+  // first play() on a page needs a user gesture in its own call stack, so
+  // this best-effort attempt on mount is backed up by retrying from the
+  // capture-phase click handler below, which is guaranteed gesture-attached.
+  function tryPlayMusic() {
+    const audioEl = musicRef.current;
+    if (audioEl && audioEl.paused) {
+      void audioEl.play().catch(() => {});
+    }
+  }
+
+  useEffect(() => {
+    tryPlayMusic();
+    const audioEl = musicRef.current;
+    return () => audioEl?.pause();
+    // Mission is keyed by App.tsx (key={activeMission.id}), so this effect's
+    // cleanup/re-run boundary already matches a mission change — no need to
+    // depend on sectorTrack explicitly.
+  }, []);
+
+  useEffect(() => {
+    if (musicRef.current) musicRef.current.muted = musicMuted;
+  }, [musicMuted]);
 
   function openGlossary(entryId: string | undefined, trigger: HTMLButtonElement) {
     setGlossaryEntryId(entryId);
@@ -166,7 +194,8 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
   }
 
   return (
-    <main className="app-shell mission-view" aria-labelledby="page-title">
+    <main className="app-shell mission-view" aria-labelledby="page-title" onClickCapture={tryPlayMusic}>
+      {sectorTrack && <audio ref={musicRef} src={sectorTrack} loop aria-hidden="true" />}
       <a className="skip-link" href="#mission">
         Skip to active mission
       </a>
@@ -189,6 +218,11 @@ export function MissionView({ mission, missions, progress, onProgressChange, onS
           >
             Browse sectors
           </button>
+          {sectorTrack && (
+            <button type="button" className="link-button cutscene-mute-toggle" onClick={() => setMusicMuted((value) => !value)}>
+              {musicMuted ? 'Unmute music' : 'Mute music'}
+            </button>
+          )}
         </div>
         <section className="scoreboard" aria-label="Your progress">
           <ProgressBar label="Mainframe integrity" completed={progress.completedMissionIds.length} total={missions.length} />

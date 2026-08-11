@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AvatarCreatorView } from './components/AvatarCreatorView';
+import { CreditsButton } from './components/CreditsButton';
 import { CutsceneView } from './components/CutsceneView';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
@@ -189,12 +190,12 @@ export function App() {
     goToMission(mission);
   }
 
-  if (view === 'title') {
-    return <TitleScreen progress={progress} onResume={handleResumeGame} onNewGame={handleNewGame} />;
-  }
+  let content;
 
-  if (view === 'avatar') {
-    return (
+  if (view === 'title') {
+    content = <TitleScreen progress={progress} onResume={handleResumeGame} onNewGame={handleNewGame} />;
+  } else if (view === 'avatar') {
+    content = (
       <AvatarCreatorView
         initialAvatar={progress.avatar}
         mode={avatarMode}
@@ -202,10 +203,8 @@ export function App() {
         onCancel={avatarMode === 'edit' ? handleAvatarCancel : undefined}
       />
     );
-  }
-
-  if (view === 'cutscene' && pendingBeat) {
-    return (
+  } else if (view === 'cutscene' && pendingBeat) {
+    content = (
       <CutsceneView
         key={pendingBeat.id}
         beat={pendingBeat}
@@ -214,11 +213,9 @@ export function App() {
         onFinish={handleCutsceneFinish}
       />
     );
-  }
-
-  if (view === 'sector-transition' && pendingMission) {
+  } else if (view === 'sector-transition' && pendingMission) {
     const sectorTitle = chapters.find((chapter) => chapter.number === chapterNumber(pendingMission))?.title ?? pendingMission.chapter;
-    return (
+    content = (
       <SectorTransitionView
         chapterNumber={chapterNumber(pendingMission)}
         sectorTitle={sectorTitle}
@@ -226,10 +223,8 @@ export function App() {
         onContinue={handleSectorTransitionContinue}
       />
     );
-  }
-
-  if (view === 'home') {
-    return (
+  } else if (view === 'home') {
+    content = (
       <HomeView
         missions={missions}
         progress={progress}
@@ -239,19 +234,25 @@ export function App() {
         onActiveProgressChange={handleActiveProgressChange}
       />
     );
+  } else {
+    const activeMission = missions.find((candidate) => candidate.id === activeMissionId) ?? missions[0];
+    content = (
+      <MissionView
+        key={activeMission.id}
+        mission={activeMission}
+        missions={missions}
+        progress={progress}
+        onProgressChange={handleProgressChange}
+        onSelectMission={handleSelectMission}
+        onBackToHome={() => setView('home')}
+      />
+    );
   }
 
-  const activeMission = missions.find((candidate) => candidate.id === activeMissionId) ?? missions[0];
-
   return (
-    <MissionView
-      key={activeMission.id}
-      mission={activeMission}
-      missions={missions}
-      progress={progress}
-      onProgressChange={handleProgressChange}
-      onSelectMission={handleSelectMission}
-      onBackToHome={() => setView('home')}
-    />
+    <>
+      {content}
+      <CreditsButton />
+    </>
   );
 }
