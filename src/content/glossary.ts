@@ -27,11 +27,13 @@ export type GlossaryEntry = {
   visualId?: string;
 };
 
-// Content voice: plain, clear "documentation" tone rather than in-world
-// ROGUE.exe banter — this is reference material a stuck player consults
-// mid-mission, so clarity wins over flavor. The panel chrome around it stays
-// part of the terminal system; the explanations themselves stay neutral.
-// SQL examples run against the schema visible in missions (Chinook-derived:
+// Content voice, resolved 2026-08-11 (docs/BACKLOG.md item 1): playful-retro,
+// matching mission copy, but didactic first — a light in-world hook per
+// entry, never at the expense of a precise, correct explanation. This is
+// reference material a stuck player consults mid-mission, so clarity still
+// wins any tug-of-war with flavor; it just doesn't have to be flavorless to
+// win. The panel chrome around it stays part of the terminal system either
+// way. SQL examples run against the schema visible in missions (Chinook-derived:
 // Invoice, Customer, InvoiceLine, Track, Genre) and were executed against
 // the local dataset before being written here — see AI_WORKFLOW.md.
 export const glossary: GlossaryEntry[] = [
@@ -39,10 +41,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'filter-sort-limit',
     title: 'Filtering, sorting, and limiting rows',
     sectors: [1],
-    summary: 'WHERE picks rows, ORDER BY sequences them, LIMIT caps how many come back.',
+    summary: 'WHERE clears the noise, ORDER BY lines up what survives, LIMIT cuts the feed.',
     explanation: [
-      'WHERE removes rows before anything else happens — only rows where the condition is true make it through. ORDER BY then sequences whatever is left, and LIMIT cuts the result down to a fixed number of rows.',
-      'Order matters in how you read the clauses, even though they\'re written WHERE → ORDER BY → LIMIT: SQL filters first, then sorts what survived, then trims.',
+      'Think of a raw table as a wall of unsorted signal. WHERE is the first purge — it drops every row where the condition is false before anything else runs. ORDER BY then lines up whatever\'s left, and LIMIT trims the result down to a fixed number of rows.',
+      'The clauses read WHERE → ORDER BY → LIMIT, and that\'s also the order SQL actually runs them in: filter first, sort what survived, then cut. Flip that order in your head and you\'d be ranking noise instead of signal.',
     ],
     example: {
       description: 'The three highest-value US invoices.',
@@ -55,10 +57,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'distinct',
     title: 'DISTINCT',
     sectors: [1],
-    summary: 'Collapses duplicate rows in the result down to one each.',
+    summary: 'Collapses duplicate rows down to one each — the same signal, minus the echo.',
     explanation: [
-      'DISTINCT removes duplicate rows from a result — if two rows are identical across every selected column, only one survives. It applies to the whole row being returned, not to a single column in isolation.',
-      'It\'s a common way to answer "what are the unique values here?" — e.g. which countries appear at all, regardless of how many invoices each one has.',
+      'DISTINCT strips duplicate rows out of a result. If two rows are identical across every selected column, only one gets through — it\'s judging the whole row, not a single column in isolation.',
+      'Reach for it whenever the real question is "what values show up at all," not "how many times." Which countries appear anywhere in the ledger, regardless of how many invoices each one racked up — that\'s a DISTINCT question.',
     ],
     example: {
       description: 'Every country that appears anywhere in the invoice ledger, no repeats.',
@@ -70,10 +72,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'text-search',
     title: 'Text search: LIKE and LOWER',
     sectors: [1],
-    summary: 'LIKE matches a text pattern; LOWER makes that match case-insensitive.',
+    summary: 'LIKE hunts for a pattern instead of an exact match; LOWER keeps the hunt case-blind.',
     explanation: [
-      'LIKE matches text against a pattern instead of an exact value. The `%` wildcard stands in for "anything, any length" — `%love%` matches any text containing "love" anywhere in it.',
-      'LIKE is case-sensitive by default in some setups, so wrapping both sides in LOWER() (the column and the pattern) makes the match case-insensitive — "Love" and "love" both match.',
+      'LIKE matches text against a pattern instead of requiring an exact value. The `%` wildcard means "anything, any length" — `%love%` catches "love" anywhere inside the text, not just at the start or end.',
+      'LIKE can be case-sensitive depending on the setup, so wrapping both sides in LOWER() — the column and the pattern — makes the match case-blind. "Love" and "love" both get flagged the same way.',
     ],
     example: {
       description: 'Every track title containing "love", regardless of capitalization.',
@@ -85,10 +87,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'calculated-columns',
     title: 'Calculated columns, aliases, and ROUND',
     sectors: [1],
-    summary: 'SELECT can compute new values, not just return stored columns — AS names them, ROUND tidies them.',
+    summary: 'SELECT can do math on the way out — AS names the result, ROUND tidies it up.',
     explanation: [
-      'A SELECT list isn\'t limited to columns that exist in the table — you can do arithmetic on them (`UnitPrice * 1.08`) and the result becomes a new column in the output.',
-      'AS gives that computed column a readable name (an alias) instead of showing the raw expression. ROUND() trims a decimal value to a fixed number of places, which matters for anything involving money.',
+      'A SELECT list isn\'t stuck showing only columns that already exist — do arithmetic on them right there (`UnitPrice * 1.08`) and the result becomes a brand-new column in the output, computed fresh every run.',
+      'AS hands that computed column a readable name (an alias) instead of leaving the raw expression as the header. ROUND() then trims a decimal to a fixed number of places — non-negotiable for anything that touches money.',
     ],
     example: {
       description: 'Track prices with an estimated 8% tax added, rounded to two decimal places.',
@@ -100,10 +102,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'group-by-aggregation',
     title: 'GROUP BY and aggregation',
     sectors: [2, 8, 9],
-    summary: 'GROUP BY collapses rows into buckets; SUM/COUNT/AVG summarize each bucket.',
+    summary: 'GROUP BY sorts rows into buckets; SUM/COUNT/AVG report on each bucket.',
     explanation: [
-      'GROUP BY collects rows that share a value (e.g. every invoice with the same BillingCountry) into one bucket per distinct value. On its own it doesn\'t summarize anything — it just defines the buckets.',
-      'An aggregate function like SUM, COUNT, or AVG then runs once per bucket, producing one summary row per group instead of one row per original row. Every column in the SELECT list has to be either the grouped column or an aggregate — SQL doesn\'t know which individual row\'s value to show for anything else.',
+      'GROUP BY takes every row and drops it into a bucket based on a shared value — every invoice billed to the same country lands in the same bucket. On its own it doesn\'t summarize a thing; it just decides where each row goes.',
+      'An aggregate — SUM, COUNT, AVG — then runs once per bucket, so the output has one summary row per group instead of one row per original row. Every column in the SELECT list has to be either the grouped column or an aggregate: there\'s no honest way for SQL to pick which individual row\'s value should represent a whole bucket.',
     ],
     example: {
       description: 'Total revenue per billing country, richest first.',
@@ -121,10 +123,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'where-vs-having',
     title: 'WHERE vs HAVING',
     sectors: [2, 8],
-    summary: 'WHERE filters individual rows before grouping; HAVING filters groups after aggregation.',
+    summary: 'WHERE filters rows before grouping; HAVING filters groups after the totals exist.',
     explanation: [
-      'WHERE and HAVING both filter, but at different stages. WHERE runs first and throws out individual rows before any grouping happens — it can\'t see an aggregate value like SUM(Total), because that total doesn\'t exist yet.',
-      'HAVING runs after GROUP BY has built its buckets and the aggregate functions have run — it filters whole groups based on their summarized value. A common mistake is reaching for WHERE to filter on a total or a count: if the condition depends on an aggregate, it has to be HAVING.',
+      'Same job, different timing. WHERE runs first and throws out individual rows before any grouping happens — it can\'t see an aggregate like SUM(Total), because that total hasn\'t been computed yet at that point in the pipeline.',
+      'HAVING runs after GROUP BY has built its buckets and the aggregates have already run — it filters whole groups by their summarized value. The classic corrupted-terminal mistake is reaching for WHERE to filter on a total or a count: if the condition depends on an aggregate, it has to be HAVING.',
     ],
     example: {
       description: 'Countries (excluding the USA) whose total revenue exceeds $150 — WHERE removes a row before grouping, HAVING removes a group after.',
@@ -137,10 +139,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'count-variants',
     title: 'COUNT(*) vs COUNT(column) vs COUNT(DISTINCT column)',
     sectors: [2, 8, 9],
-    summary: 'Three different questions that all start with COUNT — rows, non-empty values, and unique values.',
+    summary: 'Three different questions, one keyword: rows, non-empty values, and unique values.',
     explanation: [
-      'COUNT(*) counts rows — every row in the group, no exceptions. COUNT(column) counts rows where that specific column isn\'t NULL, which can be a smaller number than COUNT(*) if some rows have missing data there.',
-      'COUNT(DISTINCT column) counts unique values in that column, collapsing repeats down to one. This is the one that catches a classic AI-verification trap: joining two tables and then running COUNT(*) counts a repeat customer once per matching row, not once per customer — COUNT(DISTINCT CustomerId) is what actually answers "how many different customers."',
+      'COUNT(*) counts rows — every row in the group, no exceptions, blanks included. COUNT(column) is stricter: it only counts rows where that specific column isn\'t NULL, which can come in lower than COUNT(*) the moment some rows have missing data there.',
+      'COUNT(DISTINCT column) counts unique values, collapsing repeats down to one. This is the one that catches a classic AI-generated-report trap: join two tables together and COUNT(*) counts a repeat customer once per matching row, not once per customer — COUNT(DISTINCT CustomerId) is what actually answers "how many different customers."',
     ],
     example: {
       description: 'All three counts on the same table, showing how they diverge.',
@@ -156,10 +158,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'joins',
     title: 'JOIN types: INNER vs LEFT',
     sectors: [3, 8],
-    summary: 'INNER JOIN keeps only matches on both sides; LEFT JOIN keeps every row from the left table regardless.',
+    summary: 'INNER JOIN keeps only the rows that match on both sides; LEFT JOIN keeps every row on the left regardless.',
     explanation: [
-      'A JOIN combines rows from two tables based on a matching key (a foreign key, usually — e.g. Invoice.CustomerId matching Customer.CustomerId). INNER JOIN only keeps a row if that match exists on both sides; a customer with zero invoices simply disappears from the result entirely.',
-      'LEFT JOIN keeps every row from the left (first-named) table no matter what — if there\'s no match on the right, those columns come back NULL instead of the row being dropped. That makes LEFT JOIN the tool for "find things with no match," usually paired with a `WHERE right_table.column IS NULL` check.',
+      'A JOIN lines up rows from two tables on a matching key — usually a foreign key, like Invoice.CustomerId matching Customer.CustomerId. INNER JOIN only keeps a row when that match exists on both sides; a customer with zero invoices simply vanishes from the result.',
+      'LEFT JOIN refuses to drop anyone: every row from the left (first-named) table survives no matter what, and if there\'s no match on the right, those columns just come back NULL. That makes LEFT JOIN the tool for "find what\'s missing," usually paired with a `WHERE right_table.column IS NULL` check.',
     ],
     example: {
       description: 'Customers who have never placed an order — every Customer row is kept, and the ones with no matching Invoice show up as NULL.',
@@ -172,10 +174,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'multi-table-joins',
     title: 'Multi-table joins',
     sectors: [3],
-    summary: 'Chaining more than one JOIN to pull data through several connected tables at once.',
+    summary: 'Nothing stops a JOIN chain from running through three tables or more.',
     explanation: [
-      'Nothing about JOIN limits it to two tables — chain a second JOIN off either table already in the query to pull in a third. Each JOIN needs its own ON clause naming the columns that connect it to something already in the query.',
-      'This is how you answer questions that span a chain of relationships — e.g. "revenue by genre" has to go from InvoiceLine (what was actually purchased) through Track (which genre each purchase belongs to) to Genre (the genre\'s name), because no single table has all three pieces.',
+      'JOIN isn\'t capped at two tables — chain a second JOIN off either table already in the query to pull in a third, a fourth, however many the question needs. Each JOIN carries its own ON clause naming the columns that connect it to something already in play.',
+      'This is how you answer a question that spans a whole chain of relationships. "Revenue by genre" has to travel from InvoiceLine (what was actually bought) through Track (which genre it belongs to) to Genre (the genre\'s actual name) — no single table holds all three pieces at once.',
     ],
     example: {
       description: 'Revenue by genre — joining InvoiceLine to Track to Genre, then aggregating.',
@@ -187,10 +189,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'subqueries-vs-ctes',
     title: 'Scalar subqueries vs CTEs',
     sectors: [4, 8, 9],
-    summary: 'Both let one query feed into another — a subquery is nested inline, a CTE is named and written up front.',
+    summary: 'Both let one query feed another — a subquery nests inline, a CTE gets named up front.',
     explanation: [
-      'A scalar subquery is a complete SELECT that returns a single value, used anywhere a value could go — most often to compare against something computed from the whole table, like "above the average." It\'s written inline, nested inside the query that uses it.',
-      'A CTE (Common Table Expression, written with WITH ... AS) does something similar but names the intermediate result and defines it up front, before the main query. The main query then reads from that name like it was a table. For anything reused more than once, or complex enough that inlining it would be hard to read, a CTE is usually clearer than a nested subquery.',
+      'A scalar subquery is a full SELECT that boils down to a single value, dropped in anywhere a value could go — most often to compare against something computed from the whole table, like "above the average." It\'s written inline, buried inside the query that leans on it.',
+      'A CTE (Common Table Expression, written with WITH ... AS) does something similar but names the intermediate result and defines it up front, before the main query even starts. The main query then reads from that name like it\'s a real table. Anything reused more than once, or gnarly enough that inlining it would bury the logic, reads cleaner as a CTE than as a nested subquery.',
     ],
     example: {
       description: 'The same idea two ways: invoices above the average total, then country revenue as a named CTE.',
@@ -202,10 +204,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'temp-tables',
     title: 'Temporary tables and multi-statement SQL',
     sectors: [4],
-    summary: 'A CREATE TEMP TABLE statement can stage data for a second statement to query.',
+    summary: 'CREATE TEMP TABLE stages a result so a second statement can build on it.',
     explanation: [
-      'CREATE TEMP TABLE ... AS SELECT runs a query and saves its result as a real (if temporary) table, which a later statement in the same session can then query, filter, or join against like anything else.',
-      'This is useful for breaking a complex problem into stages — build an intermediate result first, verify it makes sense, then query it — rather than nesting everything into one enormous query.',
+      'CREATE TEMP TABLE ... AS SELECT runs a query and holds onto its result as a real (if short-lived) table — a later statement in the same run can then query it, filter it, or join against it like anything else in the schema.',
+      'It\'s how you break a gnarly problem into stages: build an intermediate result, sanity-check it, then query it — instead of nesting everything into one unreadable query. The staged table disappears the moment the run ends; it\'s scratch space, not a permanent fixture.',
     ],
     example: {
       description: 'Stage high-value invoices into a temp table, then query it.',
@@ -217,10 +219,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'dates-strftime',
     title: 'Working with dates: strftime',
     sectors: [5, 8],
-    summary: 'strftime() pulls a piece (year, month, ...) out of a date so you can filter or group by it.',
+    summary: 'strftime() pulls a piece out of a date — year, month, whatever — so you can filter or group by it.',
     explanation: [
-      "A stored date/time value usually isn't useful to group by directly — you need a specific piece of it, like just the year. strftime(format, column) extracts that piece as text; '%Y' gives a 4-digit year, '%Y-%m' gives year-month.",
-      'That extracted value behaves like any other column — put it in GROUP BY to bucket rows by year, or in a WHERE clause to scope a query to a specific window, like "only 2010" instead of a table\'s full history.',
+      "A stored date usually isn't useful to group by as-is — you need one specific piece of it, like just the year. strftime(format, column) extracts that piece as text: '%Y' gives a 4-digit year, '%Y-%m' gives year-month.",
+      'Once extracted, it behaves like any other column: drop it in GROUP BY to bucket rows by year, or in a WHERE clause to scope a query to one window — "just 2010" instead of the ledger\'s entire history.',
     ],
     example: {
       description: 'Revenue by year, and revenue for just 2010.',
@@ -232,10 +234,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'case',
     title: 'CASE expressions',
     sectors: [6],
-    summary: 'Branching logic inside a SELECT — turns a value into a category based on conditions you set.',
+    summary: 'Branching logic inside a SELECT — turns a raw value into a category on the spot.',
     explanation: [
-      'CASE WHEN ... THEN ... ELSE ... END evaluates conditions in order and returns the value tied to the first one that\'s true, falling back to ELSE if none match. It behaves like an if/elif/else chain, but as an expression usable anywhere a column could go.',
-      'It\'s the standard way to turn a continuous value into a labeled category — e.g. converting a raw dollar amount into "High," "Medium," or "Low" tiers — without changing anything about the underlying stored data.',
+      'CASE WHEN ... THEN ... ELSE ... END checks conditions in order and returns whatever\'s tied to the first one that\'s true, falling back to ELSE if nothing matches. It behaves like an if/elif/else chain, except it\'s an expression you can drop anywhere a column could go.',
+      'It\'s the standard move for turning a continuous value into a labeled tier — a raw dollar figure becoming "High," "Medium," or "Low" — without touching a single byte of what\'s actually stored.',
     ],
     example: {
       description: 'Label each invoice by size.',
@@ -247,10 +249,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'cast',
     title: 'CAST and type conversion',
     sectors: [6],
-    summary: 'CAST changes a value from one data type to another — e.g. a decimal to a whole number.',
+    summary: 'CAST converts a value to a different type for this query, without touching what\'s actually stored.',
     explanation: [
-      'A stored column has a specific type (integer, decimal, text, date...), and sometimes a calculation or comparison needs a different one. CAST(value AS TYPE) converts a value to the requested type for that query, without changing what\'s actually stored in the table.',
-      'A common case is dropping decimal precision — CAST(UnitPrice AS INTEGER) truncates 1.99 down to 1 — which is different from ROUND(), which rounds to the nearest value instead of just chopping off the decimal part.',
+      'Every stored column has a type — integer, decimal, text, date — and sometimes a calculation or comparison needs a different one on the fly. CAST(value AS TYPE) converts a value to the requested type for that one query; the underlying table never changes.',
+      'A common move is dropping decimal precision: CAST(UnitPrice AS INTEGER) chops 1.99 straight down to 1. That\'s a different operation from ROUND(), which rounds to the nearest value instead of just lopping off the decimal.',
     ],
     example: {
       description: 'Track prices cast down to whole-dollar amounts.',
@@ -262,10 +264,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'union-vs-union-all',
     title: 'UNION vs UNION ALL',
     sectors: [7],
-    summary: 'Both stack two result sets on top of each other; UNION also removes duplicate rows, UNION ALL keeps everything.',
+    summary: 'Both stack two result sets vertically; UNION also scrubs duplicate rows, UNION ALL keeps every one.',
     explanation: [
-      'UNION and UNION ALL both combine the results of two SELECT statements into one result set, stacked vertically — both queries need to return the same number of columns, in compatible types. UNION additionally de-duplicates the combined result, dropping any row that\'s an exact match of another.',
-      'UNION ALL skips that de-duplication step, so it keeps every row from both queries, including exact duplicates. It\'s also faster, since checking for duplicates across a large combined result has real cost — use UNION ALL whenever duplicates genuinely can\'t occur, or don\'t matter.',
+      'UNION and UNION ALL both stack the results of two SELECT statements into one combined set — both sides need the same number of columns, in compatible types. UNION goes a step further and de-duplicates the stacked result, dropping any row that\'s an exact match of another.',
+      'UNION ALL skips that cleanup and keeps everything, duplicates included — and it\'s faster, since checking for duplicates across a big combined result genuinely costs something. Reach for UNION ALL whenever duplicates can\'t happen, or just don\'t matter.',
     ],
     example: {
       description: 'Combining two sources of "country" that might overlap.',
@@ -278,10 +280,10 @@ export const glossary: GlossaryEntry[] = [
     id: 'views',
     title: 'Views',
     sectors: [7],
-    summary: 'A saved query that behaves like a table — the SQL runs fresh every time you read from it.',
+    summary: 'A saved query that behaves like a table — it reruns fresh every time you read from it.',
     explanation: [
-      'CREATE VIEW name AS <query> saves a query under a name without saving its results — the underlying SELECT runs again every time something reads from the view. That means a view always reflects current data, unlike a temp table, which is a one-time snapshot.',
-      'Views exist so a well-built query — one other people rely on — becomes a shared, reusable asset instead of something everyone has to rewrite from scratch. That reuse is exactly what a rogue process deleting or corrupting a view breaks.',
+      'CREATE VIEW name AS <query> saves a query under a name without saving its results — the underlying SELECT fires again every single time something reads from the view. That means a view always reflects current data, unlike a temp table, which is a one-time snapshot frozen at creation.',
+      'Views exist so a well-built, trusted query becomes a shared asset instead of something everyone rewrites from scratch. That\'s exactly the reuse a rogue process corrupting or deleting a view breaks — and exactly why restoring one matters.',
     ],
     example: {
       description: 'Save country revenue as a view, then query it like a table.',

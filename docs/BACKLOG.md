@@ -19,7 +19,19 @@ update), and a wholly new item 11 (title screen) — all merged same-day.
 audit opened item 12 (a scoped, fully-buildable pre-launch hardening
 checklist) and item 13 (an unscoped UX/game-flow roadmap split between
 near-term polish for the current class and longer-run ideas for a future
-net-new-SQL-learner audience, the latter gated like item 3).
+net-new-SQL-learner audience, the latter gated like item 3). **Same day,
+a doc-accuracy pass on items 1-11** closed out every stale or
+never-updated status line and open question: item 1's glossary copy-voice
+question was resolved (playful-retro but didactic — `src/content/glossary.ts`
+rewritten to match) and the item marked shipped; item 4's Sector 8→9 beat
+was authored (`sectorBeats[9]`) and its open question resolved; item 9's
+sector-map-interaction question was closed (it was settled by live
+playtest weeks ago, just never marked); items 5 and 6 were marked shipped
+(they'd merged but were never closed out); and item 10's status/open-
+questions text, which had gone stale and still described the data-release
+decision as an unresolved hard blocker after it was actually made, was
+corrected — nothing is outstanding there except your own go/no-go on
+actually deploying. Item 3 is paused, being handled separately.
 Read `docs/GAME_DESIGN_BRIEF.md` and
 `docs/architecture.md` first; nothing here changes the grading contract,
 the SQL loop, or the browser-only boundary unless a section explicitly
@@ -36,6 +48,12 @@ asset status drift out of sync with what's actually been generated.
 ---
 
 ## 1. Concept glossary / index with visuals & animations
+
+### Status: fully shipped
+P1.1 (data model/shell) and P1.3 (concept-tag deep-linking) landed
+2026-08-08; P1.2 (animated diagrams) followed. The one open question left
+after that (copy voice) was resolved and applied 2026-08-11 — see below.
+Nothing left to build here.
 
 ### Problem
 Players who get stuck mid-mission have no in-app reference for the SQL
@@ -102,11 +120,18 @@ or "what does `HAVING` do differently from `WHERE`" in the game's own voice.
 - ~~Overlay vs. leave the mission~~ — **Resolved 2026-08-08:** the glossary
   opens as an overlay on top of the active mission (or Home); closing it
   returns exactly where the player was. Landed in P1.1 as `GlossaryPanel`.
-- Copy voice: should glossary entries go through the same design-brief
+- ~~Copy voice: should glossary entries go through the same design-brief
   tone pass as mission copy (in-world, playful-retro), or is a more
   neutral "documentation" voice acceptable given this is reference
-  material rather than story content? (Sourcing itself is resolved above
-  — public sites for research/accuracy, rewritten in-house either way.)
+  material rather than story content?~~ — **Resolved 2026-08-11:**
+  playful-retro, matching mission copy, but didactic first — a light
+  in-world hook per entry, never at the expense of a precise, correct
+  explanation. `src/content/glossary.ts` previously committed to the
+  opposite call (a comment there explicitly chose neutral "documentation"
+  tone over in-world voice) — that comment and all 16 entries' `summary`/
+  `explanation` text were rewritten to match this decision. (Sourcing
+  itself was already resolved above — public sites for research/accuracy,
+  rewritten in-house either way.)
 
 ---
 
@@ -414,12 +439,21 @@ Split into two pieces, one buildable now and one not:
   script, sequencing, or art.
 
 ### Open questions still to resolve before build
-- Does every sector transition get an authored beat, or only some (e.g.
+- ~~Does every sector transition get an authored beat, or only some (e.g.
   just the Sector 8→9 case plus the opening) for v1, with the rest as
-  incremental follow-ups? **Still open** — P2.1 (2026-08-08) built the
-  general between-sector beat mechanism but only authored the opening;
-  `sectorBeats` in `src/content/beats.ts` is empty, so this question still
-  needs an answer before Sector 8→9 (or any other) beat gets written.
+  incremental follow-ups?~~ — **Resolved 2026-08-11:** product owner
+  delegated the choice of which beat to author to the agent ("I trust you
+  to pick a beat"). Sector 8→9 was authored — `sectorBeats[9]` in
+  `src/content/beats.ts` — as the highest-value single beat: it fulfils
+  §A5's "completing Sector 8 can trigger a short in-world beat introducing
+  the Sector 9 final-boss framing" and §A3's reserved ROGUE.exe voice slot
+  for "one line for the Sector 9 final-boss opening," using only
+  already-shipped assets (the Sector 8 background, `RogueSprite`'s
+  corrupted state — no new art). It plays as a short two-panel prelude
+  immediately before the existing (unchanged) Sector 9
+  `SectorTransitionView`, not a replacement for it. The rest of
+  `sectorBeats` stays empty by design — incremental authoring, not a
+  requirement that every sector get one.
 - ~~The "pulled into the mainframe" beat's script~~ — **Resolved
   2026-08-10:** product owner delivered the full script; see
   `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md` and the update above.
@@ -439,10 +473,12 @@ Split into two pieces, one buildable now and one not:
 
 ## 5. Chrome layout compaction & navigation cleanup
 
-### Status
-New item, opened from the first real UAT playtest of the merged build
-(2026-08-09). Unblocked — no new art, no new dependency, pure layout/CSS
-and a small component reshuffle. Tracked as BUILD_ORDER.md P4.1.
+### Status: fully shipped
+Opened from the first real UAT playtest of the merged build (2026-08-09).
+Shipped as BUILD_ORDER.md P4.1 and merged to `main`; superseded/extended
+by item 9's P5.4 and P5.6/P7.4 passes (also shipped). Nothing left to
+build here — this doc corrected 2026-08-11 to reflect that (was never
+marked closed at the time).
 
 ### Problem
 The mission screen's top header box carries "Back to sector map" and
@@ -494,9 +530,13 @@ query/Show hint/Reveal example on almost every mission.
 
 ## 6. SQL editor syntax highlighting
 
-### Status
-New item, approved 2026-08-09. Unblocked to start, but adds the project's
-first non-trivial new dependency. Tracked as BUILD_ORDER.md P4.2.
+### Status: fully shipped
+Approved 2026-08-09, shipped as BUILD_ORDER.md P4.2 and merged to `main`
+— CodeMirror 6 (`@codemirror/*`) is in `package.json` and wired in
+`src/components/SqlEditor.tsx` (lazy-loaded, per `MissionView.tsx`'s
+comment, since it's the largest dependency in the bundle). Nothing left
+to build here — this doc corrected 2026-08-11 to reflect that (was never
+marked closed at the time).
 
 ### Problem
 The SQL editor is a plain `<textarea>` — no syntax highlighting, no
@@ -708,16 +748,20 @@ it doesn't need to happen before the packet starts.
 
 ## 10. Public deployment (Vercel)
 
-### Status: prework shipped 2026-08-10 — going live is still blocked on you
+### Status: fully resolved 2026-08-10 — nothing left to build; going live is entirely your call, whenever
 All of BUILD_ORDER.md P6.1's prework merged to `main` (PR #3): the
 `engines` pin, `vercel.json`, the README Deployment section, and the real
 minimized 5-table derivative at `src/assets/data/iTunes.min.sqlite`
 (verified against all 25 missions' expected results, not just spot-checked
-— see the update below). **One specific finding below is still a hard
-blocker on actually going live**, not a checklist item to route around —
-see "Decision needed before deployment" further down. Nothing in this
-item's prework is left to build; the remaining step is your decision, not
-more agent work.
+— see the update below). **Correction (2026-08-11):** this line and the
+"Open questions" section below it previously still described the
+data-release decision as an open hard blocker — that was stale the moment
+it was written; the "Decision made" section further down in this same
+item records that the decision was actually made and wired into
+`sqlRunner.ts` the same day (2026-08-10). There is no outstanding
+technical or data-release question left on this item. The only things
+left are yours: whether/when to actually deploy, and, if so, custom
+domain vs. the default `*.vercel.app` URL (cosmetic).
 
 ### Problem
 The app runs locally (`npm run dev`/`npm run build`) but isn't deployed
@@ -848,19 +892,24 @@ per the release gate's own requirement:
   doesn't change the browser-only architecture.
 
 ### Open questions still to resolve before going live
-- **The data decision above.** Hard blocker.
+- ~~**The data decision above.** Hard blocker.~~ — **Resolved 2026-08-10**
+  (this bullet was left stale after the fact — see the corrected Status
+  line above; fixed 2026-08-11). Not a blocker.
 - Custom domain, or the default `*.vercel.app` URL? Cosmetic, not
-  blocking prework.
+  blocking prework — genuinely the only open item here, and it's yours
+  to decide whenever you deploy.
 
 ---
 
 ## 9. Mission screen information density & hierarchy pass
 
-### Status
-New item, opened 2026-08-09 (continued) from a second UAT round on the
-merged build (P4.1-P4.4 all live). Unblocked — no new art, no new
-dependency, pure layout/CSS and small component reshuffles, same
-character as item 5. Scheduled as BUILD_ORDER.md P5.2-P5.4.
+### Status: fully shipped
+Opened 2026-08-09 (continued) from a second UAT round on the merged build
+(P4.1-P4.4 all live); no new art, no new dependency, pure layout/CSS and
+small component reshuffles, same character as item 5. P5.2-P5.4 landed
+2026-08-09/10, and the second header-refinement pass (P5.6/P7.4) landed
+2026-08-11 — both open questions below were settled the same day via live
+playtest. Nothing left to build here.
 
 ### Problem
 P4.1 thinned the header and moved controls around, but the mission
@@ -955,21 +1004,21 @@ written note) found more to tighten, landed as BUILD_ORDER.md P5.6/P7.4:
   into the Terminal Reward box next to it.
 
 ### Open questions still to resolve before build
-- **Sector-map slide-out interaction:** the product owner described
-  "put it into the top box and if someone clicks it then it slides out"
-  — read here as an overlay/drawer triggered from a header control
-  (similar pattern to the existing `GlossaryPanel` overlay), rather than
-  an inline-expanding accordion that would push mission content around.
-  This is a judgment call, not a confirmed decision — flagged for the
-  product owner to correct before or during P5.4 if the intended
-  interaction is different (e.g. an inline expand instead of an
-  overlay).
-- Exact visual treatment of the consolidated header (how the map
-  trigger, points/integrity readout, terminal reward, and badges toggle
-  share the header's width without becoming cramped again) is an
-  implementation call for whoever builds P5.4, in the same spirit as
-  item 5's deferred exact padding numbers — direction is clear, pixel
-  values aren't.
+- ~~**Sector-map slide-out interaction:** the product owner described "put
+  it into the top box and if someone clicks it then it slides out" — read
+  here as an overlay/drawer triggered from a header control, rather than
+  an inline-expanding accordion.~~ — **Resolved 2026-08-11:** the
+  overlay/drawer reading was correct. Confirmed via live playtest with the
+  product owner driving the browser directly (not just an agent's
+  interpretation) — see `BUILD_ORDER.md` Wave 7's P5.6 notes ("shipped —
+  verified live in the Browser pane across the flow"). This line was
+  never updated to reflect that at the time; corrected now.
+- ~~Exact visual treatment of the consolidated header...~~ — **Resolved**:
+  shipped and live-verified as part of P5.4 and the P5.6/P7.4 refinement
+  pass (scoreboard as a single row, badges moved into Terminal Reward,
+  etc. — see the update above). Implementation-call items like this don't
+  need a separate close-out; recorded here only for consistency with the
+  rest of this item now being marked closed.
 
 ---
 
@@ -1384,20 +1433,26 @@ above to remove any "not built yet" caveat that no longer applies.
   numbered "P" packets) with acceptance criteria, and names which open
   question blocks each one. Read it before scoping any of this into a
   session.
-- Items 1, 2, 4, 8, 9, and 11 fit the current architecture with no
-  approval needed — they can be scoped into normal sector/session work
-  whenever prioritized. All are shipped as of 2026-08-11; item 4's
-  "pulled into the mainframe" beat (once the one exception waiting on the
-  product owner's script) landed 2026-08-10 and was revised once more
-  2026-08-11 — see its section above.
+- **Items 1, 2, 4, 5, 6, 7, 8, 9, and 11 are all fully shipped, with no
+  open questions left in any of them** — swept and corrected 2026-08-11
+  (several had drifted: item 1's copy-voice question, item 4's
+  beat-coverage question, and item 9's sector-map-interaction question
+  were all genuinely unresolved in the doc text despite being settled in
+  practice; items 5 and 6 had never been marked shipped at all despite
+  merging weeks earlier). Nothing in items 1-11 needs anyone's attention
+  right now except item 10 (below) and item 3 (also below).
 - Item 3 needs an explicit approval decision before any implementation
   work starts, per `AGENTS.md`. Treat it as a standing research item
-  until that decision is made.
-- Item 10 (deployment) is split: the prework, **including the data-source
-  decision itself, is done** (`sqlRunner.ts` has shipped the minimized
-  derivative since 2026-08-10) — what's left is only whether/where to
-  actually go live, which is a business decision, not a technical or
-  data-release blocker anymore.
+  until that decision is made — **paused as of 2026-08-11, being handled
+  in a separate thread**, not part of this session's or this doc's
+  active work.
+- **Item 10 (deployment) is fully resolved, including the data-source
+  decision** (`sqlRunner.ts` has shipped the minimized derivative since
+  2026-08-10) — corrected 2026-08-11, since the item's own "Status" and
+  "Open questions" text had drifted stale and still described the data
+  decision as an open hard blocker after it was actually made. What's
+  left is only whether/where to actually go live, which is entirely your
+  call, not a technical or data-release blocker.
 - **Item 12 (pre-launch hardening) and item 13 (post-launch UX roadmap)**,
   opened 2026-08-11, are the newest items and read differently from 1-11:
   item 12 is fully scoped and buildable now with an explicit priority

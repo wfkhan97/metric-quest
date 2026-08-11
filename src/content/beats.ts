@@ -4,6 +4,7 @@ import officeAlarm from '../assets/backgrounds/office-alarm.jpg';
 import pullIn from '../assets/backgrounds/pull-in.jpg';
 import corridorCalm from '../assets/backgrounds/corridor-calm.jpg';
 import corridorBreached from '../assets/backgrounds/corridor-sector-1-breached.jpg';
+import sector8Background from '../assets/backgrounds/sector-8.jpg';
 import cueA from '../assets/audio/cue-a-cubicle-fluorescence.m4a';
 import cueB from '../assets/audio/cue-b-signal-interrupt.mp3';
 import cueC from '../assets/audio/cue-c-mainframe-overture.m4a';
@@ -204,9 +205,51 @@ export const mainframePullBeat: Beat = {
 };
 
 /**
- * Between-sector beats (docs/BUILD_ORDER.md P2.1): sector number the player
- * is *leaving* -> an optional beat shown before continuing to the next
- * sector-transition screen. A sector with no entry here transitions exactly
- * as it does today — beats are authored incrementally, not all at once.
+ * BACKLOG.md item 4: Sector 8 -> 9 beat, authored 2026-08-11 per direct
+ * product-owner delegation ("I trust you to pick a beat"). Fulfils
+ * GAME_DESIGN_BRIEF.md §A5 ("completing Sector 8 can trigger a short
+ * in-world beat introducing the Sector 9 final-boss framing") and §A3's
+ * reserved ROGUE.exe voice slot for "one line for the Sector 9 final-boss
+ * opening." Reuses only existing, already-shipped assets (the Sector 8
+ * background, RogueSprite's corrupted state) — no new art. Two short
+ * panels only: the standard SectorTransitionView (Sector 9's own
+ * background/flavor text, unchanged) plays immediately after this finishes
+ * (see App.tsx's handleCutsceneFinish), so this beat is a narrative
+ * prelude, not a replacement for it.
  */
-export const sectorBeats: Partial<Record<number, Beat>> = {};
+export const sector9OpeningBeat: Beat = {
+  id: 'sector-9-opening',
+  panels: [
+    {
+      eyebrow: "ROGUE.exe's Inner Sanctum · purged",
+      heading: "It's not hiding anymore.",
+      background: sector8Background,
+      copy: [
+        'Sector 8 is clean. Every corrupted terminal ROGUE.exe was hiding behind is gone.',
+        "One door left. For the first time all night, ROGUE.exe isn't running from it.",
+      ],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: 'One system, cornered.',
+      rogueState: 'corrupted',
+      copy: [
+        'ROGUE.exe: "You want the truth? The truth is whatever the board approves by Friday. I\'ve been fabricating quarterly pitches since before you finished your coffee."',
+        '"Bring your little SELECT statements. Let\'s see whose numbers the board actually believes."',
+      ],
+    },
+  ],
+};
+
+/**
+ * Between-sector beats (docs/BUILD_ORDER.md P2.1): sector number the player
+ * is entering -> an optional beat shown before continuing to the next
+ * sector-transition screen (see App.tsx's enterMissionWithTransitionCheck,
+ * which looks this up keyed by the upcoming mission's own sector — corrected
+ * 2026-08-11, this comment previously said "leaving," which didn't match the
+ * implementation). A sector with no entry here transitions exactly as it
+ * does today — beats are authored incrementally, not all at once.
+ */
+export const sectorBeats: Partial<Record<number, Beat>> = {
+  9: sector9OpeningBeat,
+};
