@@ -1412,6 +1412,8 @@ tbody tr {
 }
 
 .tutorial-cutscene-frame {
+  block-size: calc(100dvh - 1rem);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   inline-size: min(58rem, 100%);
   margin-block-end: 0;
   max-block-size: calc(100dvh - 1rem);
@@ -1424,6 +1426,13 @@ tbody tr {
 
 .tutorial-cutscene-frame h1 {
   justify-self: start;
+}
+
+/* Only this region scrolls, so the action bar below it never has to float
+   over unread preview/copy content the way a sticky footer would. */
+.tutorial-scroll-area {
+  min-block-size: 0;
+  overflow-y: auto;
 }
 
 .tutorial-preview {
@@ -1533,12 +1542,9 @@ tbody tr {
 .tutorial-actions {
   align-items: center;
   background: var(--retro-panel);
-  bottom: 0;
   box-shadow: 0 -0.4rem 0.75rem var(--retro-panel);
   justify-content: space-between;
   padding-block: 0.35rem 0.1rem;
-  position: sticky;
-  z-index: 2;
 }
 
 /* P5.5 multi-panel cutscenes: a background image layer, positioned behind

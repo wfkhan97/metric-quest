@@ -169,17 +169,19 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
         <div className="sector-transition-frame cutscene-frame tutorial-cutscene-frame phase-scanline">
           <p className="eyebrow">{panel.eyebrow}</p>
           <h1 id="cutscene-title">{panel.heading}</h1>
-          <TutorialMissionPreview focus={panel.tutorialFocus} />
-          <div className="cutscene-copy tutorial-copy">
-            {panel.copy.map((paragraph, index) => (
-              <p
-                key={index}
-                className="sector-transition-flavor type-reveal"
-                style={{ animationDelay: `${200 + index * 900}ms` }}
-              >
-                {paragraph}
-              </p>
-            ))}
+          <div className="tutorial-scroll-area">
+            <TutorialMissionPreview focus={panel.tutorialFocus} />
+            <div className="cutscene-copy tutorial-copy">
+              {panel.copy.map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="sector-transition-flavor type-reveal"
+                  style={{ animationDelay: `${200 + index * 900}ms` }}
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           </div>
           <div className="actions tutorial-actions">
             <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
