@@ -865,7 +865,10 @@ per the release gate's own requirement:
   doesn't change the browser-only architecture.
 
 ### Open questions still to resolve before going live
-- **The data decision above.** Hard blocker.
+- ~~The data decision above.~~ **Resolved 2026-08-10** — see "Decision
+  made" above. This was a stale line left over from before that decision
+  was recorded further up in this same section; not a real remaining
+  blocker.
 - Custom domain, or the default `*.vercel.app` URL? Cosmetic, not
   blocking prework.
 
