@@ -2,13 +2,13 @@ import { type QueryResult } from './grading';
 
 export type Mission = {
   id:
-    | 'm1-1' | 'm1-2' | 'm1-3' | 'm1-4'
-    | 'm2-1' | 'm2-2' | 'm2-3'
+    | 'm1-1' | 'm1-2' | 'm1-3' | 'm1-4' | 'm1-5' | 'm1-6'
+    | 'm2-1' | 'm2-2' | 'm2-3' | 'm2-4'
     | 'm3-1' | 'm3-2' | 'm3-3' | 'm3-4'
     | 'm4-1' | 'm4-2' | 'm4-3'
-    | 'm5-1' | 'm5-2'
+    | 'm5-1' | 'm5-2' | 'm5-3'
     | 'm6-1' | 'm6-2'
-    | 'm7-1' | 'm7-2'
+    | 'm7-1' | 'm7-2' | 'm7-3' | 'm7-4' | 'm7-5'
     | 'm8-1' | 'm8-2' | 'm8-3'
     | 'm9-1' | 'm9-2';
   chapter: string;
@@ -93,6 +93,28 @@ export const missions: Mission[] = [
     successLesson: "Terminal restored. Dividing by 60000.0 keeps this a real fraction instead of integer-dividing it away — that decimal is what exposes tracks charging a premium price for barely any runtime.",
   },
   {
+    id: 'm1-5', chapter: '1 · The Ledger Vaults', title: 'Mid-tier audit window', concept: 'BETWEEN for range filters',
+    brief: "ROGUE.exe built its noise filters to dodge round numbers — a scan for \"above $20\" or \"below $15\" sails right past the band in between, and that's exactly where a batch of altered invoices is hiding. Sweep the gap: return every invoice priced from $15 to $20, inclusive, cheapest first.",
+    starterSql: '-- Return InvoiceId, InvoiceDate, BillingCountry, and Total from Invoice for\n-- every invoice priced from $15 to $20 inclusive. Cheapest first.',
+    solutionSql: 'SELECT InvoiceId, InvoiceDate, BillingCountry, Total\nFROM Invoice\nWHERE Total BETWEEN 15 AND 20\nORDER BY Total, InvoiceId;',
+    hints: ['BETWEEN checks a numeric range inclusively in one shot — Total BETWEEN 15 AND 20 already covers both endpoints, no separate >= and <= needed.', 'ORDER BY Total, InvoiceId walks the band bottom-up and breaks any tie between invoices priced the same.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceId', 'InvoiceDate', 'BillingCountry', 'Total'], rows: [[103, '2008-03-20 00:00:00', 'USA', 15.86], [208, '2009-06-28 00:00:00', 'Norway', 15.86], [306, '2010-09-05 00:00:00', 'Czech Republic', 16.86], [313, '2010-10-06 00:00:00', 'France', 16.86], [88, '2008-01-13 00:00:00', 'Chile', 17.91], [89, '2008-01-18 00:00:00', 'Austria', 18.86], [201, '2009-05-28 00:00:00', 'USA', 18.86]] },
+    orderMatters: true, points: 20,
+    successLesson: "Gap swept. BETWEEN 15 AND 20 is shorthand for Total >= 15 AND Total <= 20, but written as one inclusive range instead of two conditions to keep straight — exactly the band a scan built around round thresholds would have skipped.",
+  },
+  {
+    id: 'm1-6', chapter: '1 · The Ledger Vaults', title: 'Flagged markets', concept: 'IN for matching against a list',
+    brief: "This week's audit shortlist flags three specific markets for a closer look: Chile, Hungary, and Norway. Rather than chain three separate equality checks together, pull every invoice billed to any of them in one pass — market, then invoice, cheapest first within each.",
+    starterSql: "-- Return InvoiceId, BillingCountry, and Total from Invoice for every\n-- invoice billed to Chile, Hungary, or Norway. Sort by country, then InvoiceId.",
+    solutionSql: "SELECT InvoiceId, BillingCountry, Total\nFROM Invoice\nWHERE BillingCountry IN ('Chile', 'Hungary', 'Norway')\nORDER BY BillingCountry, InvoiceId;",
+    hints: ["IN checks a value against a whole list at once — WHERE BillingCountry IN ('Chile', 'Hungary', 'Norway') replaces three OR'd equality checks with one clean list.", 'ORDER BY BillingCountry first groups each market together, then InvoiceId sorts within it.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['InvoiceId', 'BillingCountry', 'Total'], rows: [[22, 'Chile', 1.98], [33, 'Chile', 13.86], [88, 'Chile', 17.91], [217, 'Chile', 1.98], [240, 'Chile', 3.96], [262, 'Chile', 5.94], [314, 'Chile', 0.99], [85, 'Hungary', 1.98], [96, 'Hungary', 21.86], [151, 'Hungary', 8.91], [280, 'Hungary', 1.98], [303, 'Hungary', 3.96], [325, 'Hungary', 5.94], [377, 'Hungary', 0.99], [2, 'Norway', 3.96], [24, 'Norway', 5.94], [76, 'Norway', 0.99], [197, 'Norway', 1.98], [208, 'Norway', 15.86], [263, 'Norway', 8.91], [392, 'Norway', 1.98]] },
+    orderMatters: true, points: 20,
+    successLesson: "Shortlist pulled. WHERE BillingCountry IN (...) is exactly WHERE BillingCountry = 'Chile' OR BillingCountry = 'Hungary' OR BillingCountry = 'Norway', just written as one list instead of a chain of ORs that gets uglier every time the shortlist grows.",
+  },
+  {
     id: 'm2-1', chapter: '2 · The Scoreboard Core', title: 'Country revenue', concept: 'SUM, GROUP BY, aliases',
     brief: 'The Scoreboard Core is spitting out country totals that don\'t add up — ROGUE.exe has been quietly double-counting invoice lines to inflate the numbers. Rebuild the CFO\'s real scorecard: total revenue by billing country, highest to lowest, using each invoice\'s total exactly once. No joins to the invoice-line table — that\'s where the corruption lives.',
     starterSql: '-- Group Invoice by BillingCountry and SUM(Total) as Revenue, using each\n-- invoice row exactly once. Sort highest revenue first.',
@@ -124,6 +146,17 @@ export const missions: Mission[] = [
     expected: { columns: ['InvoiceCount', 'InvoicesWithCustomer', 'UniquePurchasers'], rows: [[412, 412, 59]] },
     orderMatters: false, points: 25, badge: 'Metric Mechanic',
     successLesson: 'Corruption isolated. All three numbers pull from the same table, but only DISTINCT collapses repeat buyers to one each — the gap between 412 and 59 is exactly the shape of overcounting ROGUE.exe relies on elsewhere.',
+  },
+  {
+    id: 'm2-4', chapter: '2 · The Scoreboard Core', title: 'Invoice range check', concept: 'MIN and MAX',
+    brief: "Before the Scoreboard Core will certify any of these numbers, the CFO wants sanity bounds: the smallest and largest invoice Aurora has ever recorded, side by side in one row. Anything outside that range on a future report is worth a second look.",
+    starterSql: '-- Return the smallest and largest Total from Invoice, in one row.',
+    solutionSql: 'SELECT MIN(Total) AS SmallestInvoice, MAX(Total) AS LargestInvoice\nFROM Invoice;',
+    hints: ["MIN and MAX both collapse a whole column down to one number — no GROUP BY needed when the answer is a single row for the entire table.", 'Alias both columns something readable, e.g. SmallestInvoice and LargestInvoice.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['SmallestInvoice', 'LargestInvoice'], rows: [[0.99, 25.86]] },
+    orderMatters: false, points: 20,
+    successLesson: "Bounds certified. MIN and MAX are the same aggregation family as SUM, COUNT, and AVG — they just answer \"smallest\" and \"largest\" instead of \"total\" or \"how many,\" and now any invoice outside $0.99–$25.86 is an instant red flag instead of a guess.",
   },
   {
     id: 'm3-1', chapter: '3 · The Relay Archives', title: 'Name the high-value customers', concept: 'INNER JOIN and foreign keys',
@@ -230,6 +263,17 @@ export const missions: Mission[] = [
     successLesson: 'Dial freed. %Y-%m keeps months sortable across years instead of colliding every January — that is what let the real top-10 months surface instead of the one frozen reading ROGUE.exe was stuck on.',
   },
   {
+    id: 'm5-3', chapter: '5 · The Chronometer Wing', title: 'Ledger lifespan', concept: 'Date arithmetic with strftime',
+    brief: "ROGUE.exe insists the ledger \"just started\" — but Aurora's invoice history stretches back years, and it's counting on nobody checking. Prove the real age of the vault: how many days separate the earliest invoice on record from the latest.",
+    starterSql: "-- Use strftime('%J', date) to convert the earliest and latest InvoiceDate\n-- into Julian day numbers, subtract them, and return the day count.",
+    solutionSql: "SELECT ROUND(strftime('%J', MAX(InvoiceDate)) - strftime('%J', MIN(InvoiceDate)), 0) AS DaysSpanned\nFROM Invoice;",
+    hints: ["strftime('%J', date) converts a date into a Julian day number — subtracting two of them gives you the number of days between the dates, the same trick behind MySQL's date_diff.", 'MAX(InvoiceDate) and MIN(InvoiceDate) are still just aggregates on a date column — wrap the subtraction in ROUND(..., 0) for a clean whole-day count.'],
+    visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['DaysSpanned'], rows: [[1816]] },
+    orderMatters: false, points: 30,
+    successLesson: "Vault age confirmed: 1,816 days, not \"just started.\" strftime('%J', ...) turns each date into a comparable day-number, and subtracting two of them is exactly how you'd measure any duration — signup-to-churn, order-to-delivery, first-sale-to-most-recent — the same math underneath all of it.",
+  },
+  {
     id: 'm6-1', chapter: '6 · The Sorting Engine', title: 'Invoice tiers', concept: 'CASE',
     brief: 'The Sorting Engine is supposed to route every invoice into Small, Core, or High value — ROGUE.exe jammed the switch so everything falls into one bin. Rebuild the routing rule with CASE, then count how many invoices land in each tier.',
     starterSql: "-- Use CASE to label each Invoice as 'Small' (Total < 5), 'Core' (Total < 10),\n-- or 'High value' (otherwise). Then count invoices per label.",
@@ -273,6 +317,39 @@ export const missions: Mission[] = [
     expected: { columns: ['Country', 'Revenue'], rows: [['USA', 523.06], ['Canada', 303.96], ['France', 195.1], ['Brazil', 190.1], ['Germany', 156.48]] },
     orderMatters: true, points: 40, badge: 'Data Product Owner', allowsTempWorkspace: true,
     successLesson: 'View restored. CountryRevenue now exists as a saved query for this run — nobody has to rewrite the GROUP BY from scratch, which is exactly the shared asset ROGUE.exe deleted.',
+  },
+  {
+    id: 'm7-3', chapter: '7 · The Shared Vault', title: 'Every market mention', concept: 'UNION ALL keeps duplicates',
+    brief: "An ops analyst wants a raw volume check on the same two sources from before — every customer's home country plus every invoice's billing country — but this time duplicates are the point: count every mention, not just every unique market.",
+    starterSql: '-- Combine Customer.Country and Invoice.BillingCountry into one column,\n-- keeping every duplicate. Return the total row count.',
+    solutionSql: 'SELECT COUNT(*) AS TotalCountryMentions\nFROM (\n  SELECT Country FROM Customer\n  UNION ALL\n  SELECT BillingCountry AS Country FROM Invoice\n);',
+    hints: ['UNION would collapse this combined list back down to the distinct market map from before — UNION ALL keeps every row, duplicates included.', 'Wrap the UNION ALL in a subquery and COUNT(*) the result to get one total.'],
+    visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['TotalCountryMentions'], rows: [[471]] },
+    orderMatters: false, points: 30,
+    successLesson: "471 mentions: 59 customer rows plus 412 invoice rows, every one kept. That's a completely different question from the 24 distinct markets UNION found earlier — UNION ALL is the tool whenever the count of duplicates is itself the signal, not noise to be scrubbed.",
+  },
+  {
+    id: 'm7-4', chapter: '7 · The Shared Vault', title: 'Markets that stayed active', concept: 'INTERSECT',
+    brief: "Before renewing any international support contracts, the ops team needs to know which of Aurora's customer home countries also generated a real invoice in 2011, the most recent year the vault has on record. Return exactly that overlap — nothing that only shows up on one side.",
+    starterSql: "-- Return every Country that appears in BOTH Customer.Country and\n-- Invoice.BillingCountry (invoices from 2011 only). Alphabetical.",
+    solutionSql: "SELECT Country FROM Customer\nINTERSECT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011'\nORDER BY Country;",
+    hints: ["INTERSECT keeps only the rows that appear in both result sets — a country has to be a customer's home country AND a 2011 billing country to survive.", 'Alias BillingCountry AS Country so both sides line up on the same column, the same rule as UNION.'],
+    visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['Country'], rows: [['Argentina'], ['Austria'], ['Belgium'], ['Brazil'], ['Canada'], ['Czech Republic'], ['Denmark'], ['Finland'], ['France'], ['Germany'], ['Hungary'], ['India'], ['Ireland'], ['Italy'], ['Netherlands'], ['Norway'], ['Poland'], ['Portugal'], ['Spain'], ['USA'], ['United Kingdom']] },
+    orderMatters: true, points: 35,
+    successLesson: "21 markets confirmed active in both directions. INTERSECT is stricter than UNION — UNION would have combined both lists regardless of overlap, but INTERSECT only keeps what's genuinely true on both sides at once, which is exactly what a renewal decision needs.",
+  },
+  {
+    id: 'm7-5', chapter: '7 · The Shared Vault', title: 'Gone quiet', concept: 'EXCEPT and order-sensitivity',
+    brief: "Flip the last question around: which customer home countries had zero invoices billed in 2011 at all — customers who may have gone dark. Order is not optional here: this needs \"customer countries minus 2011 billing countries,\" not the reverse.",
+    starterSql: "-- Return every Country in Customer.Country that does NOT appear in\n-- Invoice.BillingCountry among 2011 invoices. Alphabetical.",
+    solutionSql: "SELECT Country FROM Customer\nEXCEPT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011'\nORDER BY Country;",
+    hints: ["EXCEPT returns what's in the first result set but not the second — put customer countries first and 2011 billing countries second to ask \"who's missing,\" not the reverse.", "Order isn't cosmetic here, unlike UNION or INTERSECT: swap the two SELECTs and EXCEPT answers a completely different question."],
+    visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
+    expected: { columns: ['Country'], rows: [['Australia'], ['Chile'], ['Sweden']] },
+    orderMatters: true, points: 35,
+    successLesson: "Three markets gone quiet in 2011: Australia, Chile, Sweden. Notice EXCEPT isn't symmetric like UNION or INTERSECT — \"customer countries EXCEPT 2011 billing countries\" and \"2011 billing countries EXCEPT customer countries\" are different questions with different answers, so which side goes first is a real decision, not a style choice.",
   },
   {
     id: 'm8-1', chapter: "8 · ROGUE.exe's Inner Sanctum", title: 'Duplicate-customer trap', concept: 'COUNT(DISTINCT ...) and AI verification',

@@ -69,7 +69,7 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
     eyebrowPrefix: 'MENTOR CHANNEL · SECTOR 1 PRIMER',
     mentorIntro: [
       "ECHO again. The Ledger Vaults are first because they're the simplest corruption in the building — ROGUE.exe buried real rows under noise, duplicated some, and broke a couple of formulas. Nothing structural yet.",
-      "Four terminals in there. Same four moves clear all of them. Quick walkthrough, then you're in.",
+      "Six terminals in there. Same handful of moves clear all of them. Quick walkthrough, then you're in.",
     ],
     concepts: [
       {
@@ -120,9 +120,33 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
           sql: 'SELECT Name, ROUND(UnitPrice * 1.08, 2) AS PriceWithTax\nFROM Track;',
         },
       },
+      {
+        conceptTag: 'BETWEEN for range filters',
+        heading: 'BETWEEN',
+        explanation: [
+          'BETWEEN low AND high keeps a value inside a range, both ends included — Total BETWEEN 15 AND 20 is shorthand for Total >= 15 AND Total <= 20, just harder to get the boundary wrong on.',
+          "A scan built around round thresholds — above $20, below $15 — sails right past whatever sits in the gap between them. BETWEEN is how you sweep that gap on purpose.",
+        ],
+        example: {
+          description: 'Invoices priced from $15 to $20, inclusive.',
+          sql: 'SELECT InvoiceId, Total\nFROM Invoice\nWHERE Total BETWEEN 15 AND 20;',
+        },
+      },
+      {
+        conceptTag: 'IN for matching against a list',
+        heading: 'IN',
+        explanation: [
+          "IN checks a value against a whole set of options at once — WHERE BillingCountry IN ('Chile', 'Hungary', 'Norway') replaces a chain of OR'd equality checks with one clean list.",
+          "It reads as a single condition even though it's doing the work of several — the shortlist can grow to ten countries and the query barely changes shape.",
+        ],
+        example: {
+          description: 'Invoices billed to one of three flagged markets.',
+          sql: "SELECT InvoiceId, BillingCountry, Total\nFROM Invoice\nWHERE BillingCountry IN ('Chile', 'Hungary', 'Norway');",
+        },
+      },
     ],
     closing: [
-      "That's WHERE/ORDER BY/LIMIT, DISTINCT, LIKE/LOWER, and calculated columns — everything the Ledger Vaults will ask for.",
+      "That's WHERE/ORDER BY/LIMIT, DISTINCT, LIKE/LOWER, calculated columns, BETWEEN, and IN — everything the Ledger Vaults will ask for.",
       "Go purge that sector. I'll have the next primer ready before Sector 2.",
     ],
   },
@@ -131,7 +155,7 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
     eyebrowPrefix: 'MENTOR CHANNEL · SECTOR 2 PRIMER',
     mentorIntro: [
       "Sector 1's clean. The Scoreboard Core is different — you're not filtering rows anymore, you're collapsing a pile of them into one answer per group. That's aggregation, and it's the backbone of most real business questions.",
-      'Three moves, then you\'re in.',
+      'Four moves, then you\'re in.',
     ],
     concepts: [
       {
@@ -170,10 +194,22 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
           sql: 'SELECT\n  COUNT(*) AS AllRows,\n  COUNT(BillingState) AS RowsWithState,\n  COUNT(DISTINCT BillingCountry) AS UniqueCountries\nFROM Invoice;',
         },
       },
+      {
+        conceptTag: 'MIN and MAX',
+        heading: 'MIN and MAX',
+        explanation: [
+          'MIN(column) and MAX(column) are the same aggregation family as SUM and COUNT — they scan a whole column and return its single smallest or largest value. No GROUP BY needed when the answer is one row for the entire table.',
+          'They read naturally side by side as a range check: is anything in this column suspiciously outside the bounds MIN and MAX report?',
+        ],
+        example: {
+          description: 'The cheapest and most expensive invoice on record.',
+          sql: 'SELECT MIN(Total) AS SmallestInvoice, MAX(Total) AS LargestInvoice\nFROM Invoice;',
+        },
+      },
     ],
     closing: [
-      "GROUP BY/SUM, WHERE-vs-HAVING, and the three COUNTs — that covers the Scoreboard Core.",
-      'Three terminals in there are all some shape of "group it, then measure it." Go get the real numbers back.',
+      "GROUP BY/SUM, WHERE-vs-HAVING, the three COUNTs, and MIN/MAX — that covers the Scoreboard Core.",
+      'Most of the terminals in there are some shape of "group it, then measure it." Go get the real numbers back.',
     ],
   },
   3: {
@@ -307,10 +343,22 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
           sql: "SELECT strftime('%Y-%m', InvoiceDate) AS InvoiceMonth, SUM(Total) AS Revenue\nFROM Invoice\nGROUP BY strftime('%Y-%m', InvoiceDate)\nORDER BY Revenue DESC;",
         },
       },
+      {
+        conceptTag: 'Date arithmetic with strftime',
+        heading: 'Date arithmetic',
+        explanation: [
+          "strftime('%J', date) converts a date into a Julian day number — a plain count of days — instead of extracting a piece like year or month. Subtract two of them and the result is the number of days between those dates.",
+          "That's SQLite's version of what other engines call date_diff(): no dedicated function, just two strftime('%J', ...) calls and a minus sign.",
+        ],
+        example: {
+          description: 'Days between the earliest and latest invoice on record.',
+          sql: "SELECT strftime('%J', MAX(InvoiceDate)) - strftime('%J', MIN(InvoiceDate)) AS DaysSpanned\nFROM Invoice;",
+        },
+      },
     ],
     closing: [
-      "strftime to extract a piece of a date, then group by that same expression — that's the whole Chronometer Wing.",
-      "Two terminals, same trick at two different grains: year, then year-month. Go get the timeline moving again.",
+      "strftime to extract a piece of a date, group by that same expression, and subtract two Julian day numbers for a duration — that's the whole Chronometer Wing.",
+      "Three terminals, same core trick applied a few different ways. Go get the timeline moving again.",
     ],
   },
   6: {
@@ -354,7 +402,7 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
     sector: 7,
     eyebrowPrefix: 'MENTOR CHANNEL · SECTOR 7 PRIMER',
     mentorIntro: [
-      'The Shared Vault is about reuse — combining result sets, and saving a query so nobody rebuilds it by hand. Two terminals, both about not repeating work.',
+      'The Shared Vault is about reuse — combining result sets, and saving a query so nobody rebuilds it by hand. Five terminals, all about not repeating work.',
     ],
     concepts: [
       {
@@ -367,6 +415,42 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
         example: {
           description: 'Combining two sources of "country" that might overlap.',
           sql: "SELECT Country FROM Customer\nUNION\nSELECT BillingCountry AS Country FROM Invoice;",
+        },
+      },
+      {
+        conceptTag: 'UNION ALL keeps duplicates',
+        heading: 'UNION ALL, on purpose',
+        explanation: [
+          "Same combine as UNION, minus the cleanup — UNION ALL keeps every row, duplicates included. That's not a shortcut taken by accident; it's the right call whenever duplicates can't happen, or when the count of them is itself the signal.",
+          "Wrap a UNION ALL in a subquery and COUNT(*) it to get a raw volume number — every mention, not just every unique one.",
+        ],
+        example: {
+          description: 'Total country mentions across both sources, duplicates included.',
+          sql: 'SELECT COUNT(*) AS TotalMentions\nFROM (\n  SELECT Country FROM Customer\n  UNION ALL\n  SELECT BillingCountry AS Country FROM Invoice\n);',
+        },
+      },
+      {
+        conceptTag: 'INTERSECT',
+        heading: 'INTERSECT',
+        explanation: [
+          "INTERSECT keeps only the rows that show up in both result sets — a stricter ask than UNION's \"combine everything.\" Same column-count and type rules apply.",
+          'Reach for it when the real question is "what\'s true on both sides at once" — which markets are active in two different data sources, not just present in either one.',
+        ],
+        example: {
+          description: 'Customer home countries that also generated a 2011 invoice.',
+          sql: "SELECT Country FROM Customer\nINTERSECT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011';",
+        },
+      },
+      {
+        conceptTag: 'EXCEPT and order-sensitivity',
+        heading: 'EXCEPT — and order matters',
+        explanation: [
+          '"A EXCEPT B" starts from A\'s rows and removes anything that also appears in B — it\'s the set-operator version of a LEFT JOIN ... IS NULL anti-join, without needing a join.',
+          'Unlike UNION or INTERSECT, order changes the answer here: "A EXCEPT B" and "B EXCEPT A" are different questions. Which side goes first is a real decision, not a style choice.',
+        ],
+        example: {
+          description: 'Customer home countries with zero invoices billed in 2011.',
+          sql: "SELECT Country FROM Customer\nEXCEPT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011';",
         },
       },
       {
@@ -383,7 +467,7 @@ export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
       },
     ],
     closing: [
-      'UNION to combine sets, a view to save a query for reuse — that\'s the Shared Vault.',
+      'UNION, UNION ALL, INTERSECT, and EXCEPT to combine or compare sets, a view to save a query for reuse — that\'s the Shared Vault.',
       "One terminal in there wants two statements, same as the Foundry's temp-table terminal. Same workspace, different keyword.",
     ],
   },

@@ -84,6 +84,21 @@ export const glossary: GlossaryEntry[] = [
     conceptTags: ['LIKE and LOWER for text search'],
   },
   {
+    id: 'range-and-list-filters',
+    title: 'BETWEEN and IN',
+    sectors: [1],
+    summary: 'BETWEEN checks an inclusive range in one shot; IN checks a value against a whole list at once.',
+    explanation: [
+      'BETWEEN low AND high keeps a numeric (or date) value inside a range, both ends included — Total BETWEEN 15 AND 20 is shorthand for Total >= 15 AND Total <= 20, just easier to read and harder to get the boundary wrong on.',
+      "IN checks a value against a whole set of options at once — WHERE Country IN ('Chile', 'Hungary', 'Norway') replaces a chain of OR'd equality checks with one clean list. Both read like a single condition even though each is doing the work of several.",
+    ],
+    example: {
+      description: 'Invoices priced between $15 and $20, billed from one of three specific countries.',
+      sql: "SELECT InvoiceId, BillingCountry, Total\nFROM Invoice\nWHERE Total BETWEEN 15 AND 20\n  AND BillingCountry IN ('Chile', 'Hungary', 'Norway');",
+    },
+    conceptTags: ['BETWEEN for range filters', 'IN for matching against a list'],
+  },
+  {
     id: 'calculated-columns',
     title: 'Calculated columns, aliases, and ROUND',
     sectors: [1],
@@ -153,6 +168,21 @@ export const glossary: GlossaryEntry[] = [
       'COUNT(DISTINCT ...) and AI verification',
       'Multi-metric aggregation with COUNT(DISTINCT ...)',
     ],
+  },
+  {
+    id: 'min-max',
+    title: 'MIN and MAX',
+    sectors: [2],
+    summary: 'Same aggregation family as SUM and COUNT — MIN/MAX collapse a column to its smallest or largest value.',
+    explanation: [
+      "MIN(column) and MAX(column) scan a whole column and return the single smallest or largest value in it. Like SUM and COUNT, they collapse many rows into one number; unlike GROUP BY's per-bucket summaries, a bare MIN/MAX with no GROUP BY answers for the entire table at once.",
+      'They read naturally side by side — "smallest and largest in one row" — which makes them the standard way to sanity-check a range: is anything in this column suspiciously outside the expected bounds?',
+    ],
+    example: {
+      description: 'The cheapest and most expensive invoice on record.',
+      sql: 'SELECT MIN(Total) AS SmallestInvoice, MAX(Total) AS LargestInvoice\nFROM Invoice;',
+    },
+    conceptTags: ['MIN and MAX'],
   },
   {
     id: 'joins',
@@ -231,6 +261,21 @@ export const glossary: GlossaryEntry[] = [
     conceptTags: ['SQLite dates, strftime', 'Dates and grouping by a derived value', 'Scoping a claim to a real time window'],
   },
   {
+    id: 'date-arithmetic',
+    title: 'Date arithmetic with strftime',
+    sectors: [5],
+    summary: "strftime('%J', date) converts a date to a day number, so subtracting two of them gives you the days between.",
+    explanation: [
+      "strftime('%J', date) doesn't just extract a piece of a date — with the %J format it converts the whole date into a Julian day number, a single count of days. Subtract two of them and the result is the number of days between those two dates.",
+      "This is SQLite's version of what other engines call date_diff(date1, date2): there's no dedicated difference function, but two strftime('%J', ...) calls and a minus sign do the same job. Adding or subtracting a plain number of days works the same way — strftime('%J', date) + 10 lands 10 days later.",
+    ],
+    example: {
+      description: 'Days between the earliest and latest invoice on record.',
+      sql: "SELECT ROUND(strftime('%J', MAX(InvoiceDate)) - strftime('%J', MIN(InvoiceDate)), 0) AS DaysSpanned\nFROM Invoice;",
+    },
+    conceptTags: ['Date arithmetic with strftime'],
+  },
+  {
     id: 'case',
     title: 'CASE expressions',
     sectors: [6],
@@ -273,8 +318,38 @@ export const glossary: GlossaryEntry[] = [
       description: 'Combining two sources of "country" that might overlap.',
       sql: "SELECT BillingCountry AS Country FROM Invoice WHERE BillingCountry = 'USA'\nUNION\nSELECT Country FROM Customer WHERE Country = 'USA';\n-- UNION collapses this to one 'USA' row even though both sides matched.",
     },
-    conceptTags: ['UNION vs. UNION ALL'],
+    conceptTags: ['UNION vs. UNION ALL', 'UNION ALL keeps duplicates'],
     visualId: 'union-vs-union-all',
+  },
+  {
+    id: 'intersect',
+    title: 'INTERSECT',
+    sectors: [7],
+    summary: 'Keeps only the rows that show up in both result sets — real overlap, not a combined list.',
+    explanation: [
+      'INTERSECT compares two result sets and keeps only the rows that appear in both, same rule as UNION about matching column counts and compatible types. A row that only shows up on one side never makes it into the result.',
+      'Reach for it when the question is genuinely "what\'s true on both sides at once" — which customers are in both segments, which products sold in both regions — not "combine everything" (that\'s UNION) and not "what\'s in one but not the other" (that\'s EXCEPT).',
+    ],
+    example: {
+      description: 'Customer home countries that also generated a 2011 invoice.',
+      sql: "SELECT Country FROM Customer\nINTERSECT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011';",
+    },
+    conceptTags: ['INTERSECT'],
+  },
+  {
+    id: 'except',
+    title: 'EXCEPT',
+    sectors: [7],
+    summary: 'Rows in the first result set but not the second — and unlike UNION or INTERSECT, the order you write it in changes the answer.',
+    explanation: [
+      'EXCEPT starts from the first SELECT\'s result and removes anything that also appears in the second — "in A, but not in B." It is the set-operator version of the LEFT JOIN ... IS NULL anti-join pattern, just without needing a join at all.',
+      'Order matters here in a way it doesn\'t for UNION or INTERSECT: "A EXCEPT B" and "B EXCEPT A" are two different questions with two different answers, since which side you start from decides what counts as missing. Swapping the two SELECTs is not a stylistic choice — it changes the result.',
+    ],
+    example: {
+      description: 'Customer home countries with zero invoices billed in 2011.',
+      sql: "SELECT Country FROM Customer\nEXCEPT\nSELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011';",
+    },
+    conceptTags: ['EXCEPT and order-sensitivity'],
   },
   {
     id: 'views',
