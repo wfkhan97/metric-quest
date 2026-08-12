@@ -443,14 +443,16 @@ background, consistent canvas size. Tone: playful retro-arcade villain, not
 horror -- a classic, campy 8-bit boss character, not something frightening.
 ```
 
-### Step 3b — Sector 8/9 confrontation cinematic (§A8 Phase 2, requested 2026-08-09)
+### Step 3b — Sector 8/9 confrontation cinematic (§A8 Phase 2, requested 2026-08-09; placeholder art wired 2026-08-12)
 
-Not commissioned yet — playtesting confirmed `m8-1` (ROGUE.exe's first
-direct appearance) and the Sector 9 finale don't currently land as
-confrontations; they reuse the same static aside/transition treatment as
-every other mission. A CSS-only escalation ships first without this art
-(see BUILD_ORDER.md P4.4), so this is not blocking — send this whenever a
-"real" cinematic upgrade is wanted:
+Not commissioned yet, but **no longer blocking on nothing** — a full
+8-panel placeholder set (composited from the existing calm/corrupted
+sprites by `codex/mentor-system-character`) is wired in: a Sector 8
+entrance beat plays ROGUE.exe's first direct appearance on entering the
+sector, and a post-campaign finale beat plays its defeat after the last
+mission. See `docs/BACKLOG.md`'s Design asset tracker for exactly where.
+Sending this prompt now replaces real exports panel-for-panel — send
+whenever a "real" cinematic upgrade is wanted:
 
 ```text
 Design a short multi-panel confrontation sequence for Metric Quest, in the
@@ -605,13 +607,13 @@ signal-restored).
 ### Before Step 8 — one already-drafted prompt still waiting to be sent
 
 - **Step 3b** (Sector 8/9 confrontation cinematic) — ready to copy-paste as-is,
-  still not sent. `codex/mentor-system-character` has since delivered 8
-  composited placeholder panels for this exact moment (see
-  `src/assets/cutscenes/README.md`) — one is already wired into m8-1
-  (`RogueSprite`'s new `confronting` state). Sending Step 3b now would
-  replace these placeholders with real exports, not start from nothing —
-  see the Design asset tracker in `docs/BACKLOG.md` for exactly what's wired
-  vs. still pending.
+  still not sent. **Update (2026-08-12):** all 8 composited placeholder
+  panels `codex/mentor-system-character` delivered are now fully wired —
+  `rogue-entrance-01..04` drive a new Sector 8 entrance beat and
+  `rogue-final-01..04` drive a new post-campaign finale beat (see
+  `docs/BACKLOG.md`'s Design asset tracker for exactly where). Sending
+  Step 3b now would replace all 8 placeholders with real exports, not
+  start from nothing.
 - ~~Step 3c~~ ("Good AI" mentor character) — **done, see Step 3c below.**
   Real art for both states landed and got wired 2026-08-12; no prompt left
   to send here.
