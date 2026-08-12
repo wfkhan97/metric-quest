@@ -158,6 +158,17 @@ export function App() {
     setView('cutscene');
   }
 
+  // Same shape as handleReplayOpening — lets a player who declined (or
+  // never saw) ECHO's pitch revisit it and change their mind, without
+  // digging through "Review SQL primers" (which only lists sector primers,
+  // not the intro itself).
+  function handleReplayMentorIntro() {
+    setPendingMission(null);
+    setPendingBeat(mentorIntroBeat);
+    setCutsceneSkippable(true);
+    setView('cutscene');
+  }
+
   function handleReplayTutorial() {
     setPendingMission(null);
     setPendingBeat(terminalOrientationBeat);
@@ -395,6 +406,7 @@ export function App() {
         onEditAvatar={handleEditAvatar}
         onReplayOpening={hasSeenOpening(progress) ? handleReplayOpening : undefined}
         onReplayTutorial={handleReplayTutorial}
+        onReplayMentorIntro={hasSeenMentorIntro(progress) ? handleReplayMentorIntro : undefined}
         onActiveProgressChange={handleActiveProgressChange}
         learnSqlMode={isLearnSqlModeOn(progress)}
         onToggleLearnSqlMode={handleToggleLearnSqlMode}

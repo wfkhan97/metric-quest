@@ -278,6 +278,22 @@ describe('Mentor-intro choice', () => {
 
     await user.click(screen.getByRole('button', { name: 'Accept mentor-intro' }));
     expect(screen.getByRole('button', { name: 'Learn SQL Mode: On' })).toBeTruthy();
+    // Seen either way (accept or decline) — Home offers a way back to ECHO's pitch.
+    expect(screen.getByRole('button', { name: 'Meet ECHO again' })).toBeTruthy();
+  });
+
+  it('offers Meet ECHO again on Home once seen, and replaying it re-shows the same choice', async () => {
+    render(<App />);
+    const user = userEvent.setup();
+    await reachMentorIntro(user);
+    await user.click(screen.getByRole('button', { name: 'Decline mentor-intro' }));
+
+    await user.click(screen.getByRole('button', { name: 'Meet ECHO again' }));
+    expect(screen.getByLabelText('Cutscene mentor-intro')).toBeTruthy();
+
+    await user.click(screen.getByRole('button', { name: 'Accept mentor-intro' }));
+    expect(screen.getByRole('heading', { name: 'Incident brief' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Learn SQL Mode: On' })).toBeTruthy();
   });
 
   it('declining leaves Learn SQL Mode off', async () => {

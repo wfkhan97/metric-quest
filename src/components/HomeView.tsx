@@ -20,6 +20,8 @@ type HomeViewProps = {
   onReplayOpening?: () => void;
   /** Always available once Home is reached, including on older saves. */
   onReplayTutorial: () => void;
+  /** Undefined until the mentor-intro beat has been seen once — nothing to replay yet. */
+  onReplayMentorIntro?: () => void;
   /** Called after a save-slot switch, create, or delete-of-active changes
    * which progress is active — App owns `progress` state and needs to sync. */
   onActiveProgressChange: (progress: Progress) => void;
@@ -38,6 +40,7 @@ export function HomeView({
   onEditAvatar,
   onReplayOpening,
   onReplayTutorial,
+  onReplayMentorIntro,
   onActiveProgressChange,
   learnSqlMode,
   onToggleLearnSqlMode,
@@ -211,6 +214,11 @@ export function HomeView({
             <button type="button" className="link-button" onClick={onReplayTutorial}>
               Review controls
             </button>
+            {onReplayMentorIntro && (
+              <button type="button" className="link-button" onClick={onReplayMentorIntro}>
+                Meet ECHO again
+              </button>
+            )}
             <button type="button" className="link-button" onClick={onToggleLearnSqlMode}>
               Learn SQL Mode: {learnSqlMode ? 'On' : 'Off'}
             </button>
