@@ -59,9 +59,10 @@ export function buildSectorPrimerBeat(primer: SectorPrimer): Beat {
 // (already verified against the local dataset — see AI_WORKFLOW.md) and
 // rewritten for this different voice/purpose, not copied verbatim.
 //
-// Authored incrementally, same pattern as sectorBeats — only Sector 1 exists
-// so far (Stage 1 of the Learn SQL Mode plan). A sector with no entry here
-// transitions exactly as it does today, primer or not.
+// All 9 sectors are authored below (Learn SQL Mode Stages 1 and 3). Kept as
+// a sparse Partial<Record<...>>, same pattern as sectorBeats, so a future
+// sector added without a primer entry here just transitions exactly as it
+// does today rather than erroring.
 export const sectorPrimers: Partial<Record<number, SectorPrimer>> = {
   1: {
     sector: 1,
