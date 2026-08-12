@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
+import { MentorSprite } from './MentorSprite';
 import { RogueSprite } from './RogueSprite';
 import { TutorialMissionPreview } from './TutorialMissionPreview';
 import { defaultAvatar } from '../lib/avatarOptions';
@@ -14,6 +15,8 @@ type CutsceneViewProps = {
   isMusicMuted: boolean;
   onToggleMusicMute: () => void;
   onFinish: () => void;
+  /** Called when the player picks either option on a panel.choice — fires before the normal Continue/finish advance. */
+  onChoice?: (accepted: boolean) => void;
 };
 
 const avatarMotionClass: Record<string, string> = {
@@ -33,7 +36,7 @@ const rogueMotionClass: Record<string, string> = {
 // panelIndex to 0 for the new beat; there is deliberately no effect that
 // calls setPanelIndex(0) on a `beat` change, since that pattern trips the
 // react-hooks "no setState synchronously in an effect" rule.
-export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMusicMute, onFinish }: CutsceneViewProps) {
+export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMusicMute, onFinish, onChoice }: CutsceneViewProps) {
   const [panelIndex, setPanelIndex] = useState(0);
   const continueButtonRef = useRef<HTMLButtonElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -133,6 +136,11 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
     setPanelIndex((index) => index + 1);
   }
 
+  function handleChoice(accepted: boolean) {
+    onChoice?.(accepted);
+    handleContinue();
+  }
+
   const continueLabel = panel.continueLabel ?? (isLastPanel ? 'Continue' : 'Next');
 
   if (isBoot) {
@@ -215,11 +223,16 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
         {panel.whiteoutTransition && <div className="cutscene-whiteout" aria-hidden="true" />}
         <p className="eyebrow">{panel.eyebrow}</p>
         <h1 id="cutscene-title">{panel.heading}</h1>
-        {(panel.showAvatar || panel.rogueState) && (
+        {(panel.showAvatar || panel.rogueState || panel.mentorState) && (
           <div className="sector-sprite">
             {panel.rogueState && (
               <div className={rogueMotionClass[panel.rogueMotion ?? 'entrance']}>
                 <RogueSprite state={panel.rogueState} />
+              </div>
+            )}
+            {panel.mentorState && (
+              <div className="phase-slide">
+                <MentorSprite state={panel.mentorState} />
               </div>
             )}
             {panel.showAvatar && (
@@ -245,13 +258,37 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
             </p>
           ))}
         </div>
+        {panel.codeExample && (
+          <div className="cutscene-code-example">
+            <p className="subtle">{panel.codeExample.description}</p>
+            <pre>
+              <code>{panel.codeExample.sql}</code>
+            </pre>
+          </div>
+        )}
         <div className="actions">
-          <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
-            {continueLabel}
-          </button>
+          {panel.choice ? (
+            <>
+              <button type="button" className="primary" onClick={() => handleChoice(true)} ref={continueButtonRef}>
+                {panel.choice.yesLabel}
+              </button>
+              <button type="button" onClick={() => handleChoice(false)}>
+                {panel.choice.noLabel}
+              </button>
+            </>
+          ) : (
+            <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
+              {continueLabel}
+            </button>
+          )}
           {hasAnyAudio && (
             <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
               {isMusicMuted ? 'Unmute music' : 'Mute music'}
+            </button>
+          )}
+          {skippable && beat.skipLabel && (
+            <button type="button" className="link-button" onClick={onFinish}>
+              {beat.skipLabel}
             </button>
           )}
         </div>

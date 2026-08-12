@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
+import { PrimerReviewPanel } from './PrimerReviewPanel';
 import { ProgressBar } from './ProgressBar';
 import { ProgressSummaryPanel } from './ProgressSummaryPanel';
 import { SaveSlotPanel } from './SaveSlotPanel';
@@ -19,9 +20,17 @@ type HomeViewProps = {
   onReplayOpening?: () => void;
   /** Always available once Home is reached, including on older saves. */
   onReplayTutorial: () => void;
+  /** Undefined until the mentor-intro beat has been seen once — nothing to replay yet. */
+  onReplayMentorIntro?: () => void;
   /** Called after a save-slot switch, create, or delete-of-active changes
    * which progress is active — App owns `progress` state and needs to sync. */
   onActiveProgressChange: (progress: Progress) => void;
+  /** Learn SQL Mode (docs/BACKLOG.md item 13 Part B1): off by default. */
+  learnSqlMode: boolean;
+  onToggleLearnSqlMode: () => void;
+  /** Sector numbers whose mentor primer has already played once — the only ones "Review SQL primers" can replay. */
+  seenPrimerSectors: number[];
+  onReviewPrimer: (sector: number) => void;
 };
 
 export function HomeView({
@@ -31,14 +40,21 @@ export function HomeView({
   onEditAvatar,
   onReplayOpening,
   onReplayTutorial,
+  onReplayMentorIntro,
   onActiveProgressChange,
+  learnSqlMode,
+  onToggleLearnSqlMode,
+  seenPrimerSectors,
+  onReviewPrimer,
 }: HomeViewProps) {
   const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
   const [isSaveSlotsOpen, setIsSaveSlotsOpen] = useState(false);
   const [isProgressSummaryOpen, setIsProgressSummaryOpen] = useState(false);
+  const [isPrimerReviewOpen, setIsPrimerReviewOpen] = useState(false);
   const glossaryButtonRef = useRef<HTMLButtonElement>(null);
   const saveSlotsButtonRef = useRef<HTMLButtonElement>(null);
   const progressSummaryButtonRef = useRef<HTMLButtonElement>(null);
+  const primerReviewButtonRef = useRef<HTMLButtonElement>(null);
 
   // Monet's OAuth callback redirects back here with ?connected=<provider>
   // once the connection is live (the tutor itself lives in MissionView, not
@@ -117,6 +133,20 @@ export function HomeView({
         />
       )}
 
+      {isPrimerReviewOpen && (
+        <PrimerReviewPanel
+          sectors={seenPrimerSectors}
+          onSelect={(sector) => {
+            setIsPrimerReviewOpen(false);
+            onReviewPrimer(sector);
+          }}
+          onClose={() => {
+            setIsPrimerReviewOpen(false);
+            primerReviewButtonRef.current?.focus();
+          }}
+        />
+      )}
+
       <div id="home-main" className="home-content">
         <section className="panel intro-panel" aria-labelledby="brief-title">
           <h2 id="brief-title">Incident brief</h2>
@@ -184,6 +214,19 @@ export function HomeView({
             <button type="button" className="link-button" onClick={onReplayTutorial}>
               Review controls
             </button>
+            {onReplayMentorIntro && (
+              <button type="button" className="link-button" onClick={onReplayMentorIntro}>
+                Meet ECHO again
+              </button>
+            )}
+            <button type="button" className="link-button" onClick={onToggleLearnSqlMode}>
+              Learn SQL Mode: {learnSqlMode ? 'On' : 'Off'}
+            </button>
+            {seenPrimerSectors.length > 0 && (
+              <button type="button" className="link-button" onClick={() => setIsPrimerReviewOpen(true)} ref={primerReviewButtonRef}>
+                Review SQL primers
+              </button>
+            )}
           </div>
         </section>
 

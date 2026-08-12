@@ -1,3 +1,4 @@
+import { type MentorState } from '../components/MentorSprite';
 import { type RogueState } from '../components/RogueSprite';
 import officeCalm from '../assets/backgrounds/office-calm.jpg';
 import officeAlarm from '../assets/backgrounds/office-alarm.jpg';
@@ -31,6 +32,13 @@ export type BeatPanel = {
   rogueState?: RogueState;
   /** Defaults to 'entrance' (the existing slide-in). 'dash' is a fast unstoppable streak, used when ROGUE.exe doesn't pause to interact with the player. */
   rogueMotion?: RogueMotion;
+  /** ROGUE.exe's friendly counterpart — used by the mentor-intro beat and
+   * Learn SQL Mode's per-sector primers. Always enters the same way
+   * (`phase-slide`), so unlike rogueState there is no separate motion prop. */
+  mentorState?: MentorState;
+  /** A short worked SQL example, rendered as a styled code block under the
+   * copy — used by Learn SQL Mode's per-sector primer panels (src/content/primers.ts). */
+  codeExample?: { description: string; sql: string };
   /** A one-time full-screen teal wipe over this panel, standing in for a hard cut/transition rather than a scene. */
   whiteoutTransition?: boolean;
   /**
@@ -44,10 +52,17 @@ export type BeatPanel = {
   sfxSrc?: string;
   /** Attribution text, shown only while a CC-BY (not CC0) track is playing. */
   creditLine?: string;
-  /** Overrides the default "Next" (or "Continue" on a beat's last panel). */
+  /** Overrides the default "Next" (or "Continue" on a beat's last panel). Ignored when `choice` is set. */
   continueLabel?: string;
   /** Current region in the non-interactive terminal-orientation schematic. */
   tutorialFocus?: TutorialFocus;
+  /**
+   * Replaces the single Continue button with a real two-way choice — the
+   * panel's copy should read as the actual question being asked. Picking
+   * either option calls CutsceneView's `onChoice` (if provided) and then
+   * advances exactly like a normal Continue click. `frame` layout only.
+   */
+  choice?: { yesLabel: string; noLabel: string };
 };
 
 export type Beat = {
@@ -281,6 +296,45 @@ export const terminalOrientationBeat: Beat = {
         'Brief. Schema. Editor. Run. Inspect. Adjust. That is the whole terminal loop. You can replay this orientation from the main screen.',
       ],
       continueLabel: 'Continue',
+    },
+  ],
+};
+
+/**
+ * Learn SQL Mode (BACKLOG.md item 13 Part B1, scoped in this session's
+ * planning doc): the "meet the mentor" onboarding beat. Plays once, right
+ * after the player's first-ever completion of openingBeat (chained through
+ * terminalOrientationBeat if that also plays) — see App.tsx's
+ * `offerMentorIntro`. Purely narrative and static; introduces Learn SQL
+ * Mode without forcing it on, and does not itself flip the setting — the
+ * player toggles it from Home afterward.
+ *
+ * Mentor name "ECHO" is a first-draft placeholder, trivial to rename later
+ * (this is the only file that spells it out in dialogue) — no character art
+ * exists yet either, see MentorSprite.tsx's placeholder glyph.
+ */
+export const mentorIntroBeat: Beat = {
+  id: 'mentor-intro',
+  panels: [
+    {
+      eyebrow: 'Unknown signal · not ROGUE.exe',
+      heading: "Okay. You're not supposed to be in here.",
+      mentorState: 'calm',
+      copy: [
+        "A second signal cuts through the static, calmer than the first. Not ROGUE.exe.",
+        '"...Okay. You\'re not supposed to be in here, and neither, technically, am I. Call me ECHO — I keep what\'s left of this system standing upright."',
+        '"You\'re new. First day, and somehow you also drew \'debug a rogue AI\' as your onboarding task. Rough."',
+      ],
+    },
+    {
+      eyebrow: 'Unknown signal · not ROGUE.exe',
+      heading: "I can't fight it for you.",
+      mentorState: 'explaining',
+      copy: [
+        '"I can\'t fight ROGUE.exe for you — has to be your query, or the mainframe won\'t accept it as a real fix. But I can walk you through the SQL you\'ll need before you hit a locked door, sector by sector, if you want it."',
+        '"Your call, and not a permanent one — flip Learn SQL Mode on or off from the main terminal any time, whatever you pick right now."',
+      ],
+      choice: { yesLabel: 'Yes — walk me through it', noLabel: "I've got this" },
     },
   ],
 };
