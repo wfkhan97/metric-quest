@@ -480,17 +480,25 @@ background, consistent canvas size, same palette as the rest of the set.
 Export each panel as an individual PNG file.
 ```
 
-### Step 3c — "Good AI" mentor character (BACKLOG.md item 3, art-only — not approved to build)
+### Step 3c — "Good AI" mentor character (art-only, not commissioned yet)
 
 Not commissioned yet. This is the friendly counterpart to ROGUE.exe that
-`docs/BACKLOG.md` item 3 (the Monet.gg-connected in-game tutor) and
 `docs/GAME_DESIGN_BRIEF.md` §A3's "optional, later" mentor/sysadmin voice
-both reserve space for. **Requesting this art does not approve or start
-building item 3** — the tutor feature itself is still blocked on an
-explicit product-owner approval decision per `AGENTS.md`'s external-AI-call
-rule, and this prompt doesn't touch that. It's safe to send whenever you
-want the character designed, the same way Step 3b's cinematic art was
-drafted ahead of its own build being unblocked.
+reserves space for. It now has two in-game uses: **Learn SQL Mode**
+(`docs/BACKLOG.md` item 13 Part B1, built 2026-08-11/12 on branch
+`claude/learn-sql-mode`) gives this character a narrative role and a
+first-draft working name, **ECHO**, delivered today via
+`src/components/MentorSprite.tsx`'s placeholder glyph — send this prompt
+whenever the real art should replace it, no code changes needed beyond
+adding an `imageUrl` per state. It's also still the character
+`docs/BACKLOG.md` item 3 (the Monet.gg-connected in-game tutor) reserves
+this same slot for, should that ever get named/fronted by a character
+too — **requesting this art does not approve or resume building item 3**,
+which stays gated per its own status line. Safe to send any time, the
+same way Step 3b's cinematic art was drafted ahead of its own build
+being unblocked. Note ECHO's name isn't locked in — if you want it
+changed, it's one string to edit in `src/content/beats.ts` and
+`src/content/primers.ts`, not a re-scoping.
 
 ```text
 Design 1-2 illustrations of a friendly system-mentor character for Metric

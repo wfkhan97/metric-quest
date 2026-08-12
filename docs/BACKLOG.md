@@ -224,18 +224,22 @@ scoped as its own item, phased behind the same approval gate as item 3.
 
 ## 3. Player-connected AI subscriptions → in-game SQL tutor ("good AI" character)
 
-### Status: built, then paused (2026-08-11) — on branch `claude/monet-oauth-relay`, not merged
-Approved and built this session (see "Decision made" below), but the
-product owner hit a recurring device-code authorization error trying to
-complete a live end-to-end connect test and paused here rather than debug
-it live. **Treat this as a future enhancement, not active work:** the
-code is saved on `claude/monet-oauth-relay` (pushed to origin) and the
-checks (lint/typecheck/tests/build) all pass, but it is not merged, not
-deployed, and not currently being pursued. Do not resume building,
-testing, or merging this without a fresh explicit go-ahead — if picking
-up planned work from this file, treat item 3 as off the table for now,
-the same way `BUILD_ORDER.md`'s Wave 3 used to say before this session,
-just for a different reason (paused mid-build, not pre-approval).
+### Status: built and merged to `main`, but gated off for the current release (corrected 2026-08-12)
+Approved and built this session (see "Decision made" below). **Correction:**
+this line previously said "built, then paused... on branch
+`claude/monet-oauth-relay`, not merged" — that went stale. Verified
+directly: `claude/monet-oauth-relay` is an ancestor of `main`, and
+`api/chat.ts`, `api/oauth/*`, `api/_lib/monet.ts`, and
+`src/components/AiTutorPanel.tsx` all exist on `main` today, wired into
+`MissionView.tsx`. What's actually true: it's fully built and merged,
+but explicitly feature-flagged off for tonight's production release
+(`AI_TUTOR_ENABLED = false` in `MissionView.tsx`, plus `.vercelignore`
+excluding `api/` from the deploy entirely) because
+`MONET_CLIENT_ID`/`MONET_CLIENT_SECRET` aren't configured yet — see the
+"Gate the AI tutor off for tonight's release" commit. **Treat this as
+built-but-dormant, not active work:** flipping `AI_TUTOR_ENABLED` back
+on and un-ignoring `api/` needs those secrets configured and the smoke
+test re-run first — do not do either without a fresh explicit go-ahead.
 
 This was the one idea that structurally conflicted with `AGENTS.md`'s "no
 accounts, servers, external AI calls... without explicit approval" rule.
@@ -1354,15 +1358,44 @@ answer... materially bigger feature, out of scope") — restated here as
 the single highest-leverage net-new-learner gap: today the game assumes a
 player already knows what `SELECT`/`FROM`/`WHERE` mean before Mission
 1.1. A true beginner has no on-ramp before being handed a graded
-business question. **Needs a product-owner scoping decision** (how much
-primer, skippable for the current SQL-literate class or not, whether it's
-static copy or interactive) before it's buildable — this is a curriculum
-design call, not an engineering one. **Split 2026-08-11:** the narrower
+business question. **Split 2026-08-11:** the narrower
 "orient the player to the screen and controls, don't teach SQL concepts"
 version of this idea has been opened as its own item 14 below, since it's
 scopable/buildable independent of the bigger curriculum question this
 entry is actually about. B1 stays open as the (still bigger, still gated)
 "actually teach SQL basics" idea — item 14 is not a substitute for it.
+
+**Status: built as "Learn SQL Mode," 2026-08-11/12, on branch
+`claude/learn-sql-mode` (not yet merged to `main`).** All three open
+questions this entry originally left gated are now resolved, per direct
+product-owner conversation:
+- **How much primer:** every sector (1-9), 2-4 concepts each, one short
+  worked SQL example per concept.
+- **Skippable for the current SQL-literate class:** yes — the whole
+  feature is an opt-in **Learn SQL Mode** toggle on Home, off by default,
+  so the class's already-shipped experience is unaffected unless a
+  player turns it on themselves.
+- **Static copy or interactive:** static, hand-authored copy, same
+  architecture pattern as the glossary (item 1) — no live AI call, no new
+  `AGENTS.md` exception needed. Explicitly does not depend on or extend
+  item 3's Monet-connected tutor.
+
+New narrative piece: a one-time "meet the mentor" onboarding beat
+introduces a friendly counterpart to ROGUE.exe (working name **ECHO**,
+placeholder pending a real product decision — trivial to rename, it's
+only spelled out in `src/content/beats.ts`'s `mentorIntroBeat`) who
+offers the primer track without forcing it. Content lives in
+`src/content/primers.ts` (`sectorPrimers`, one entry per sector, built
+into `Beat`s via `buildSectorPrimerBeat`); rendering reuses the existing
+`CutsceneView`/`Beat`/`BeatPanel` system with two small additive fields
+(`mentorState`, `codeExample`) rather than a new component. New
+`MentorSprite` component ships with a placeholder glyph — no character
+art commissioned yet (see the corrected note on `docs/GAME_DESIGN_BRIEF.md`
+§B Step 3c). Full design/rationale in the session's plan doc
+(`/Users/WK/.claude/plans/fluttering-coalescing-squid.md`, referenced
+here since it isn't part of this repo). B2 (ungraded practice reps) and
+in-cutscene branching choice were both explicitly scoped out of this
+pass — see the plan doc's "Deferred" section if picking either up later.
 
 #### B2. Optional low-stakes "practice reps" before each graded mission
 For a true beginner, 25 graded missions across filter → aggregation →
