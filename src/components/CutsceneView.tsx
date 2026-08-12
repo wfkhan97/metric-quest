@@ -3,6 +3,8 @@ import { AvatarPreview } from './AvatarPreview';
 import { MentorSprite } from './MentorSprite';
 import { RogueSprite } from './RogueSprite';
 import { TutorialMissionPreview } from './TutorialMissionPreview';
+import nameplateEcho from '../assets/ui/nameplate-echo.png';
+import nameplateRogue from '../assets/ui/nameplate-rogue.png';
 import { defaultAvatar } from '../lib/avatarOptions';
 import { type AvatarConfig } from '../lib/progress';
 import { type Beat } from '../content/beats';
@@ -227,12 +229,22 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
           <div className="sector-sprite">
             {panel.rogueState && (
               <div className={rogueMotionClass[panel.rogueMotion ?? 'entrance']}>
-                <RogueSprite state={panel.rogueState} />
+                <RogueSprite
+                  state={panel.rogueState}
+                  // The entrance/final/named cinematic panels are full
+                  // illustrations (src/assets/cutscenes/README.md), not the
+                  // small reusable calm/corrupted icon -- shown bigger so
+                  // detail survives.
+                  className={panel.rogueState === 'calm' || panel.rogueState === 'corrupted' ? undefined : 'rogue-sprite-cinematic'}
+                />
+                {/* `named` already bakes its own nameplate into the image. */}
+                {panel.rogueState !== 'named' && <img className="cutscene-nameplate" src={nameplateRogue} alt="" aria-hidden="true" />}
               </div>
             )}
             {panel.mentorState && (
               <div className="phase-slide">
                 <MentorSprite state={panel.mentorState} />
+                <img className="cutscene-nameplate" src={nameplateEcho} alt="" aria-hidden="true" />
               </div>
             )}
             {panel.showAvatar && (

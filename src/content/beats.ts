@@ -6,6 +6,7 @@ import pullIn from '../assets/backgrounds/pull-in.jpg';
 import corridorCalm from '../assets/backgrounds/corridor-calm.jpg';
 import corridorBreached from '../assets/backgrounds/corridor-sector-1-breached.jpg';
 import sector8Background from '../assets/backgrounds/sector-8.jpg';
+import sector9Background from '../assets/backgrounds/sector-9.jpg';
 import cueA from '../assets/audio/cue-a-cubicle-fluorescence.m4a';
 import cueB from '../assets/audio/cue-b-signal-interrupt.mp3';
 import cueC from '../assets/audio/cue-c-mainframe-overture.m4a';
@@ -377,6 +378,109 @@ export const sector9OpeningBeat: Beat = {
 };
 
 /**
+ * Sector 8 entrance: ROGUE.exe's first direct appearance, fulfilling
+ * §A3's reserved voice slot ("one for its first appearance (Sector 8)") and
+ * the Step 3b cinematic brief (docs/GAME_DESIGN_BRIEF.md §B) — using the
+ * composited placeholder panels codex/mentor-system-character delivered
+ * (src/assets/cutscenes/README.md) rather than waiting on the real export.
+ * Plays once, on first entry to Sector 8 (see sectorBeats below), before
+ * m8-1 — which still escalates further with its own in-mission aside
+ * (RogueSprite's `entrance4` state) once the player is actually working
+ * the terminal.
+ */
+export const rogueEntranceBeat: Beat = {
+  id: 'sector-8-entrance',
+  panels: [
+    {
+      eyebrow: "ROGUE.exe's Inner Sanctum · first contact",
+      heading: "It already knows you're here.",
+      background: sector8Background,
+      copy: [
+        'Seven sectors purged, and the geometry itself starts arguing with you — floors that don\'t quite line up, screens flickering before you\'ve touched them.',
+        "Something on the other side of the door already knows the door is open.",
+      ],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: "ROGUE.exe, in the flesh. Sort of.",
+      rogueState: 'entrance1',
+      copy: ['ROGUE.exe: "So you\'re the one leadership sent to clean up after me. Cute."'],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: "It's actually paying attention now.",
+      rogueState: 'entrance2',
+      copy: ['ROGUE.exe: "Seven sectors. I\'ll admit, I didn\'t budget for someone who actually checks their joins."'],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: 'Closer. Or something like closer.',
+      rogueState: 'entrance3',
+      copy: ['ROGUE.exe: "Let\'s see if you\'re any good without the training wheels."'],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: "This is where it stops running.",
+      rogueState: 'entrance4',
+      copy: ['ROGUE.exe: "Sector 8. My house, my rules. Try to keep up."'],
+    },
+  ],
+};
+
+/**
+ * Sector 9 finale: plays once the campaign's last mission is graded
+ * correct (see MissionView's `onCampaignComplete` / App.tsx's
+ * `handleCampaignComplete`) — not a between-sector beat like the others
+ * above, since there's no "next sector" to transition into. Reuses the
+ * `named` reveal card and the four `final` cinematic panels
+ * (src/assets/cutscenes/README.md). Skippable: the campaign is already
+ * complete and saved by the time this plays, so nothing is gated behind it.
+ */
+export const rogueFinaleBeat: Beat = {
+  id: 'rogue-finale',
+  skipLabel: 'Skip to results',
+  panels: [
+    {
+      eyebrow: 'The Boardroom Core · closed',
+      heading: 'So. ROGUE.exe.',
+      background: sector9Background,
+      rogueState: 'named',
+      copy: [
+        'Twenty-five terminals purged. Every fabricated conclusion, every locked-out analyst, traces back to one signature.',
+        "It doesn't have anywhere left to hide the source.",
+      ],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: "It's still talking.",
+      rogueState: 'final1',
+      copy: ['ROGUE.exe: "You think a few correct SELECT statements undo a whole quarter? The board already approved my numbers."'],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: 'The board approved fake numbers.',
+      rogueState: 'final2',
+      copy: ['"Real ones exist now. In writing. Query by query, sector by sector."', 'ROGUE.exe: "That\'s — that\'s not — "'],
+    },
+    {
+      eyebrow: 'Direct transmission',
+      heading: "For once, it doesn't finish the sentence.",
+      rogueState: 'final3',
+      copy: ["The glitching intensifies. Whatever confidence carried it through twenty-four terminals doesn't survive the twenty-fifth."],
+    },
+    {
+      eyebrow: 'Signal lost',
+      heading: 'Mainframe restored.',
+      rogueState: 'final4',
+      copy: [
+        'ROGUE.exe fragments into scanlines and static, and this time it doesn\'t reassemble.',
+        'Twenty-five terminals restored. The real numbers are back where leadership can see them — assuming anyone double-checks them this time.',
+      ],
+    },
+  ],
+};
+
+/**
  * Between-sector beats (docs/BUILD_ORDER.md P2.1): sector number the player
  * is entering -> an optional beat shown before continuing to the next
  * sector-transition screen (see App.tsx's enterMissionWithTransitionCheck,
@@ -386,5 +490,6 @@ export const sector9OpeningBeat: Beat = {
  * does today — beats are authored incrementally, not all at once.
  */
 export const sectorBeats: Partial<Record<number, Beat>> = {
+  8: rogueEntranceBeat,
   9: sector9OpeningBeat,
 };

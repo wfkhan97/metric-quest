@@ -59,6 +59,8 @@ type MissionViewProps = {
   onProgressChange: (next: Progress) => void;
   onSelectMission: (mission: Mission) => void;
   onBackToHome: () => void;
+  /** Called instead of onSelectMission when the just-completed mission was the campaign's last one (no nextMission exists). */
+  onCampaignComplete?: () => void;
 };
 
 export function MissionView({
@@ -69,6 +71,7 @@ export function MissionView({
   onToggleMusicMute,
   onProgressChange,
   onSelectMission,
+  onCampaignComplete,
   onBackToHome,
 }: MissionViewProps) {
   const [sql, setSql] = useState(mission.starterSql);
@@ -345,7 +348,7 @@ export function MissionView({
 
           {mission.id === 'm8-1' && (
             <aside className="rogue-encounter rogue-boss-moment" aria-label="ROGUE.exe transmission">
-              <RogueSprite state="confronting" className="rogue-sprite-boss" />
+              <RogueSprite state="entrance4" className="rogue-sprite-boss" />
               <p className="rogue-boss-line type-reveal">
                 <strong>ROGUE.exe:</strong> &ldquo;Verification is such a delightfully inefficient human habit.&rdquo;
               </p>
@@ -488,6 +491,11 @@ export function MissionView({
               {feedback.tone === 'success' && nextMission && (
                 <button type="button" className="start-button next-mission-button" onClick={() => onSelectMission(nextMission)}>
                   {feedback.sectorNowComplete ? 'Next sector' : 'Next mission'}
+                </button>
+              )}
+              {feedback.tone === 'success' && !nextMission && feedback.campaignNowComplete && onCampaignComplete && (
+                <button type="button" className="start-button next-mission-button" onClick={onCampaignComplete}>
+                  Confront ROGUE.exe
                 </button>
               )}
             </section>

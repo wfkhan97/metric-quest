@@ -7,7 +7,15 @@ import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
 import { TitleScreen } from './components/TitleScreen';
-import { mainframePullBeat, mentorIntroBeat, openingBeat, sectorBeats, terminalOrientationBeat, type Beat } from './content/beats';
+import {
+  mainframePullBeat,
+  mentorIntroBeat,
+  openingBeat,
+  rogueFinaleBeat,
+  sectorBeats,
+  terminalOrientationBeat,
+  type Beat,
+} from './content/beats';
 import { chapterNumber, chapters } from './content/chapters';
 import { sectorPrimerBeats } from './content/primers';
 import { missions, type Mission } from './lib/missions';
@@ -151,6 +159,17 @@ export function App() {
     proceedPastAvatar(mission, progress);
   }
 
+  // MissionView's "Confront ROGUE.exe" button, shown in place of "Next
+  // mission" once the campaign's last mission is graded correct (no
+  // nextMission exists at that point). Skippable — the campaign is already
+  // won and saved by the time this plays.
+  function handleCampaignComplete() {
+    setPendingMission(null);
+    setPendingBeat(rogueFinaleBeat);
+    setCutsceneSkippable(true);
+    setView('cutscene');
+  }
+
   function handleReplayOpening() {
     setPendingMission(null);
     setPendingBeat(mainframePullBeat);
@@ -249,6 +268,10 @@ export function App() {
     }
     if (beat?.id === 'mentor-intro') {
       continueAfterOnboarding(progress);
+      return;
+    }
+    if (beat?.id === 'rogue-finale') {
+      setView('home');
       return;
     }
     if (beat && beat.id.startsWith('sector-primer-')) {
@@ -427,6 +450,7 @@ export function App() {
         onProgressChange={handleProgressChange}
         onSelectMission={handleSelectMission}
         onBackToHome={() => setView('home')}
+        onCampaignComplete={handleCampaignComplete}
       />
     );
   }

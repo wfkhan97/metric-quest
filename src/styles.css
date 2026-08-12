@@ -1217,6 +1217,23 @@ tbody tr {
   object-fit: cover;
 }
 
+/* The Sector 8 entrance / Sector 9 finale cinematic panels and the `named`
+   reveal card are full illustrations, not the small reusable calm/corrupted
+   icon -- sized up so detail survives (src/components/CutsceneView.tsx). */
+.rogue-sprite-cinematic {
+  block-size: clamp(8rem, 22vh, 11rem);
+  box-shadow: 0 0 20px rgba(255, 138, 128, 0.4);
+  flex-basis: clamp(8rem, 22vh, 11rem);
+  inline-size: clamp(8rem, 22vh, 11rem);
+}
+
+.cutscene-nameplate {
+  display: block;
+  image-rendering: pixelated;
+  inline-size: 4.5rem;
+  margin-block-start: 0.35rem;
+}
+
 /* ECHO's placeholder glyph and (once commissioned) real sprite — same
    footprint as .rogue-sprite, teal instead of danger-red so the two never
    read as the same kind of presence even at a glance. */
