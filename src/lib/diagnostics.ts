@@ -101,6 +101,41 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => hasKeyword(sql, /60000/) && !hasKeyword(sql, /60000\.0/),
     },
   ],
+  'm1-5': [
+    {
+      id: 'm1-5-incomplete-range',
+      label: 'Incomplete range',
+      explanation:
+        "BETWEEN 15 AND 20 needs both bounds to define the band — a filter with only the lower bound (e.g. Total > 15) lets in every invoice above $15, not just the ones capped at $20.",
+      matches: (sql) => !(hasKeyword(sql, /\b15\b/) && hasKeyword(sql, /\b20\b/)),
+    },
+    {
+      id: 'm1-5-wrong-sort-direction',
+      label: 'Sorted descending instead of ascending',
+      explanation:
+        '"Cheapest first" needs ascending order (the default, or an explicit ASC) — DESC would put the priciest invoice in the band first instead of the cheapest.',
+      matches: (sql) => hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm1-6': [
+    {
+      id: 'm1-6-missing-country',
+      label: 'Missing one of the three markets',
+      explanation:
+        "The shortlist has three markets — Chile, Hungary, and Norway. Leaving any one of them out of the IN list drops every invoice billed to that country from the result.",
+      matches: (sql) => !(hasKeyword(sql, /\bchile\b/i) && hasKeyword(sql, /\bhungary\b/i) && hasKeyword(sql, /\bnorway\b/i)),
+    },
+    {
+      id: 'm1-6-wrong-sort',
+      label: 'Not sorted by country first',
+      explanation:
+        'Sorting by InvoiceId alone interleaves all three markets by invoice number instead of grouping each market together — ORDER BY BillingCountry, InvoiceId is what keeps Chile, Hungary, and Norway each in their own block.',
+      matches: (sql) => {
+        const orderByClause = sql.match(/order\s+by\s+([^;]*)/i);
+        return orderByClause !== null && !/billingcountry/i.test(orderByClause[1]);
+      },
+    },
+  ],
   'm2-1': [
     {
       id: 'm2-1-joined-invoice-line',
@@ -136,6 +171,22 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
         'COUNT(CustomerId) counts every invoice that has a customer attached — including repeat buyers, counted once per purchase. COUNT(DISTINCT CustomerId) is the one that collapses repeats down to one per unique customer, which is what the third number in this mission needs.',
       glossaryEntryId: 'count-variants',
       matches: (sql) => !hasKeyword(sql, noDistinct),
+    },
+  ],
+  'm2-4': [
+    {
+      id: 'm2-4-missing-min-or-max',
+      label: 'Missing MIN or MAX',
+      explanation:
+        'This mission wants both bounds in one row — leaving out either MIN(Total) or MAX(Total) reports only half the range instead of the smallest and largest side by side.',
+      matches: (sql) => !(hasKeyword(sql, /\bmin\s*\(/i) && hasKeyword(sql, /\bmax\s*\(/i)),
+    },
+    {
+      id: 'm2-4-unnecessary-group-by',
+      label: 'Unnecessary GROUP BY',
+      explanation:
+        'This mission wants one overall row for the whole table — adding a GROUP BY (e.g. by BillingCountry) splits MIN and MAX into one row per group instead of a single company-wide range.',
+      matches: (sql) => hasKeyword(sql, noGroupBy),
     },
   ],
   'm3-1': [
@@ -284,6 +335,26 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       matches: (sql) => !hasKeyword(sql, hasLimit),
     },
   ],
+  'm5-3': [
+    {
+      id: 'm5-3-missing-julian-day',
+      label: "Missing strftime('%J', ...)",
+      explanation:
+        "Subtracting two InvoiceDate values directly doesn't measure days — SQLite has to convert each one to a Julian day number with strftime('%J', ...) first before subtraction means anything.",
+      matches: (sql) => !hasKeyword(sql, /strftime/i),
+    },
+    {
+      id: 'm5-3-swapped-min-max',
+      label: 'MIN and MAX swapped',
+      explanation:
+        "The span has to run from the earliest date to the latest — strftime('%J', MAX(InvoiceDate)) minus strftime('%J', MIN(InvoiceDate)). Reversing that order (MIN minus MAX) gives the same span as a negative number instead of a real day count.",
+      matches: (sql) => {
+        const minIndex = sql.search(/strftime\([^)]*,\s*min\(invoicedate\)\)/i);
+        const maxIndex = sql.search(/strftime\([^)]*,\s*max\(invoicedate\)\)/i);
+        return minIndex !== -1 && maxIndex !== -1 && minIndex < maxIndex;
+      },
+    },
+  ],
   'm6-1': [
     {
       id: 'm6-1-missing-else',
@@ -347,6 +418,48 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       explanation:
         '"Richest first" needs ORDER BY Revenue DESC — without DESC, SQL sorts ascending by default, so LIMIT 5 keeps the five lowest-revenue countries instead of the highest.',
       matches: (sql) => hasKeyword(sql, hasOrderBy) && !hasKeyword(sql, hasDesc),
+    },
+  ],
+  'm7-3': [
+    {
+      id: 'm7-3-used-union',
+      label: 'UNION instead of UNION ALL',
+      explanation:
+        'Plain UNION de-duplicates the combined list back down to the distinct market map from m7-1 — this mission wants every mention counted, so it needs UNION ALL, which keeps duplicates instead of scrubbing them.',
+      glossaryEntryId: 'union-vs-union-all',
+      matches: (sql) => hasKeyword(sql, /\bunion\b/i) && !hasKeyword(sql, /\bunion\s+all\b/i),
+    },
+  ],
+  'm7-4': [
+    {
+      id: 'm7-4-used-union',
+      label: 'UNION instead of INTERSECT',
+      explanation:
+        "UNION would combine both lists regardless of overlap — this mission wants only the countries that are genuinely on both sides at once, which is what INTERSECT checks for.",
+      glossaryEntryId: 'intersect',
+      matches: (sql) => hasKeyword(sql, /\bunion\b/i) && !hasKeyword(sql, /\bintersect\b/i),
+    },
+    {
+      id: 'm7-4-missing-year-filter',
+      label: 'Missing the 2011 filter',
+      explanation:
+        "Without a WHERE strftime('%Y', InvoiceDate) = '2011' filter on the Invoice side, the INTERSECT checks against billing countries from every year on record instead of just 2011, which changes which countries count as active.",
+      glossaryEntryId: 'dates-strftime',
+      matches: (sql) => !hasKeyword(sql, /2011/),
+    },
+  ],
+  'm7-5': [
+    {
+      id: 'm7-5-swapped-except-order',
+      label: 'EXCEPT sides reversed',
+      explanation:
+        "EXCEPT is order-sensitive: \"customer countries EXCEPT 2011 billing countries\" finds who went quiet, but \"2011 billing countries EXCEPT customer countries\" asks the opposite question and returns a different (likely empty) result. Customer.Country has to be the first SELECT.",
+      glossaryEntryId: 'except',
+      matches: (sql) => {
+        const customerIndex = sql.search(/from\s+customer\b/i);
+        const invoiceIndex = sql.search(/from\s+invoice\b/i);
+        return customerIndex !== -1 && invoiceIndex !== -1 && invoiceIndex < customerIndex;
+      },
     },
   ],
   'm8-1': [

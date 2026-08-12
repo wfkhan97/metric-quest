@@ -11,8 +11,8 @@ const stubResult: QueryResult = { columns: [], rows: [] };
 
 // For every mission with at least one signature: a SQL string per signature
 // id that should trip *that* signature's matches(), independent of the
-// mission's real solutionSql. Covers all 43 signatures across all 25
-// missions, not just the ones with more than one signature.
+// mission's real solutionSql. Covers every signature across every mission,
+// not just the ones with more than one signature.
 const triggers: Record<string, string> = {
   'm1-1-missing-where': 'SELECT InvoiceId, InvoiceDate, Total FROM Invoice ORDER BY Total DESC LIMIT 5;',
   'm1-1-missing-limit': "SELECT InvoiceId, Total FROM Invoice WHERE BillingCountry = 'USA' ORDER BY Total DESC;",
@@ -25,6 +25,12 @@ const triggers: Record<string, string> = {
   'm1-4-missing-where': 'SELECT TrackId, Name FROM Track WHERE UnitPrice > 1;',
   'm1-4-integer-division': 'SELECT TrackId, Milliseconds / 60000 AS Minutes FROM Track;',
 
+  'm1-5-incomplete-range': 'SELECT InvoiceId, Total FROM Invoice WHERE Total > 15 ORDER BY Total;',
+  'm1-5-wrong-sort-direction': 'SELECT InvoiceId, Total FROM Invoice WHERE Total BETWEEN 15 AND 20 ORDER BY Total DESC;',
+
+  'm1-6-missing-country': "SELECT InvoiceId, BillingCountry, Total FROM Invoice WHERE BillingCountry IN ('Chile', 'Hungary') ORDER BY BillingCountry;",
+  'm1-6-wrong-sort': "SELECT InvoiceId, BillingCountry, Total FROM Invoice WHERE BillingCountry IN ('Chile', 'Hungary', 'Norway') ORDER BY InvoiceId;",
+
   'm2-1-joined-invoice-line':
     'SELECT BillingCountry, SUM(Total) FROM Invoice JOIN InvoiceLine ON Invoice.InvoiceId = InvoiceLine.InvoiceId GROUP BY BillingCountry;',
   'm2-1-missing-group-by': 'SELECT BillingCountry, SUM(Total) FROM Invoice;',
@@ -32,6 +38,9 @@ const triggers: Record<string, string> = {
   'm2-2-missing-having': 'SELECT BillingCountry, SUM(Total) FROM Invoice GROUP BY BillingCountry;',
 
   'm2-3-missing-distinct': 'SELECT COUNT(CustomerId) FROM Invoice;',
+
+  'm2-4-missing-min-or-max': 'SELECT MIN(Total) AS SmallestInvoice FROM Invoice;',
+  'm2-4-unnecessary-group-by': 'SELECT BillingCountry, MIN(Total), MAX(Total) FROM Invoice GROUP BY BillingCountry;',
 
   'm3-1-missing-join': 'SELECT CustomerId, Total FROM Invoice ORDER BY Total DESC LIMIT 5;',
   'm3-1-missing-country-filter':
@@ -67,6 +76,10 @@ const triggers: Record<string, string> = {
   'm5-2-missing-limit':
     "SELECT strftime('%Y-%m', InvoiceDate) AS Month, SUM(Total) FROM Invoice GROUP BY Month ORDER BY SUM(Total) DESC;",
 
+  'm5-3-missing-julian-day': 'SELECT MAX(InvoiceDate) - MIN(InvoiceDate) AS DaysSpanned FROM Invoice;',
+  'm5-3-swapped-min-max':
+    "SELECT ROUND(strftime('%J', MIN(InvoiceDate)) - strftime('%J', MAX(InvoiceDate)), 0) AS DaysSpanned FROM Invoice;",
+
   'm6-1-missing-else': "SELECT CASE WHEN Total < 5 THEN 'Small' WHEN Total < 10 THEN 'Core' END AS Tier FROM Invoice;",
   'm6-1-wrong-condition-order':
     "SELECT CASE WHEN Total < 10 THEN 'Core' WHEN Total < 5 THEN 'Small' ELSE 'High value' END AS Tier FROM Invoice;",
@@ -81,6 +94,16 @@ const triggers: Record<string, string> = {
   'm7-2-missing-limit':
     'CREATE TEMP VIEW RevenueByCountry AS SELECT BillingCountry, SUM(Total) AS Revenue FROM Invoice GROUP BY BillingCountry; SELECT * FROM RevenueByCountry ORDER BY Revenue DESC;',
   'm7-2-missing-desc': 'SELECT * FROM RevenueByCountry ORDER BY Revenue LIMIT 5;',
+
+  'm7-3-used-union':
+    'SELECT COUNT(*) AS TotalCountryMentions FROM (SELECT Country FROM Customer UNION SELECT BillingCountry FROM Invoice);',
+
+  'm7-4-used-union':
+    "SELECT Country FROM Customer UNION SELECT BillingCountry AS Country FROM Invoice WHERE strftime('%Y', InvoiceDate) = '2011' ORDER BY Country;",
+  'm7-4-missing-year-filter': 'SELECT Country FROM Customer\nINTERSECT\nSELECT BillingCountry AS Country FROM Invoice\nORDER BY Country;',
+
+  'm7-5-swapped-except-order':
+    "SELECT BillingCountry AS Country FROM Invoice\nWHERE strftime('%Y', InvoiceDate) = '2011'\nEXCEPT\nSELECT Country FROM Customer\nORDER BY Country;",
 
   'm8-1-missing-distinct': 'SELECT COUNT(CustomerId) FROM Invoice;',
 
@@ -103,7 +126,7 @@ const triggers: Record<string, string> = {
 const missionsWithSignatures = missions.filter((mission) => getMistakeSignatures(mission.id).length > 0);
 
 describe('diagnostics: signature coverage', () => {
-  it('every one of the 25 missions has at least one signature (P2.2 shipped for all sectors)', () => {
+  it('every mission has at least one signature (P2.2 shipped for all sectors)', () => {
     expect(missionsWithSignatures).toHaveLength(missions.length);
   });
 

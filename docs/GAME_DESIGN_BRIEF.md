@@ -85,13 +85,13 @@ renaming and framing exercise only, no new SQL concepts, no reordering. The
 
 | Ch. | Original title | Sector name | Concept | Visual theme | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Revenue reconnaissance | The Ledger Vaults | filter, sort, limit, DISTINCT, text search, calculations | Bank-vault archive of glowing data ledgers on shelves | M1.1-M1.4 built |
-| 2 | Executive scorecard | The Scoreboard Core | aggregation, `GROUP BY`, `HAVING`, `COUNT` | Control room with a large glowing dashboard, dials, rising totals | M2.1-M2.3 built |
+| 1 | Revenue reconnaissance | The Ledger Vaults | filter, sort, limit, DISTINCT, text search, calculations, `BETWEEN`, `IN` | Bank-vault archive of glowing data ledgers on shelves | M1.1-M1.6 built |
+| 2 | Executive scorecard | The Scoreboard Core | aggregation, `GROUP BY`, `HAVING`, `COUNT`, `MIN`/`MAX` | Control room with a large glowing dashboard, dials, rising totals | M2.1-M2.4 built |
 | 3 | Connected customer evidence | The Relay Archives | joins | Record cabinets linked by glowing data-relay cables/tubes | M3.1-M3.4 built |
 | 4 | Analyst workbench | The Workbench Foundry | subqueries, CTEs, temp tables | A forge/workshop where raw data is staged and reshaped | M4.1-M4.3 built |
-| 5 | Time and operations | The Chronometer Wing | dates and times | A clocktower-like wing full of gears and chronometers | M5.1-M5.2 built |
+| 5 | Time and operations | The Chronometer Wing | dates and times, date arithmetic | A clocktower-like wing full of gears and chronometers | M5.1-M5.3 built |
 | 6 | Decision rules and data types | The Sorting Engine | `CASE`, casts | A mechanical facility with conveyor belts and branching chutes | M6.1-M6.2 built |
-| 7 | Shared analytical assets | The Shared Vault | sets, views | A communal library where shared "views" sit on illuminated pedestals | M7.1-M7.2 built |
+| 7 | Shared analytical assets | The Shared Vault | sets (`UNION`/`UNION ALL`/`INTERSECT`/`EXCEPT`), views | A communal library where shared "views" sit on illuminated pedestals | M7.1-M7.5 built |
 | 8 | Verify the AI analyst | ROGUE.exe's Inner Sanctum | AI verification | ROGUE.exe's corrupted home turf: warped geometry, glitching screens | M8.1 built; M8.2/M8.3 not built |
 | 9 | Boardroom final | The Boardroom Core (final boss) | SELECT framework | A grand boardroom turned battle arena | not built |
 
