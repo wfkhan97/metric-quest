@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
+import { MentorSprite } from './MentorSprite';
 import { RogueSprite } from './RogueSprite';
 import { TutorialMissionPreview } from './TutorialMissionPreview';
 import { defaultAvatar } from '../lib/avatarOptions';
@@ -215,11 +216,16 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
         {panel.whiteoutTransition && <div className="cutscene-whiteout" aria-hidden="true" />}
         <p className="eyebrow">{panel.eyebrow}</p>
         <h1 id="cutscene-title">{panel.heading}</h1>
-        {(panel.showAvatar || panel.rogueState) && (
+        {(panel.showAvatar || panel.rogueState || panel.mentorState) && (
           <div className="sector-sprite">
             {panel.rogueState && (
               <div className={rogueMotionClass[panel.rogueMotion ?? 'entrance']}>
                 <RogueSprite state={panel.rogueState} />
+              </div>
+            )}
+            {panel.mentorState && (
+              <div className="phase-slide">
+                <MentorSprite state={panel.mentorState} />
               </div>
             )}
             {panel.showAvatar && (
@@ -245,6 +251,14 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
             </p>
           ))}
         </div>
+        {panel.codeExample && (
+          <div className="cutscene-code-example">
+            <p className="subtle">{panel.codeExample.description}</p>
+            <pre>
+              <code>{panel.codeExample.sql}</code>
+            </pre>
+          </div>
+        )}
         <div className="actions">
           <button type="button" className="primary" onClick={handleContinue} ref={continueButtonRef}>
             {continueLabel}
@@ -252,6 +266,11 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
           {hasAnyAudio && (
             <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
               {isMusicMuted ? 'Unmute music' : 'Mute music'}
+            </button>
+          )}
+          {skippable && beat.skipLabel && (
+            <button type="button" className="link-button" onClick={onFinish}>
+              {beat.skipLabel}
             </button>
           )}
         </div>

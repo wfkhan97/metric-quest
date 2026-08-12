@@ -22,6 +22,16 @@ export type Progress = {
   /** Optional and additive: whether this save has been offered the terminal
    * orientation. Missing on an older save is valid and means "not offered." */
   seenTutorial?: boolean;
+  /** Optional and additive: whether the player has opted into Learn SQL
+   * Mode (a mentor-taught primer before each sector). Missing/undefined
+   * means off, same as false — off is the default for the current class. */
+  learnSqlMode?: boolean;
+  /** Optional and additive, same rule as `seenSectors`: sector numbers whose
+   * mentor primer has already played once. */
+  seenPrimers?: number[];
+  /** Optional and additive: whether the "meet the mentor" onboarding beat
+   * has played once. Missing means "not offered yet." */
+  seenMentorIntro?: boolean;
 };
 
 /** One save slot (P6.2 multi-save). `progress` is exactly today's `Progress`
@@ -68,6 +78,11 @@ function parseProgress(value: unknown): Progress {
     : undefined;
   const seenOpening = typeof parsed.seenOpening === 'boolean' ? parsed.seenOpening : undefined;
   const seenTutorial = typeof parsed.seenTutorial === 'boolean' ? parsed.seenTutorial : undefined;
+  const learnSqlMode = typeof parsed.learnSqlMode === 'boolean' ? parsed.learnSqlMode : undefined;
+  const seenPrimers = Array.isArray(parsed.seenPrimers)
+    ? parsed.seenPrimers.filter((n): n is number => typeof n === 'number')
+    : undefined;
+  const seenMentorIntro = typeof parsed.seenMentorIntro === 'boolean' ? parsed.seenMentorIntro : undefined;
   return {
     completedMissionIds: parsed.completedMissionIds.filter((id): id is string => typeof id === 'string'),
     badges: parsed.badges.filter((badge): badge is string => typeof badge === 'string'),
@@ -76,6 +91,9 @@ function parseProgress(value: unknown): Progress {
     ...(seenSectors ? { seenSectors } : {}),
     ...(seenOpening !== undefined ? { seenOpening } : {}),
     ...(seenTutorial !== undefined ? { seenTutorial } : {}),
+    ...(learnSqlMode !== undefined ? { learnSqlMode } : {}),
+    ...(seenPrimers ? { seenPrimers } : {}),
+    ...(seenMentorIntro !== undefined ? { seenMentorIntro } : {}),
   };
 }
 
@@ -308,4 +326,35 @@ export function hasSeenTutorial(progress: Progress): boolean {
 export function markTutorialSeen(progress: Progress): Progress {
   if (hasSeenTutorial(progress)) return progress;
   return { ...progress, seenTutorial: true };
+}
+
+export function isLearnSqlModeOn(progress: Progress): boolean {
+  return progress.learnSqlMode ?? false;
+}
+
+/** Off by default, so today's shipped experience for the current class is
+ * unaffected — the player opts in from Home or the mentor's onboarding beat. */
+export function toggleLearnSqlMode(progress: Progress): Progress {
+  return { ...progress, learnSqlMode: !isLearnSqlModeOn(progress) };
+}
+
+export function hasSeenPrimer(progress: Progress, sector: number): boolean {
+  return progress.seenPrimers?.includes(sector) ?? false;
+}
+
+/** Marked the moment a sector primer is triggered (not on completion), same
+ * refresh-safety rule as markTutorialSeen — a refresh mid-primer must not
+ * reopen it in a loop. */
+export function markPrimerSeen(progress: Progress, sector: number): Progress {
+  if (hasSeenPrimer(progress, sector)) return progress;
+  return { ...progress, seenPrimers: [...(progress.seenPrimers ?? []), sector] };
+}
+
+export function hasSeenMentorIntro(progress: Progress): boolean {
+  return progress.seenMentorIntro ?? false;
+}
+
+export function markMentorIntroSeen(progress: Progress): Progress {
+  if (hasSeenMentorIntro(progress)) return progress;
+  return { ...progress, seenMentorIntro: true };
 }

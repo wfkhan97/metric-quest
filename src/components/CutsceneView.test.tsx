@@ -3,7 +3,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { terminalOrientationBeat } from '../content/beats';
+import { terminalOrientationBeat, type Beat } from '../content/beats';
 import { CutsceneView } from './CutsceneView';
 
 afterEach(cleanup);
@@ -50,5 +50,70 @@ describe('CutsceneView terminal orientation', () => {
     const allowedFinish = renderOrientation(true);
     await user.keyboard('{Escape}');
     expect(allowedFinish).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('CutsceneView mentor + code-example panels (Learn SQL Mode)', () => {
+  const mentorBeat: Beat = {
+    id: 'test-mentor-beat',
+    panels: [
+      {
+        eyebrow: 'Mentor channel',
+        heading: 'WHERE, ORDER BY, LIMIT',
+        mentorState: 'explaining',
+        copy: ['WHERE filters first.'],
+        codeExample: {
+          description: 'The three highest-value US invoices.',
+          sql: "SELECT InvoiceId FROM Invoice WHERE BillingCountry = 'USA';",
+        },
+      },
+    ],
+  };
+
+  it('renders the mentor sprite and the worked SQL example', () => {
+    render(
+      <CutsceneView
+        beat={mentorBeat}
+        skippable={false}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: /terminal cursor/ })).toBeTruthy();
+    expect(screen.getByText('The three highest-value US invoices.')).toBeTruthy();
+    expect(screen.getByText(/SELECT InvoiceId FROM Invoice/)).toBeTruthy();
+  });
+
+  it('shows a Skip control on the default (non-tutorial) layout when the beat has a skipLabel', async () => {
+    const skippableBeat: Beat = { ...mentorBeat, id: 'test-skippable-mentor-beat', skipLabel: 'Skip primer' };
+    const onFinish = vi.fn();
+    render(
+      <CutsceneView
+        beat={skippableBeat}
+        skippable={true}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={onFinish}
+      />,
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Skip primer' }));
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not show Skip on the default layout when the beat has no skipLabel (e.g. story beats)', () => {
+    render(
+      <CutsceneView
+        beat={mentorBeat}
+        skippable={true}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /^Skip/ })).toBeNull();
   });
 });

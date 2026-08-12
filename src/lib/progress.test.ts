@@ -5,16 +5,22 @@ import {
   deleteSave,
   getActiveSaveId,
   hasProgressPersistenceFailure,
+  hasSeenMentorIntro,
+  hasSeenPrimer,
   hasSeenSector,
   hasSeenTutorial,
+  isLearnSqlModeOn,
   listSaveSlots,
   loadProgress,
+  markMentorIntroSeen,
+  markPrimerSeen,
   markSectorSeen,
   markTutorialSeen,
   renameSave,
   saveProgress,
   setAvatar,
   switchActiveSave,
+  toggleLearnSqlMode,
   type Progress,
 } from './progress';
 
@@ -305,5 +311,41 @@ describe('multi-save (P6.2)', () => {
     deleteSave(id);
     expect(listSaveSlots()).toHaveLength(1);
     expect(getActiveSaveId()).toBe(id);
+  });
+});
+
+describe('Learn SQL Mode helpers', () => {
+  const empty: Progress = { completedMissionIds: [], points: 0, badges: [] };
+
+  it('is off by default and toggles both ways', () => {
+    expect(isLearnSqlModeOn(empty)).toBe(false);
+    const on = toggleLearnSqlMode(empty);
+    expect(isLearnSqlModeOn(on)).toBe(true);
+    const off = toggleLearnSqlMode(on);
+    expect(isLearnSqlModeOn(off)).toBe(false);
+  });
+
+  it('tracks seen primers per sector without disturbing others', () => {
+    expect(hasSeenPrimer(empty, 1)).toBe(false);
+    const afterSector1 = markPrimerSeen(empty, 1);
+    expect(hasSeenPrimer(afterSector1, 1)).toBe(true);
+    expect(hasSeenPrimer(afterSector1, 2)).toBe(false);
+    // Idempotent — marking an already-seen sector again is a no-op.
+    expect(markPrimerSeen(afterSector1, 1)).toBe(afterSector1);
+  });
+
+  it('tracks the mentor intro as a one-time flag', () => {
+    expect(hasSeenMentorIntro(empty)).toBe(false);
+    const seen = markMentorIntroSeen(empty);
+    expect(hasSeenMentorIntro(seen)).toBe(true);
+    expect(markMentorIntroSeen(seen)).toBe(seen);
+  });
+
+  it('round-trips Learn SQL Mode fields through save/load', () => {
+    saveProgress({ ...empty, learnSqlMode: true, seenPrimers: [1, 2], seenMentorIntro: true });
+    const loaded = loadProgress();
+    expect(loaded.learnSqlMode).toBe(true);
+    expect(loaded.seenPrimers).toEqual([1, 2]);
+    expect(loaded.seenMentorIntro).toBe(true);
   });
 });

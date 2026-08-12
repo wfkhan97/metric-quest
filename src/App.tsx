@@ -7,21 +7,28 @@ import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
 import { TitleScreen } from './components/TitleScreen';
-import { mainframePullBeat, openingBeat, sectorBeats, terminalOrientationBeat, type Beat } from './content/beats';
+import { mainframePullBeat, mentorIntroBeat, openingBeat, sectorBeats, terminalOrientationBeat, type Beat } from './content/beats';
 import { chapterNumber, chapters } from './content/chapters';
+import { sectorPrimerBeats } from './content/primers';
 import { missions, type Mission } from './lib/missions';
 import {
   hasSeenOpening,
   hasSeenTutorial,
   hasSeenSector,
+  hasSeenMentorIntro,
+  hasSeenPrimer,
   hasProgressPersistenceFailure,
+  isLearnSqlModeOn,
   loadProgress,
+  markMentorIntroSeen,
   markOpeningSeen,
+  markPrimerSeen,
   markSectorSeen,
   markTutorialSeen,
   resetActiveSave,
   saveProgress,
   setAvatar,
+  toggleLearnSqlMode,
   type AvatarConfig,
   type Progress,
 } from './lib/progress';
@@ -46,6 +53,11 @@ export function App() {
   const [pendingMission, setPendingMission] = useState<Mission | null>(null);
   const [pendingBeat, setPendingBeat] = useState<Beat | null>(null);
   const [cutsceneSkippable, setCutsceneSkippable] = useState(false);
+  // True only while terminalOrientationBeat is playing as part of the true
+  // first-run onboarding chain (not a manual "Review controls" replay) — the
+  // one signal handleCutsceneFinish needs to know whether it's safe to chain
+  // into mentorIntroBeat next. See offerMentorIntro below.
+  const [isOnboardingChain, setIsOnboardingChain] = useState(false);
   const [avatarMode, setAvatarMode] = useState<'onboarding' | 'edit'>('onboarding');
   const [isMusicMuted, setIsMusicMuted] = useState(loadMusicMuted);
 
@@ -152,6 +164,34 @@ export function App() {
     setView('cutscene');
   }
 
+  // Shared tail end of onboarding, reached once neither the terminal
+  // orientation nor the mentor intro has anything left to offer.
+  function continueAfterOnboarding(progressSnapshot: Progress) {
+    if (pendingMission) {
+      const mission = pendingMission;
+      setPendingMission(null);
+      // Avatar is already set by this point (proceedPastAvatar only
+      // reaches the opening beat once it is), so continue straight into
+      // the normal sector-transition/mission-entry check.
+      enterMissionWithTransitionCheck(mission, progressSnapshot);
+    } else {
+      setView('home');
+    }
+  }
+
+  // Learn SQL Mode: offers the one-time "meet the mentor" beat. Returns
+  // true (and shows the beat) if it hadn't been seen yet, false if the
+  // caller should just continue on. Marked seen at trigger time, same
+  // refresh-safety reasoning as markTutorialSeen above.
+  function offerMentorIntro(progressSnapshot: Progress): boolean {
+    if (hasSeenMentorIntro(progressSnapshot)) return false;
+    handleProgressChange(markMentorIntroSeen(progressSnapshot));
+    setPendingBeat(mentorIntroBeat);
+    setCutsceneSkippable(true);
+    setView('cutscene');
+    return true;
+  }
+
   function handleCutsceneFinish() {
     const beat = pendingBeat;
     setPendingBeat(null);
@@ -162,8 +202,9 @@ export function App() {
     }
     if (beat?.id === 'opening') {
       // A replay begins with an already-seen opening. Only the mandatory
-      // first completion can offer the orientation; replaying the story must
-      // continue to Home exactly as it did before the tutorial existed.
+      // first completion can offer the orientation or the mentor intro;
+      // replaying the story must continue to Home exactly as it did before
+      // either of those existed.
       const isFirstOpeningCompletion = !hasSeenOpening(progress);
       let nextProgress = markOpeningSeen(progress);
       if (isFirstOpeningCompletion && !hasSeenTutorial(nextProgress)) {
@@ -171,31 +212,41 @@ export function App() {
         // through cannot automatically reopen the walkthrough in a loop.
         nextProgress = markTutorialSeen(nextProgress);
         handleProgressChange(nextProgress);
+        setIsOnboardingChain(true);
         setPendingBeat(terminalOrientationBeat);
         setCutsceneSkippable(true);
         setView('cutscene');
         return;
       }
       handleProgressChange(nextProgress);
-      if (pendingMission) {
-        const mission = pendingMission;
-        setPendingMission(null);
-        // Avatar is already set by this point (proceedPastAvatar only
-        // reaches the opening beat once it is), so continue straight into
-        // the normal sector-transition/mission-entry check.
-        enterMissionWithTransitionCheck(mission, nextProgress);
-      } else {
-        setView('home');
-      }
+      if (isFirstOpeningCompletion && offerMentorIntro(nextProgress)) return;
+      continueAfterOnboarding(nextProgress);
       return;
     }
     if (beat?.id === 'terminal-orientation') {
+      // isOnboardingChain is only ever true when this orientation was the
+      // one auto-chained from a true first-run 'opening' completion above —
+      // a manual "Review controls" replay (handleReplayTutorial) never sets
+      // it, so replaying the orientation alone can't also re-trigger the
+      // mentor intro.
+      const wasOnboardingChain = isOnboardingChain;
+      setIsOnboardingChain(false);
+      if (wasOnboardingChain && offerMentorIntro(progress)) return;
+      continueAfterOnboarding(progress);
+      return;
+    }
+    if (beat?.id === 'mentor-intro') {
+      continueAfterOnboarding(progress);
+      return;
+    }
+    if (beat && beat.id.startsWith('sector-primer-')) {
+      // Reached either from handleSectorTransitionContinue (pendingMission
+      // set — continue into the mission it was queued for) or from Home's
+      // "Review SQL primers" replay (pendingMission null — return Home).
       if (pendingMission) {
         const mission = pendingMission;
         setPendingMission(null);
-        // Keep the existing transition path authoritative. Calling goToMission
-        // here would skip Sector 1's first-view interstitial.
-        enterMissionWithTransitionCheck(mission, progress);
+        goToMission(mission);
       } else {
         setView('home');
       }
@@ -250,9 +301,37 @@ export function App() {
       return;
     }
     const mission = pendingMission;
-    handleProgressChange(markSectorSeen(progress, chapterNumber(mission)));
+    const sector = chapterNumber(mission);
+    const nextProgress = markSectorSeen(progress, sector);
+    const primerBeat = sectorPrimerBeats[sector];
+    if (isLearnSqlModeOn(nextProgress) && primerBeat && !hasSeenPrimer(nextProgress, sector)) {
+      // Marked seen at trigger time, same refresh-safety reasoning as
+      // markTutorialSeen — pendingMission stays set so handleCutsceneFinish's
+      // 'sector-primer-*' branch knows to continue into this mission after.
+      handleProgressChange(markPrimerSeen(nextProgress, sector));
+      setPendingBeat(primerBeat);
+      setCutsceneSkippable(true);
+      setView('cutscene');
+      return;
+    }
+    handleProgressChange(nextProgress);
     setPendingMission(null);
     goToMission(mission);
+  }
+
+  function handleToggleLearnSqlMode() {
+    handleProgressChange(toggleLearnSqlMode(progress));
+  }
+
+  // Home's "Review SQL primers" — replays an already-seen sector primer
+  // on demand, same shape as handleReplayOpening/handleReplayTutorial.
+  function handleReviewPrimer(sector: number) {
+    const beat = sectorPrimerBeats[sector];
+    if (!beat) return;
+    setPendingMission(null);
+    setPendingBeat(beat);
+    setCutsceneSkippable(true);
+    setView('cutscene');
   }
 
   let content;
@@ -308,6 +387,10 @@ export function App() {
         onReplayOpening={hasSeenOpening(progress) ? handleReplayOpening : undefined}
         onReplayTutorial={handleReplayTutorial}
         onActiveProgressChange={handleActiveProgressChange}
+        learnSqlMode={isLearnSqlModeOn(progress)}
+        onToggleLearnSqlMode={handleToggleLearnSqlMode}
+        seenPrimerSectors={progress.seenPrimers ?? []}
+        onReviewPrimer={handleReviewPrimer}
       />
     );
   } else {

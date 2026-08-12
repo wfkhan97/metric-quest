@@ -237,7 +237,12 @@ pre,
 }
 
 .header-reward {
-  flex: 1 1 14rem;
+  align-items: flex-start;
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
 }
 
 /* P5.6: the mission-view scoreboard shrinks to just "integrity bar + points"
@@ -298,7 +303,7 @@ pre,
 .badges-disclosure {
   color: var(--retro-muted);
   font-size: 0.78rem;
-  margin-block-start: 0.4rem;
+  text-align: end;
 }
 
 .badges-disclosure summary {
@@ -350,11 +355,10 @@ pre,
 .concept-tag-link {
   background: transparent;
   border: none;
-  color: inherit;
+  color: var(--retro-teal);
   font: inherit;
+  font-weight: 800;
   padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 .concept-tag-link:hover {
@@ -410,7 +414,6 @@ h3 {
   color: var(--retro-teal);
   font-weight: 800;
   padding: 0.2rem 0.35rem;
-  text-decoration: underline;
 }
 
 .link-button:hover,
@@ -639,7 +642,6 @@ h3 {
 
 .chapter-map-heading-link:hover {
   color: var(--retro-text);
-  text-decoration: underline;
 }
 
 .chapter-toggle {
@@ -1157,6 +1159,23 @@ tbody tr {
   object-fit: cover;
 }
 
+/* ECHO's placeholder glyph and (once commissioned) real sprite — same
+   footprint as .rogue-sprite, teal instead of danger-red so the two never
+   read as the same kind of presence even at a glance. */
+.mentor-sprite {
+  background: var(--retro-panel-raised);
+  block-size: 3.1rem;
+  border: 2px solid var(--retro-teal);
+  flex: 0 0 3.1rem;
+  image-rendering: pixelated;
+  inline-size: 3.1rem;
+  object-fit: cover;
+}
+
+.mentor-sprite-placeholder.is-explaining rect:last-child {
+  fill: var(--retro-amber);
+}
+
 /* P4.4: m8-1's first direct ROGUE.exe encounter escalates the generic
    .rogue-encounter treatment above — bigger sprite, brighter danger glow,
    room for the overlay flash pseudo-element. Animation-bearing rules for
@@ -1400,6 +1419,29 @@ tbody tr {
 
 .cutscene-mute-toggle {
   font-size: 0.72rem;
+}
+
+/* Learn SQL Mode's per-sector primers (src/content/primers.ts): a worked
+   SQL example under the mentor's copy, styled like the glossary's example
+   block so a primer and a glossary entry read as the same kind of thing. */
+.cutscene-code-example {
+  background: #07101d;
+  border: 1px solid var(--retro-border);
+  inline-size: 100%;
+  padding: 0.5rem;
+  text-align: start;
+}
+
+.cutscene-code-example p {
+  margin: 0 0 0.35rem;
+}
+
+.cutscene-code-example pre {
+  color: var(--retro-text);
+  font-size: clamp(0.65rem, 1.25vw, 0.78rem);
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 /* Item 14: a code-rendered map of the mission workspace. It is decorative
@@ -1898,6 +1940,20 @@ tbody tr {
   margin-block-start: 0;
 }
 
+/* Learn SQL Mode's "Review SQL primers" overlay (PrimerReviewPanel) reuses
+   the glossary panel/backdrop chrome wholesale — only this list is new. */
+.primer-review-list {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.primer-review-list .link-button {
+  text-align: start;
+}
+
 /* Always-present, deliberately unobtrusive — rendered once in App.tsx
    alongside whichever screen is active, not per-screen, so it floats above
    cutscenes/backgrounds/overlays too (z-index above the highest existing
@@ -2188,7 +2244,10 @@ tbody tr {
 }
 
 .sector-map-drawer .chapter-map {
+  background: none;
   block-size: 100%;
+  border: none;
+  box-shadow: none;
   grid-column: auto;
   grid-row: auto;
   /* Overrides the narrow-viewport .chapter-map/.chapter-list max-block-size
