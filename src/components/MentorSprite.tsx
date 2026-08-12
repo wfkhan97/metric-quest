@@ -1,13 +1,17 @@
+import mentorActive from '../assets/mentor/mentor-active.png';
+import mentorIdle from '../assets/mentor/mentor-idle.png';
+
 export type MentorState = 'calm' | 'explaining';
 
-// No commissioned art yet (docs/GAME_DESIGN_BRIEF.md §B Step 3c). A plain
-// teal terminal-cursor glyph stands in — same swap-point pattern as
-// AvatarPreview.tsx's sprite.imageUrl branch: once real art lands, add a
-// `src` per state below and the <img> branch picks it up. No caller needs
-// to change.
+// Real art landed 2026-08-12: mentor-idle.png/mentor-active.png (a matched
+// idle/active CRT-monitor pair, docs/GAME_DESIGN_BRIEF.md §B Step 3c's
+// spec) had been committed 2026-08-10 but never wired into any component —
+// found and wired in here. The `src?` swap-point pattern stays (same as
+// AvatarPreview.tsx's sprite.imageUrl branch) so a future third state added
+// without art yet still renders something, rather than breaking.
 const MENTOR_ART: Record<MentorState, { src?: string; alt: string }> = {
-  calm: { alt: 'A steady teal terminal cursor, calm and attentive' },
-  explaining: { alt: 'A steady teal terminal cursor, brighter, actively explaining' },
+  calm: { src: mentorIdle, alt: 'ECHO, a calm teal CRT terminal, steady and attentive' },
+  explaining: { src: mentorActive, alt: 'ECHO, a bright teal CRT terminal, actively explaining' },
 };
 
 type MentorSpriteProps = {

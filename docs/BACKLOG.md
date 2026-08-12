@@ -1388,10 +1388,17 @@ offers the primer track without forcing it. Content lives in
 `src/content/primers.ts` (`sectorPrimers`, one entry per sector, built
 into `Beat`s via `buildSectorPrimerBeat`); rendering reuses the existing
 `CutsceneView`/`Beat`/`BeatPanel` system with two small additive fields
-(`mentorState`, `codeExample`) rather than a new component. New
-`MentorSprite` component ships with a placeholder glyph — no character
-art commissioned yet (see the corrected note on `docs/GAME_DESIGN_BRIEF.md`
-§B Step 3c). Full design/rationale in the session's plan doc
+(`mentorState`, `codeExample`) rather than a new component. **Update
+2026-08-12:** `MentorSprite` now ships with real art — `mentor-idle.png`/
+`mentor-active.png` (a matched CRT-monitor pair fulfilling
+`docs/GAME_DESIGN_BRIEF.md` §B Step 3c's spec) had actually been
+committed 2026-08-10 (`be517b6`) but never wired into any component;
+found and wired in here rather than requesting new art. A separate,
+independent asset delivery on `codex/mentor-system-character`
+(`echo-idle.png` — same character concept, same "ECHO" name landed
+independently) was reviewed but not used, since the already-committed
+pair was a complete two-state set and needed no new request. Full
+design/rationale in the session's plan doc
 (`/Users/WK/.claude/plans/fluttering-coalescing-squid.md`, referenced
 here since it isn't part of this repo). B2 (ungraded practice reps) and
 in-cutscene branching choice were both explicitly scoped out of this
