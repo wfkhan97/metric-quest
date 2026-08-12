@@ -41,11 +41,43 @@ vi.mock('./components/AvatarCreatorView', () => ({
 }));
 
 vi.mock('./components/CutsceneView', () => ({
-  CutsceneView: ({ beat, skippable, onFinish }: { beat: Beat; skippable: boolean; onFinish: () => void }) => (
+  CutsceneView: ({
+    beat,
+    skippable,
+    onFinish,
+    onChoice,
+  }: {
+    beat: Beat;
+    skippable: boolean;
+    onFinish: () => void;
+    onChoice?: (accepted: boolean) => void;
+  }) => (
     <main aria-label={`Cutscene ${beat.id}`}>
       <p>{beat.id}</p>
       <button type="button" onClick={onFinish}>{`Finish ${beat.id}`}</button>
       {skippable && beat.skipLabel && <button type="button" onClick={onFinish}>{beat.skipLabel}</button>}
+      {onChoice && beat.panels.some((panel) => panel.choice) && (
+        <>
+          <button
+            type="button"
+            onClick={() => {
+              onChoice(true);
+              onFinish();
+            }}
+          >
+            {`Accept ${beat.id}`}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              onChoice(false);
+              onFinish();
+            }}
+          >
+            {`Decline ${beat.id}`}
+          </button>
+        </>
+      )}
     </main>
   ),
 }));
@@ -227,5 +259,33 @@ describe('Learn SQL Mode', () => {
     const dialog = screen.getByRole('dialog', { name: 'Review SQL primers' });
     await user.click(within(dialog).getByRole('button', { name: /Sector 1/ }));
     expect(screen.getByLabelText('Cutscene sector-primer-1')).toBeTruthy();
+  });
+});
+
+describe('Mentor-intro choice', () => {
+  async function reachMentorIntro(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: 'New game' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm avatar' }));
+    await finishOpening(user);
+    await user.click(screen.getByRole('button', { name: 'Finish terminal-orientation' }));
+    expect(screen.getByLabelText('Cutscene mentor-intro')).toBeTruthy();
+  }
+
+  it('accepting turns Learn SQL Mode on directly, with no separate Home toggle needed', async () => {
+    render(<App />);
+    const user = userEvent.setup();
+    await reachMentorIntro(user);
+
+    await user.click(screen.getByRole('button', { name: 'Accept mentor-intro' }));
+    expect(screen.getByRole('button', { name: 'Learn SQL Mode: On' })).toBeTruthy();
+  });
+
+  it('declining leaves Learn SQL Mode off', async () => {
+    render(<App />);
+    const user = userEvent.setup();
+    await reachMentorIntro(user);
+
+    await user.click(screen.getByRole('button', { name: 'Decline mentor-intro' }));
+    expect(screen.getByRole('button', { name: 'Learn SQL Mode: Off' })).toBeTruthy();
   });
 });

@@ -28,6 +28,7 @@ import {
   resetActiveSave,
   saveProgress,
   setAvatar,
+  setLearnSqlMode,
   toggleLearnSqlMode,
   type AvatarConfig,
   type Progress,
@@ -323,6 +324,13 @@ export function App() {
     handleProgressChange(toggleLearnSqlMode(progress));
   }
 
+  // Only the mentor-intro beat's second panel currently sets `choice` —
+  // an explicit set (not toggle) so the player's actual answer wins,
+  // regardless of whatever the flag happened to be already.
+  function handleMentorIntroChoice(accepted: boolean) {
+    handleProgressChange(setLearnSqlMode(progress, accepted));
+  }
+
   // Home's "Review SQL primers" — replays an already-seen sector primer
   // on demand, same shape as handleReplayOpening/handleReplayTutorial.
   function handleReviewPrimer(sector: number) {
@@ -365,6 +373,7 @@ export function App() {
         isMusicMuted={isMusicMuted}
         onToggleMusicMute={toggleMusicMute}
         onFinish={handleCutsceneFinish}
+        onChoice={handleMentorIntroChoice}
       />
     );
   } else if (view === 'sector-transition' && pendingMission) {

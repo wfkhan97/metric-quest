@@ -19,6 +19,7 @@ import {
   renameSave,
   saveProgress,
   setAvatar,
+  setLearnSqlMode,
   switchActiveSave,
   toggleLearnSqlMode,
   type Progress,
@@ -323,6 +324,13 @@ describe('Learn SQL Mode helpers', () => {
     expect(isLearnSqlModeOn(on)).toBe(true);
     const off = toggleLearnSqlMode(on);
     expect(isLearnSqlModeOn(off)).toBe(false);
+  });
+
+  it('setLearnSqlMode sets the explicit value regardless of the current one (mentor-intro choice)', () => {
+    expect(isLearnSqlModeOn(setLearnSqlMode(empty, true))).toBe(true);
+    expect(isLearnSqlModeOn(setLearnSqlMode(empty, false))).toBe(false);
+    const alreadyOn = toggleLearnSqlMode(empty);
+    expect(isLearnSqlModeOn(setLearnSqlMode(alreadyOn, true))).toBe(true);
   });
 
   it('tracks seen primers per sector without disturbing others', () => {

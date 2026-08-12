@@ -117,3 +117,70 @@ describe('CutsceneView mentor + code-example panels (Learn SQL Mode)', () => {
     expect(screen.queryByRole('button', { name: /^Skip/ })).toBeNull();
   });
 });
+
+describe('CutsceneView panel.choice (Learn SQL Mode mentor-intro)', () => {
+  const choiceBeat: Beat = {
+    id: 'test-choice-beat',
+    panels: [
+      {
+        eyebrow: 'Mentor channel',
+        heading: 'Want a hand?',
+        mentorState: 'explaining',
+        copy: ['Your call.'],
+        choice: { yesLabel: 'Yes please', noLabel: 'No thanks' },
+      },
+    ],
+  };
+
+  it('renders both options instead of a single Continue button', () => {
+    render(
+      <CutsceneView
+        beat={choiceBeat}
+        skippable={false}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Yes please' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'No thanks' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Continue' })).toBeNull();
+  });
+
+  it('calls onChoice with the picked value, then finishes/advances same as a normal Continue', async () => {
+    const onChoice = vi.fn();
+    const onFinish = vi.fn();
+    render(
+      <CutsceneView
+        beat={choiceBeat}
+        skippable={false}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={onFinish}
+        onChoice={onChoice}
+      />,
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'No thanks' }));
+    expect(onChoice).toHaveBeenCalledWith(false);
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+
+  it('works with no onChoice handler provided (choice panel on a beat that never wires one)', async () => {
+    const onFinish = vi.fn();
+    render(
+      <CutsceneView
+        beat={choiceBeat}
+        skippable={false}
+        isMusicMuted={false}
+        onToggleMusicMute={vi.fn()}
+        onFinish={onFinish}
+      />,
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Yes please' }));
+    expect(onFinish).toHaveBeenCalledTimes(1);
+  });
+});

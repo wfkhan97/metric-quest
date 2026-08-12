@@ -338,6 +338,13 @@ export function toggleLearnSqlMode(progress: Progress): Progress {
   return { ...progress, learnSqlMode: !isLearnSqlModeOn(progress) };
 }
 
+/** Explicit set, distinct from toggle — used by the mentor-intro beat's
+ * yes/no choice, where the player's answer should win outright rather than
+ * flip whatever the current value happens to be. */
+export function setLearnSqlMode(progress: Progress, value: boolean): Progress {
+  return { ...progress, learnSqlMode: value };
+}
+
 export function hasSeenPrimer(progress: Progress, sector: number): boolean {
   return progress.seenPrimers?.includes(sector) ?? false;
 }

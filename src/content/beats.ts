@@ -52,10 +52,17 @@ export type BeatPanel = {
   sfxSrc?: string;
   /** Attribution text, shown only while a CC-BY (not CC0) track is playing. */
   creditLine?: string;
-  /** Overrides the default "Next" (or "Continue" on a beat's last panel). */
+  /** Overrides the default "Next" (or "Continue" on a beat's last panel). Ignored when `choice` is set. */
   continueLabel?: string;
   /** Current region in the non-interactive terminal-orientation schematic. */
   tutorialFocus?: TutorialFocus;
+  /**
+   * Replaces the single Continue button with a real two-way choice — the
+   * panel's copy should read as the actual question being asked. Picking
+   * either option calls CutsceneView's `onChoice` (if provided) and then
+   * advances exactly like a normal Continue click. `frame` layout only.
+   */
+  choice?: { yesLabel: string; noLabel: string };
 };
 
 export type Beat = {
@@ -325,9 +332,9 @@ export const mentorIntroBeat: Beat = {
       mentorState: 'explaining',
       copy: [
         '"I can\'t fight ROGUE.exe for you — has to be your query, or the mainframe won\'t accept it as a real fix. But I can walk you through the SQL you\'ll need before you hit a locked door, sector by sector, if you want it."',
-        '"Flip on Learn SQL Mode from the main terminal any time — on or off, your call, and you can change your mind later."',
+        '"Your call, and not a permanent one — flip Learn SQL Mode on or off from the main terminal any time, whatever you pick right now."',
       ],
-      continueLabel: 'Got it',
+      choice: { yesLabel: 'Yes — walk me through it', noLabel: "I've got this" },
     },
   ],
 };
