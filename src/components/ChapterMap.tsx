@@ -1,5 +1,6 @@
 import { useEffect, useId, useState } from 'react';
 import { chapterNumber, chapters } from '../content/chapters';
+import iconRestored from '../assets/ui/icon-restored.png';
 import { type Mission } from '../lib/missions';
 
 type ChapterMapProps = {
@@ -90,12 +91,27 @@ export function ChapterMap({
                       <li key={mission.id}>
                         <button
                           type="button"
-                          className={isActive ? 'mission-button active' : 'mission-button'}
+                          className={[
+                            'mission-button',
+                            isActive && 'active',
+                            isCompleted && 'completed',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
                           onClick={() => onSelectMission(mission)}
                           aria-current={isActive ? 'page' : undefined}
                         >
                           <strong>{mission.title}</strong>
-                          <small>{isCompleted ? 'Purged' : `${mission.points} points`}</small>
+                          <small>
+                            {isCompleted ? (
+                              <>
+                                <img className="icon-inline" src={iconRestored} alt="" aria-hidden="true" />
+                                Purged
+                              </>
+                            ) : (
+                              `${mission.points} points`
+                            )}
+                          </small>
                         </button>
                       </li>
                     );

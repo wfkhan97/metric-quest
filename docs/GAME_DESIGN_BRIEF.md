@@ -550,7 +550,11 @@ re-request rather than resending this whole kit.
 
 ### Step 4a — Fix: `icon-corruption.png` legibility (requested 2026-08-10)
 
-Not sent yet. The corruption-detected icon from the Step 4 kit came back
+**Status: delivered and wired in (2026-08-10)** — see `docs/BACKLOG.md`'s
+Design asset tracker. Kept below for the prompt-history record; nothing
+left to send here.
+
+The corruption-detected icon from the Step 4 kit came back
 illegible — it reads as generic static/noise rather than communicating
 "corruption" the way the delivered "signal restored" icon clearly reads
 as "restored." This is a narrow re-request for just that one icon, not
@@ -582,6 +586,149 @@ red/amber, matching the app's existing error-state color
 restored." Transparent background, same square canvas size as the other
 small icons in the kit (128x128px, matching points/badge/progress/
 signal-restored).
+```
+
+### Before Step 8 — two already-drafted prompts still waiting to be sent
+
+Two requests from earlier passes were fully drafted but never sent. Both are
+still valid and don't block or get blocked by anything in Steps 8-11 below:
+
+- **Step 3b** (Sector 8/9 confrontation cinematic) — ready to copy-paste as-is.
+- **Step 3c** ("Good AI" mentor character) — **the brief text still says "I
+  don't have a name locked in yet," but that's stale.** A separate in-flight
+  build (`codex/mentor-system-character`) has since named this character
+  **ECHO** and shipped a CSS placeholder glyph for it
+  (`.mentor-sprite`/`.mentor-sprite-placeholder` in `src/styles.css`). Before
+  sending Step 3c, add one line naming the character "ECHO" so the delivered
+  art and the shipped placeholder agree — otherwise send as-is, the rest of
+  the brief still holds.
+
+### Step 8 — ROGUE.exe idle/escalation animation frame sheet (§A8 Phase 3)
+
+Unblocks the animation described in §A8 Phase 3. `src/styles.css` already
+has CSS-only jitter placeholders (`rogue-glitch`, `rogue-boss-glitch`) sitting
+on the single static `corrupted` pose — this replaces that placeholder with
+a real frame cycle once delivered, no CSS rewrite needed beyond swapping a
+background-position/frame-step animation in for the current transform jitter.
+
+```text
+Continuing the ROGUE.exe character you already designed (the glitchy,
+fragmented, non-humanoid terminal/CRT-monitor face -- calm and corrupted
+states already delivered), I'd like a short animation frame sheet for its
+"corrupted" state, reusing that exact design.
+
+Two short loops, same character, same canvas size and palette as the
+existing corrupted illustration:
+1. "Idle glitch" -- 4-6 frames of a subtle, continuous glitch-jitter loop
+   (the kind of thing that plays constantly while ROGUE.exe is on screen,
+   not a big event).
+2. "Boss escalation" -- 4-6 frames of the same character breaking down
+   further/more chaotically, for the moment it's confronted directly and
+   losing (used bigger and closer to camera than the idle loop).
+
+Export as a single sprite sheet (frames laid out in a horizontal row) for
+each loop, or as individually numbered frame files if that's easier on
+your end -- whichever makes the frame order unambiguous. Keep every frame
+on the same transparent canvas size as the existing rogue-corrupted
+illustration so it drops into the same on-screen footprint.
+```
+
+### Step 9 — Recruit avatar run-cycle + "pulled in" frame sheet (§A8 Phase 3)
+
+Unblocks the other half of §A8 Phase 3. Today the opening cutscene fakes
+motion on the single static avatar sprite via CSS transform tricks
+(`cutscene-avatar-run`, `cutscene-avatar-pulled` in `src/styles.css`) — this
+is the frame-sheet version of that. Scoped to one base sprite first (style-
+lock, same reasoning as Step 1a) rather than all 12 recolors at once.
+
+```text
+Continuing the "Recruit" player-character sprite set you designed (the
+customizable base sprites with color/outfit recolors), I'd like a short
+animation frame sheet using the "Analyst" base sprite specifically, as a
+style test before we decide whether to extend this to the other base
+sprites too.
+
+Two short sequences, same pose proportions, canvas size, and pixel density
+as the existing Analyst sprite:
+1. "Run" -- 4-6 frames of a simple side-on or 3/4-view running cycle.
+2. "Pulled in" -- 4-6 frames of the character being yanked/spun/dissolving
+   into a bright teal (#1fd3c4) vortex, ending mostly consumed by light
+   -- this plays once, at the moment the character is pulled from the
+   real world into the mainframe.
+
+Export as a sprite sheet or individually numbered frames, transparent
+background, same canvas size as the existing base sprite. Once this style
+is approved, let me know what it'd take to apply the same two sequences to
+the other 11 recolors -- I may not need all of them animated, just want to
+know the lift before deciding.
+```
+
+### Step 10 — Particle/VFX overlay texture pack
+
+New, not part of any earlier step. These are small tileable/loopable
+textures meant to sit as CSS overlay layers (blend-mode, opacity, or
+position-animated) on top of existing art — not full illustrations — for
+moments the current CSS-only effects (glitch/flicker/scanline) don't quite
+sell on their own: the "floor gives way to static" cutscene panel, a
+corruption-in-progress decal for sectors under active attack, and a spark
+burst for the "pulled in" zap moment.
+
+```text
+Design a small set of overlay textures/effects for "Metric Quest," meant to
+be layered on top of existing scene art in a web app via CSS (opacity,
+blend modes, or simple position animation) -- not full illustrations, just
+effect textures. Same 8-bit/16-bit pixel-art style and palette as the rest
+of the set (deep navy #0a1024, teal #1fd3c4, amber #ffd166, plus the
+existing error color #ff8a80 where noted below).
+
+Four textures:
+1. "Static/noise" -- a tileable field of pixel-block static/interference,
+   teal-tinted, usable at partial opacity over a scene to suggest a screen
+   losing signal.
+2. "Digital rain/data shatter" -- vertical streaks of falling
+   teal/amber pixel fragments, transparent background, tileable
+   horizontally, suggesting a screen or object breaking apart into data.
+3. "Spark/ember burst" -- a single burst/explosion of small teal and amber
+   pixel particles radiating outward, transparent background, sized to
+   composite behind or around a character sprite at the moment of a sudden
+   event (e.g. being pulled through a portal).
+4. "Corruption crack decal" -- a jagged, glitchy crack/fracture pattern in
+   the error color (#ff8a80), transparent background, meant to overlay
+   part of a scene or panel to signal "this is actively corrupted right
+   now," distinct from the character-facing icon-corruption.png you
+   already delivered.
+
+Export each as an individual transparent PNG. Where a texture is meant to
+tile or loop (1, 2), please say so explicitly and make the edges seamless.
+```
+
+### Step 11 — Mission-workspace region icon set (Learn SQL Mode + general UI)
+
+Small, icon-sized (not full illustrations) — extends the Step 4 UI chrome
+kit rather than replacing it. Useful for the first-run terminal orientation
+(`TutorialMissionPreview.tsx`, currently CSS-only with no icons at all) and
+any future per-region visual anchor in the main mission workspace.
+
+```text
+Extending the small UI icon set you designed earlier (points, badge,
+progress, signal-restored, corruption-detected icons -- 128x128px,
+transparent, same 8-bit/16-bit pixel style), please add one more small set:
+simple glyph icons representing the parts of a SQL mission workspace, for
+use as a visual anchor next to each region's label, not as a full
+illustration.
+
+Six icons, same canvas size and style as the existing kit:
+1. "Brief" -- a short document/scroll glyph.
+2. "Schema" -- a small connected-tables/grid glyph.
+3. "Editor" -- a cursor/prompt glyph (">_" or similar).
+4. "Run" -- a play/execute glyph.
+5. "Feedback" -- a small speech-bubble or status-pulse glyph.
+6. "Help/hint" -- a lightbulb or question-mark glyph.
+
+Keep the set visually consistent with each other (same line weight,
+same "read as one family" feeling as the existing points/badge/progress
+icons), teal (#1fd3c4) as the default state color unless a specific one
+calls for the amber/error accents already established elsewhere in the kit.
 ```
 
 ---

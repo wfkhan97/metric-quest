@@ -18,6 +18,7 @@ import { classifyAttempt, type MistakeSignature } from '../lib/diagnostics';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
+import { playSfx } from '../content/sfx';
 import { runMissionQuery } from '../lib/sqlRunner';
 import { useFocusTrap } from '../lib/useFocusTrap';
 
@@ -96,6 +97,15 @@ export function MissionView({
   // an executed result to read.
   const [wrongAttemptCount, setWrongAttemptCount] = useState(0);
   const [diagnostic, setDiagnostic] = useState<MistakeSignature | undefined>(undefined);
+  // Furls the editor once a mission is graded correct, so the player mainly
+  // sees the "terminal restored" feedback instead of a wall of SQL they've
+  // already solved. They can still reopen it (e.g. to tweak and re-run) via
+  // the disclosure's own summary toggle.
+  const [isEditorCollapsed, setIsEditorCollapsed] = useState(false);
+  const nextMission = useMemo(() => {
+    const index = missions.findIndex((candidate) => candidate.id === mission.id);
+    return index === -1 ? undefined : missions[index + 1];
+  }, [missions, mission.id]);
   const sectorTrack = sectorMusic[chapterNumber(mission)];
   const musicRef = useRef<HTMLAudioElement>(null);
 
@@ -174,16 +184,19 @@ export function MissionView({
     setFeedback(undefined);
     setResult(undefined);
     setDiagnostic(undefined);
+    playSfx('queryRun', isMusicMuted);
     const outcome = await runMissionQuery(sql, { allowsTempWorkspace: mission.allowsTempWorkspace });
     setIsRunning(false);
     if (!outcome.ok) {
       setFeedback({ tone: 'error', heading: rogueInvalidQueryLine, text: outcome.message });
+      playSfx('queryError', isMusicMuted);
       return;
     }
     setResult(outcome.result);
     const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters });
     if (!validation.correct) {
       setFeedback({ tone: 'error', heading: rogueWrongResultLine, text: validation.message });
+      playSfx('queryError', isMusicMuted);
       const nextWrongAttemptCount = wrongAttemptCount + 1;
       setWrongAttemptCount(nextWrongAttemptCount);
       if (nextWrongAttemptCount >= 2) {
@@ -207,6 +220,8 @@ export function MissionView({
       sectorNowComplete,
       campaignNowComplete,
     });
+    playSfx(sectorNowComplete || campaignNowComplete ? 'sectorComplete' : 'querySuccess', isMusicMuted);
+    setIsEditorCollapsed(true);
   }
 
   return (
@@ -248,12 +263,14 @@ export function MissionView({
           </strong>
         </section>
         <section className="panel header-reward" aria-labelledby="rewards-title">
-          <h2 id="rewards-title">Terminal reward</h2>
-          <p>
-            <strong>{mission.points} points</strong>
-            {mission.badge ? ` · ${mission.badge} badge` : ''}
-          </p>
-          {completed && <p>Purged terminals can be replayed without changing your points.</p>}
+          <div className="header-reward-text">
+            <h2 id="rewards-title">Terminal reward</h2>
+            <p>
+              <strong>{mission.points} points</strong>
+              {mission.badge ? ` · ${mission.badge} badge` : ''}
+            </p>
+            {completed && <p>Purged terminals can be replayed without changing your points.</p>}
+          </div>
           <details className="badges-disclosure">
             <summary>Badges{progress.badges.length ? ` (${progress.badges.length})` : ''}</summary>
             <div className="badges-list">
@@ -337,13 +354,18 @@ export function MissionView({
 
           <SchemaExplorer tables={mission.visibleTables} relationships={mission.relationships} />
 
-          <section className="panel sql-editor-panel" aria-labelledby="editor-title">
-            <div className="editor-header">
+          <details
+            className="panel sql-editor-panel"
+            open={!isEditorCollapsed}
+            onToggle={(event) => setIsEditorCollapsed(!event.currentTarget.open)}
+          >
+            <summary className="editor-header">
               <h3 id="editor-title">SQL editor</h3>
               {/* P5.2: the "syntax highlighting and autocomplete" placeholder tag is
                   removed from view (too much on-screen text) but the future item it
                   tracked is not dropped — see BACKLOG.md item 6's clarifying note. */}
-            </div>
+              {isEditorCollapsed && <span className="subtle">Click to edit query</span>}
+            </summary>
             <span className="sql-label sr-only" id="sql-label">
               Write a read-only SQL query
             </span>
@@ -398,7 +420,7 @@ export function MissionView({
                 </button>
               )}
             </div>
-          </section>
+          </details>
 
           {hintCount > 0 && (
             <section className="hints" aria-label="Mission hints">
@@ -462,6 +484,11 @@ export function MissionView({
                 <p className="badge-unlock">
                   <img className="icon-inline" src={iconBadge} alt="" aria-hidden="true" /> Badge unlocked: <strong>{feedback.newBadge}</strong>
                 </p>
+              )}
+              {feedback.tone === 'success' && nextMission && (
+                <button type="button" className="start-button next-mission-button" onClick={() => onSelectMission(nextMission)}>
+                  {feedback.sectorNowComplete ? 'Next sector' : 'Next mission'}
+                </button>
               )}
             </section>
           )}

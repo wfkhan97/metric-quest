@@ -237,7 +237,12 @@ pre,
 }
 
 .header-reward {
-  flex: 1 1 14rem;
+  align-items: flex-start;
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: space-between;
 }
 
 /* P5.6: the mission-view scoreboard shrinks to just "integrity bar + points"
@@ -298,7 +303,7 @@ pre,
 .badges-disclosure {
   color: var(--retro-muted);
   font-size: 0.78rem;
-  margin-block-start: 0.4rem;
+  text-align: end;
 }
 
 .badges-disclosure summary {
@@ -350,11 +355,10 @@ pre,
 .concept-tag-link {
   background: transparent;
   border: none;
-  color: inherit;
+  color: var(--retro-teal);
   font: inherit;
+  font-weight: 800;
   padding: 0;
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 .concept-tag-link:hover {
@@ -410,7 +414,6 @@ h3 {
   color: var(--retro-teal);
   font-weight: 800;
   padding: 0.2rem 0.35rem;
-  text-decoration: underline;
 }
 
 .link-button:hover,
@@ -639,7 +642,6 @@ h3 {
 
 .chapter-map-heading-link:hover {
   color: var(--retro-text);
-  text-decoration: underline;
 }
 
 .chapter-toggle {
@@ -707,9 +709,30 @@ h3 {
   border-inline-start-color: var(--retro-amber);
 }
 
+.mission-button.completed {
+  background: rgba(31, 211, 196, 0.07);
+  border-inline-start-color: var(--retro-teal);
+}
+
+.mission-button.completed.active {
+  border-inline-start-color: var(--retro-amber);
+}
+
 .mission-button small {
+  align-items: center;
   color: var(--retro-muted);
+  display: flex;
   font-size: 0.75rem;
+  gap: 0.25rem;
+}
+
+.mission-button.completed small {
+  color: var(--retro-teal);
+}
+
+.mission-button.completed small .icon-inline {
+  block-size: 0.85rem;
+  inline-size: 0.85rem;
 }
 
 /* Mission: P5.4 moved the sector map into a drawer (see .sector-map-drawer
@@ -790,6 +813,7 @@ h3 {
 .schema-tables {
   display: grid;
   gap: 0.45rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
   margin-block-start: 0.65rem;
 }
 
@@ -811,6 +835,19 @@ h3 {
   padding-inline-start: 1.1rem;
 }
 
+.schema-table li {
+  align-items: baseline;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+
+.schema-column-type {
+  font-size: 0.72rem;
+  text-align: end;
+  white-space: nowrap;
+}
+
 .schema-relationships {
   border-block-start: 1px solid var(--retro-border);
   margin-block-start: 0.75rem;
@@ -830,11 +867,30 @@ h3 {
 
 .editor-header {
   align-items: center;
+  cursor: pointer;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: space-between;
+  list-style: none;
   margin-block-end: 0.3rem;
+}
+
+.editor-header::-webkit-details-marker {
+  display: none;
+}
+
+.editor-header::before {
+  color: var(--retro-teal);
+  content: '▾ ';
+}
+
+.sql-editor-panel:not([open]) .editor-header {
+  margin-block-end: 0;
+}
+
+.sql-editor-panel:not([open]) .editor-header::before {
+  content: '▸ ';
 }
 
 .placeholder-tag,
@@ -873,6 +929,10 @@ h3 {
 .sql-editor .cm-editor {
   block-size: 100%;
   outline: none;
+}
+
+.next-mission-button {
+  margin-block-start: 0.6rem;
 }
 
 .actions {
@@ -2188,7 +2248,10 @@ tbody tr {
 }
 
 .sector-map-drawer .chapter-map {
+  background: none;
   block-size: 100%;
+  border: none;
+  box-shadow: none;
   grid-column: auto;
   grid-row: auto;
   /* Overrides the narrow-viewport .chapter-map/.chapter-list max-block-size

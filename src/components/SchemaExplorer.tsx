@@ -1,3 +1,5 @@
+import { columnTypes } from '../content/columnTypes';
+
 type SchemaExplorerProps = {
   tables: string[];
   relationships?: string[];
@@ -36,6 +38,7 @@ export function SchemaExplorer({ tables, relationships }: SchemaExplorerProps) {
                 {columns.map((column) => (
                   <li key={column}>
                     <code>{column}</code>
+                    {columnTypes[name]?.[column] && <span className="subtle schema-column-type">{columnTypes[name][column]}</span>}
                   </li>
                 ))}
               </ul>
