@@ -16,7 +16,10 @@ export type ValidationOptions = {
 /**
  * Compares executed result tables, not learner SQL text. Future missions may
  * opt into order-sensitive comparison; the foundation treats row order as
- * irrelevant so equivalent queries can pass.
+ * irrelevant so equivalent queries can pass. Column headers are checked only
+ * by count, not by exact alias text — mission hints invite learners to pick
+ * their own readable alias (e.g. "alias it something like Revenue"), so a
+ * differently-named-but-correct column must still pass.
  */
 export function resultTablesMatch(actual: QueryResult, expected: QueryResult): boolean {
   return validateResult(actual, expected).correct;
@@ -27,8 +30,8 @@ export function validateResult(
   expected: QueryResult,
   options: ValidationOptions = {},
 ): ValidationResult {
-  if (!sameColumns(actual.columns, expected.columns)) {
-    return { correct: false, kind: 'columns', message: `Check the selected columns and aliases. Expected: ${expected.columns.join(', ')}.` };
+  if (actual.columns.length !== expected.columns.length) {
+    return { correct: false, kind: 'columns', message: `Check how many columns you're selecting, in what order. This mission expects ${expected.columns.length} column(s), shaped like: ${expected.columns.join(', ')}.` };
   }
 
   if (actual.rows.length !== expected.rows.length) {
@@ -53,20 +56,12 @@ function sameRowValues(actual: string[], expected: string[]): boolean {
   return actual.every((row, index) => row === expected[index]);
 }
 
-function sameColumns(actual: string[], expected: string[]): boolean {
-  return actual.length === expected.length && actual.every((column, index) => normaliseColumn(column) === normaliseColumn(expected[index]));
-}
-
 function canonicalRows(rows: SqlValue[][]): string[] {
   return rawRows(rows).sort();
 }
 
 function rawRows(rows: SqlValue[][]): string[] {
   return rows.map((row) => JSON.stringify(row.map(normaliseValue)));
-}
-
-function normaliseColumn(value: string): string {
-  return value.trim().toLocaleLowerCase();
 }
 
 function normaliseValue(value: SqlValue): SqlValue {

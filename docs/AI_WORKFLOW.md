@@ -2,7 +2,7 @@
 
 ## Working agreement
 
-1. Read `AGENTS.md`, this document, `docs/architecture.md`, and the relevant source files before editing.
+1. Read `AGENTS.md`, this document, and the relevant source files before editing. For the rest of `docs/`, check [`docs/CONTEXT.md`](CONTEXT.md) first — it routes to whichever file (architecture, design brief, backlog, etc.) actually applies to the task instead of reading the whole folder.
 2. Assign one owner to each bounded change. Do not edit the same feature concurrently from separate tools.
 3. Keep source datasets in `SQL Databases/` immutable. Inspect with read-only commands only.
 4. Use AI-generated SQL as a hypothesis, not as evidence. Execute a reference query locally before encoding expected results.
