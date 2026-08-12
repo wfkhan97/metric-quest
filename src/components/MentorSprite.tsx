@@ -1,12 +1,15 @@
+import echoIdleSrc from '../assets/mentor/echo-idle.png';
+
 export type MentorState = 'calm' | 'explaining';
 
-// No commissioned art yet (docs/GAME_DESIGN_BRIEF.md §B Step 3c). A plain
-// teal terminal-cursor glyph stands in — same swap-point pattern as
-// AvatarPreview.tsx's sprite.imageUrl branch: once real art lands, add a
-// `src` per state below and the <img> branch picks it up. No caller needs
-// to change.
+// `calm` has real art now (ECHO, docs/GAME_DESIGN_BRIEF.md §B Step 3c —
+// delivered ahead of the commissioned request, see
+// src/assets/mentor/echo-idle.png). `explaining` has no second pose yet, so
+// it keeps the placeholder glyph below — same swap-point pattern as
+// AvatarPreview.tsx's sprite.imageUrl branch: once art lands, add a `src`
+// per state and the <img> branch picks it up. No caller needs to change.
 const MENTOR_ART: Record<MentorState, { src?: string; alt: string }> = {
-  calm: { alt: 'A steady teal terminal cursor, calm and attentive' },
+  calm: { src: echoIdleSrc, alt: 'ECHO, calm and attentive' },
   explaining: { alt: 'A steady teal terminal cursor, brighter, actively explaining' },
 };
 

@@ -602,14 +602,21 @@ Two requests from earlier passes were fully drafted but never sent. Both are
 still valid and don't block or get blocked by anything in Steps 8-11 below:
 
 - **Step 3b** (Sector 8/9 confrontation cinematic) — ready to copy-paste as-is.
+  **Update (2026-08-12):** `codex/mentor-system-character` has since delivered
+  8 composited placeholder panels for this exact moment (see
+  `src/assets/cutscenes/README.md`) — one is already wired into m8-1
+  (`RogueSprite`'s new `confronting` state). Sending Step 3b now would
+  replace these placeholders with real exports, not start from nothing —
+  see the Design asset tracker in `docs/BACKLOG.md` for exactly what's wired
+  vs. still pending.
 - **Step 3c** ("Good AI" mentor character) — **the brief text still says "I
   don't have a name locked in yet," but that's stale.** A separate in-flight
   build (`codex/mentor-system-character`) has since named this character
-  **ECHO** and shipped a CSS placeholder glyph for it
-  (`.mentor-sprite`/`.mentor-sprite-placeholder` in `src/styles.css`). Before
-  sending Step 3c, add one line naming the character "ECHO" so the delivered
-  art and the shipped placeholder agree — otherwise send as-is, the rest of
-  the brief still holds.
+  **ECHO** and delivered `echo-idle.png`, now wired as `MentorSprite`'s
+  `calm` state (the `explaining` state still has no art). Before sending
+  Step 3c, add one line naming the character "ECHO" and note that a `calm`
+  placeholder already exists so a second (`explaining`) pose is the one
+  that's actually still missing.
 
 ### Step 8 — ROGUE.exe idle/escalation animation frame sheet (§A8 Phase 3)
 

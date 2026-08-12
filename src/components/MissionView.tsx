@@ -345,7 +345,7 @@ export function MissionView({
 
           {mission.id === 'm8-1' && (
             <aside className="rogue-encounter rogue-boss-moment" aria-label="ROGUE.exe transmission">
-              <RogueSprite state="corrupted" className="rogue-sprite-boss" />
+              <RogueSprite state="confronting" className="rogue-sprite-boss" />
               <p className="rogue-boss-line type-reveal">
                 <strong>ROGUE.exe:</strong> &ldquo;Verification is such a delightfully inefficient human habit.&rdquo;
               </p>
