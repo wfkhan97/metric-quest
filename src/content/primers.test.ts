@@ -31,4 +31,30 @@ describe('sector primers', () => {
       }
     }
   });
+
+  it('covers all 9 sectors (Learn SQL Mode Stage 3), each with a real beat and non-empty copy', () => {
+    for (let sector = 1; sector <= 9; sector += 1) {
+      const primer = sectorPrimers[sector];
+      expect(primer, `sector ${sector} primer`).toBeDefined();
+      expect(primer!.mentorIntro.length).toBeGreaterThan(0);
+      expect(primer!.closing.length).toBeGreaterThan(0);
+      expect(primer!.concepts.length).toBeGreaterThan(0);
+
+      const beat = sectorPrimerBeats[sector];
+      expect(beat?.id).toBe(`sector-primer-${sector}`);
+    }
+  });
+
+  it('gives every concept a non-trivial explanation and a real SQL example (no placeholder content)', () => {
+    for (const primer of Object.values(sectorPrimers) as SectorPrimer[]) {
+      for (const concept of primer.concepts) {
+        expect(concept.heading.length).toBeGreaterThan(0);
+        expect(concept.explanation.length).toBeGreaterThan(0);
+        for (const paragraph of concept.explanation) {
+          expect(paragraph.length).toBeGreaterThan(20);
+        }
+        expect(concept.example.sql.toUpperCase()).toContain('SELECT');
+      }
+    }
+  });
 });
