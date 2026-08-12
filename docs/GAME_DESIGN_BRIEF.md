@@ -480,25 +480,31 @@ background, consistent canvas size, same palette as the rest of the set.
 Export each panel as an individual PNG file.
 ```
 
-### Step 3c — "Good AI" mentor character (art-only, not commissioned yet)
+### Step 3c — "Good AI" mentor character (art delivered and wired 2026-08-12)
 
-Not commissioned yet. This is the friendly counterpart to ROGUE.exe that
+This is the friendly counterpart to ROGUE.exe that
 `docs/GAME_DESIGN_BRIEF.md` §A3's "optional, later" mentor/sysadmin voice
-reserves space for. It now has two in-game uses: **Learn SQL Mode**
-(`docs/BACKLOG.md` item 13 Part B1, built 2026-08-11/12 on branch
-`claude/learn-sql-mode`) gives this character a narrative role and a
-first-draft working name, **ECHO**, delivered today via
-`src/components/MentorSprite.tsx`'s placeholder glyph — send this prompt
-whenever the real art should replace it, no code changes needed beyond
-adding an `imageUrl` per state. It's also still the character
-`docs/BACKLOG.md` item 3 (the Monet.gg-connected in-game tutor) reserves
-this same slot for, should that ever get named/fronted by a character
-too — **requesting this art does not approve or resume building item 3**,
-which stays gated per its own status line. Safe to send any time, the
-same way Step 3b's cinematic art was drafted ahead of its own build
-being unblocked. Note ECHO's name isn't locked in — if you want it
-changed, it's one string to edit in `src/content/beats.ts` and
-`src/content/primers.ts`, not a re-scoping.
+reserves space for. **Status: done, not pending.** A matched two-state
+pair (`mentor-idle.png`/`mentor-active.png`) matching this exact prompt's
+spec was actually committed 2026-08-10 (`be517b6`, "fix: refresh feedback
+and mentor visual assets") but never wired into any component — found
+and wired into `src/components/MentorSprite.tsx` on 2026-08-12 on branch
+`claude/learn-sql-mode`, replacing the placeholder glyph that shipped
+with the character's first narrative use, **Learn SQL Mode**
+(`docs/BACKLOG.md` item 13 Part B1, built 2026-08-11/12), which also
+gave the character its first-draft working name, **ECHO** (not locked
+in — one string to edit in `src/content/beats.ts` and
+`src/content/primers.ts` if you want it changed).
+
+It's also still the character `docs/BACKLOG.md` item 3 (the Monet.gg-
+connected in-game tutor) reserves this same slot for, should that ever
+get named/fronted by a character too — using this art there **does not
+approve or resume building item 3**, which stays gated per its own
+status line.
+
+The prompt below is kept as a record of what was actually requested and
+delivered, and stays reusable if a revised or alternate version is ever
+wanted — no need to send it again for the current pair.
 
 ```text
 Design 1-2 illustrations of a friendly system-mentor character for Metric
@@ -596,27 +602,19 @@ small icons in the kit (128x128px, matching points/badge/progress/
 signal-restored).
 ```
 
-### Before Step 8 — two already-drafted prompts still waiting to be sent
+### Before Step 8 — one already-drafted prompt still waiting to be sent
 
-Two requests from earlier passes were fully drafted but never sent. Both are
-still valid and don't block or get blocked by anything in Steps 8-11 below:
-
-- **Step 3b** (Sector 8/9 confrontation cinematic) — ready to copy-paste as-is.
-  **Update (2026-08-12):** `codex/mentor-system-character` has since delivered
-  8 composited placeholder panels for this exact moment (see
+- **Step 3b** (Sector 8/9 confrontation cinematic) — ready to copy-paste as-is,
+  still not sent. `codex/mentor-system-character` has since delivered 8
+  composited placeholder panels for this exact moment (see
   `src/assets/cutscenes/README.md`) — one is already wired into m8-1
   (`RogueSprite`'s new `confronting` state). Sending Step 3b now would
   replace these placeholders with real exports, not start from nothing —
   see the Design asset tracker in `docs/BACKLOG.md` for exactly what's wired
   vs. still pending.
-- **Step 3c** ("Good AI" mentor character) — **the brief text still says "I
-  don't have a name locked in yet," but that's stale.** A separate in-flight
-  build (`codex/mentor-system-character`) has since named this character
-  **ECHO** and delivered `echo-idle.png`, now wired as `MentorSprite`'s
-  `calm` state (the `explaining` state still has no art). Before sending
-  Step 3c, add one line naming the character "ECHO" and note that a `calm`
-  placeholder already exists so a second (`explaining`) pose is the one
-  that's actually still missing.
+- ~~Step 3c~~ ("Good AI" mentor character) — **done, see Step 3c below.**
+  Real art for both states landed and got wired 2026-08-12; no prompt left
+  to send here.
 
 ### Step 8 — ROGUE.exe idle/escalation animation frame sheet (§A8 Phase 3)
 

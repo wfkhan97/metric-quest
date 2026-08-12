@@ -81,7 +81,7 @@ describe('CutsceneView mentor + code-example panels (Learn SQL Mode)', () => {
       />,
     );
 
-    expect(screen.getByRole('img', { name: /terminal cursor/ })).toBeTruthy();
+    expect(screen.getByRole('img', { name: /ECHO/ })).toBeTruthy();
     expect(screen.getByText('The three highest-value US invoices.')).toBeTruthy();
     expect(screen.getByText(/SELECT InvoiceId FROM Invoice/)).toBeTruthy();
   });
