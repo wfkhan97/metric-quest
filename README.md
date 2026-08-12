@@ -2,7 +2,7 @@
 
 Metric Quest is a browser-only SQL game for Tech MBA students. On day one at Aurora Music, the player gets pulled into the company mainframe: a rogue analyst AI has corrupted the database, and the only way out is to restore it sector by sector by writing real SQL. Learners read a mission brief, write a read-only SQL query, run it locally against a bundled SQLite dataset, and get feedback based on the executed result — never on the SQL text itself.
 
-This is a presentation layer over a real SQL curriculum, not a re-skinned quiz: every "battle" is a genuine business question, graded on the real executed result. See [docs/GAME_DESIGN_BRIEF.md](docs/GAME_DESIGN_BRIEF.md) for the full narrative, world, and visual-asset brief, and [METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md](METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md) for what is built versus what is next.
+This is a presentation layer over a real SQL curriculum, not a re-skinned quiz: every "battle" is a genuine business question, graded on the real executed result. See [docs/GAME_DESIGN_BRIEF.md](docs/GAME_DESIGN_BRIEF.md) for the full narrative, world, and visual-asset brief. [METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md](METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md) is the original three-week build playbook (all 16 of its prompts are now marked done); for current "what's built vs. what's next" status, see [docs/CONTEXT.md](docs/CONTEXT.md), which routes to the live backlog.
 
 ## Quick start
 
@@ -36,9 +36,11 @@ Run `npm run check` before handing off any change.
 > reference copy. [`src/lib/sqlRunner.ts`](src/lib/sqlRunner.ts) loads the
 > derivative today, not the full file — see
 > [docs/BACKLOG.md](docs/BACKLOG.md) item 10 for the full decision record
-> and provenance. **What's still open is only whether/where to actually
-> deploy** — that decision itself hasn't been made yet; nothing has been
-> published publicly as of this writing.
+> and provenance. **Live in production as of 2026-08-12:**
+> **https://metric-quest.vercel.app**. Vercel is connected to this
+> repo's GitHub remote and auto-deploys `main` to Production, feature
+> branches to Preview — no separate manual deploy step is needed for new
+> changes once they're merged.
 
 Metric Quest is a fully static site with no server-side component: `npm run build` produces `dist/`, and that directory is the entire deployable artifact.
 
@@ -47,7 +49,7 @@ npm run build   # runs typecheck, then vite build
 # deployable output: dist/
 ```
 
-**Vercel.** This repo includes a [`vercel.json`](vercel.json) that pins the build command (`npm run build`) and output directory (`dist`) explicitly rather than relying on auto-detection, and `package.json` pins `"engines": {"node": "22.x"}` so the build uses a confirmed Vercel-supported Node LTS instead of whatever the platform's default happens to be. To deploy:
+**Vercel.** The live project is already connected to this repo's GitHub remote and auto-deploys on every push (`main` → Production, other branches → Preview) — merging to `main` is the whole deploy step; no manual `vercel` CLI action is needed for routine changes. This repo includes a [`vercel.json`](vercel.json) that pins the build command (`npm run build`) and output directory (`dist`) explicitly rather than relying on auto-detection, and `package.json` pins `"engines": {"node": "22.x"}` so the build uses a confirmed Vercel-supported Node LTS instead of whatever the platform's default happens to be. To connect a fresh Vercel project (e.g. a fork):
 
 1. Import the repository into a new Vercel project — `vercel.json` is picked up automatically, no manual framework/build/output configuration needed.
 2. Install command: leave the default (Vercel detects `pnpm-lock.yaml` and uses `pnpm install` automatically).
@@ -74,7 +76,7 @@ See [docs/architecture.md](docs/architecture.md) for the full product boundary, 
 
 ## Course data
 
-Only `SQL Databases/iTunes.sqlite` — the dataset the app actually loads — is tracked in this repository. The rest of `SQL Databases/` is instructional source material and is intentionally excluded; see the data-release gate in [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) before adding more of it or deploying publicly.
+Two files are tracked, and they are not the same thing: `SQL Databases/iTunes.sqlite` is the full instructional reference copy (never modified, never loaded at runtime), and `src/assets/data/iTunes.min.sqlite` is the minimized 5-table derivative (`Customer`, `Genre`, `Invoice`, `InvoiceLine`, `Track`) the app actually loads and ships publicly — see [docs/BACKLOG.md](docs/BACKLOG.md) item 10 for the minimization decision and provenance. The rest of `SQL Databases/` (every other dataset in that folder) is instructional source material and is intentionally excluded from this repository; see the data-release gate in [docs/AI_WORKFLOW.md](docs/AI_WORKFLOW.md) before adding more of it or changing what a public deployment serves.
 
 ## Working on this project
 

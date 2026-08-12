@@ -190,6 +190,48 @@ and where to deploy is not).
 
 ---
 
+## Session status (2026-08-12) — read this first
+
+A documentation-accuracy pass this session found several of the "still
+open" items above and status lines elsewhere in this doc had actually
+been resolved since 2026-08-11, just never corrected here. Verified
+directly against `main`'s current state, not assumed:
+
+- **Item 10's deployment decision is resolved — the app is live.** Vercel
+  auto-deploys `main` to Production via its GitHub integration; the
+  public URL is **https://metric-quest.vercel.app**. See
+  `docs/BACKLOG.md` item 10's corrected status line for the smoke-test
+  record. P4.5 (avatar sprite fix) is confirmed fully fixed, same as
+  BACKLOG.md item 7 already said — no longer listed as open.
+- **Wave 3/P3.1 (AI tutor) and item 13 Part B1 ("Learn SQL Mode") are
+  both merged to `main`**, not sitting on unmerged branches as prior
+  status blocks said — the tutor stays gated off in the release
+  candidate (`.vercelignore` excludes `api/`), per `docs/BACKLOG.md`
+  item 3's still-standing approval gate; Learn SQL Mode ships live,
+  off by default. BACKLOG.md item 14 (first-run tutorial) is also
+  merged, not "awaiting approval" as its own doc previously said.
+- **`pnpm audit --prod` was run for the first time (2026-08-12): clean,
+  no known vulnerabilities.** See BACKLOG.md item 12 finding 3.
+- **Missions grew from 25 to 32** (`m1-5`/`m1-6` BETWEEN/IN, `m2-4`
+  MIN/MAX, `m5-3` date arithmetic, `m7-3`/`m7-4`/`m7-5` UNION ALL/
+  INTERSECT/EXCEPT — added to close gaps found auditing the game against
+  the Cornell course syllabus and its SQL reference guide, distributed
+  into existing Sectors 1, 2, 5, and 7). `docs/architecture.md`,
+  `docs/GAME_DESIGN_BRIEF.md`'s sector table, and this doc's mission
+  counts are corrected to match.
+
+The Sector 8/9 confrontation cinematic (§A8 Phase 2 in
+`docs/GAME_DESIGN_BRIEF.md`) also shipped 2026-08-12 — see that doc's
+own corrected status and `docs/BACKLOG.md`'s design asset tracker.
+Nothing above changes the SQL loop, grading contract, or syllabus
+coverage.
+
+**Still open / outstanding, unchanged:** P0.4 (icon regeneration,
+blocked on a design request) and the Sector 8→9 authored-beat question
+(BACKLOG.md item 4).
+
+---
+
 ## The ordering principle
 
 Three things determine order:

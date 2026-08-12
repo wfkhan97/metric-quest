@@ -20,4 +20,4 @@ One line per file: what it is, and when to actually read it. Check here before o
 ## Feature records (read only if working on or near that feature)
 - [`RELEASE_2026-08-11.md`](RELEASE_2026-08-11.md) — v1 release plan/notes.
 - [`CUTSCENE_P5_5_MAINFRAME_INTRO.md`](CUTSCENE_P5_5_MAINFRAME_INTRO.md) — P5.5 cutscene script + post-ship revisions.
-- [`TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md) — first-run tutorial plan (implemented, awaiting merge).
+- [`TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md) — first-run tutorial plan (implemented and merged to `main`).

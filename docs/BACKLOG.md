@@ -791,7 +791,24 @@ it doesn't need to happen before the packet starts.
 
 ## 10. Public deployment (Vercel)
 
-### Status: fully resolved 2026-08-10 — nothing left to build; going live is entirely your call, whenever
+### Status: live in production (deployed 2026-08-12) — nothing left to build
+**Correction (2026-08-12):** this line previously said "fully resolved —
+nothing left to build; going live is entirely your call, whenever," as if
+deployment were still a future decision. The product owner has since gone
+live: Vercel is connected to this GitHub repo (auto-deploys `main` to
+Production, feature branches to Preview), and the public URL is
+**https://metric-quest.vercel.app**. A live-site check the same day
+confirmed: root page loads with no console errors; `/api/chat` and
+`/api/oauth` (the gated-off tutor routes) both 404, not deployed; only the
+minimized `src/assets/data/iTunes.min.sqlite` derivative is served
+(`SQL Databases/iTunes.sqlite` 404s, as intended); and the full SQL loop
+(write a query, run it, get graded, unlock a badge) works end-to-end
+against the live deployment. This covered the availability, first-run,
+SQL-loop, data-gate, and tutor-exclusion rows of
+`docs/RELEASE_2026-08-11.md`'s smoke-test table — the accessibility
+keyboard sweep, narrow-viewport check, and multi-browser/device coverage
+rows were not separately re-run at deploy time.
+
 All of BUILD_ORDER.md P6.1's prework merged to `main` (PR #3): the
 `engines` pin, `vercel.json`, the README Deployment section, and the real
 minimized 5-table derivative at `src/assets/data/iTunes.min.sqlite`
@@ -1161,15 +1178,19 @@ amount of copy-pasted logic worth deduplicating while it's still fresh.
    synchronous classroom session that is a materially worse failure mode
    than a scoped fallback panel styled to the existing visual system
    (§A6's palette) with a "Signal lost — reload to reconnect" message.
-3. **`pnpm audit` has never been run or recorded.** The project uses
-   pnpm (`pnpm-lock.yaml`, and the README's deployment section already
-   tells Vercel to auto-detect it), but every script and doc reference is
-   `npm run ...`, and `npm audit` fails outright against a pnpm lockfile
-   (confirmed live: `ENOLOCK`/"requires an existing shrinkwrap file").
-   No dependency-vulnerability check has ever actually succeeded and been
-   recorded anywhere in this repo's history, for a dependency tree that
-   includes `sql.js` (WASM), CodeMirror, React, and Vite. This is a
-   two-minute check (`pnpm audit`) that has simply never been run.
+3. **`pnpm audit` — run 2026-08-12: clean, no known vulnerabilities.**
+   The project uses pnpm (`pnpm-lock.yaml`, and the README's deployment
+   section already tells Vercel to auto-detect it), but every script and
+   doc reference is `npm run ...`, and `npm audit` fails outright against
+   a pnpm lockfile (confirmed live: `ENOLOCK`/"requires an existing
+   shrinkwrap file"). This finding originally flagged that no
+   dependency-vulnerability check had ever actually succeeded and been
+   recorded anywhere in this repo's history — `pnpm audit --prod` was run
+   on 2026-08-12, against the same `pnpm-lock.yaml` shipped in that day's
+   production deploy, and reported "No known vulnerabilities found" for
+   the full dependency tree, including `sql.js` (WASM), CodeMirror,
+   React, and Vite. Re-run and re-record after any dependency bump, same
+   as any audit.
 4. **`localStorage` write failures are unhandled.** `src/lib/progress.ts`
    already defends the read path (`JSON.parse` inside `try`/`catch`,
    falling back safely on corrupt data — confirmed at lines 126-144), but
@@ -1366,7 +1387,7 @@ entry is actually about. B1 stays open as the (still bigger, still gated)
 "actually teach SQL basics" idea — item 14 is not a substitute for it.
 
 **Status: built as "Learn SQL Mode," 2026-08-11/12, on branch
-`claude/learn-sql-mode` (not yet merged to `main`).** All three open
+`claude/learn-sql-mode`, merged to `main`.** All three open
 questions this entry originally left gated are now resolved, per direct
 product-owner conversation:
 - **How much primer:** every sector (1-9), 2-4 concepts each, one short
@@ -1503,7 +1524,7 @@ deliberately narrower than B1** — see Non-goals — and is opened
 separately rather than replacing B1, which stays on the roadmap as its
 own, bigger, still-gated idea.
 
-**Implemented 2026-08-11; awaiting product-owner approval to merge:** see
+**Implemented 2026-08-11, merged to `main`:** see
 [`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md). The approved
 skippable six-panel passive walkthrough now uses the existing cutscene
 sequencing pattern with a code-rendered, non-interactive mission-screen

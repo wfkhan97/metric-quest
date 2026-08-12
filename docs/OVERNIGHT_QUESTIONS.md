@@ -64,4 +64,30 @@ regression, and deleting `colorOptions` would also mean deciding what
 happens to the `colorId` field already saved in existing players'
 `AvatarConfig` records.
 
+### 2026-08-12 — All five "standing / already-known" items above are resolved
+
+A documentation-accuracy pass found every item in the "standing /
+already-known" list at the top of this file is now stale — each has
+since shipped, verified directly against `main`, not appended as a new
+question:
+
+1. **Between-sector story beats** — `sectorBeats` is no longer empty;
+   Sector 8 has an authored entrance beat and there's a post-campaign
+   finale beat. See `docs/BACKLOG.md`'s design asset tracker, "Sector
+   8/9 confrontation cinematic" row (shipped 2026-08-12).
+2. **P5.5 cutscene** — shipped 2026-08-10, see
+   `docs/CUTSCENE_P5_5_MAINFRAME_INTRO.md`.
+3. **Item 3, AI tutor** — built and merged to `main`, gated off for the
+   current release (`.vercelignore` excludes `api/`). See
+   `docs/BACKLOG.md` item 3.
+4. **Item 7, avatar sprite transparency** — fully fixed 2026-08-10, all
+   12 sprites re-exported and verified. See `docs/BACKLOG.md` item 7.
+5. **Item 8, multi-save/profile state** — shipped 2026-08-10. See
+   `docs/BACKLOG.md` item 8.
+
+Not itself a new question — recorded here per this file's own
+append-only convention, so a reader who starts at the top isn't misled
+by a "punch list" whose items are all long since closed. Current status
+for any of these lives in `docs/BACKLOG.md`, not here.
+
 <!-- Append new entries below this line, most recent last. -->

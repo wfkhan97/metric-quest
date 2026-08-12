@@ -1,7 +1,7 @@
 # Optional first-run tutorial — screen/mechanics orientation plan
 
-Status: **implemented on `codex/tutorial-mode-implementation`; awaiting
-product-owner approval to merge.**
+Status: **implemented and merged to `main`** (via
+`codex/tutorial-mode-implementation`).
 This document scopes and records `docs/BACKLOG.md` item 14 only. It does not
 expand item 13 Part B1's separate SQL-basics primer.
 

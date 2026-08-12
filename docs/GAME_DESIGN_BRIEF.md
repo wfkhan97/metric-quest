@@ -92,8 +92,8 @@ renaming and framing exercise only, no new SQL concepts, no reordering. The
 | 5 | Time and operations | The Chronometer Wing | dates and times, date arithmetic | A clocktower-like wing full of gears and chronometers | M5.1-M5.3 built |
 | 6 | Decision rules and data types | The Sorting Engine | `CASE`, casts | A mechanical facility with conveyor belts and branching chutes | M6.1-M6.2 built |
 | 7 | Shared analytical assets | The Shared Vault | sets (`UNION`/`UNION ALL`/`INTERSECT`/`EXCEPT`), views | A communal library where shared "views" sit on illuminated pedestals | M7.1-M7.5 built |
-| 8 | Verify the AI analyst | ROGUE.exe's Inner Sanctum | AI verification | ROGUE.exe's corrupted home turf: warped geometry, glitching screens | M8.1 built; M8.2/M8.3 not built |
-| 9 | Boardroom final | The Boardroom Core (final boss) | SELECT framework | A grand boardroom turned battle arena | not built |
+| 8 | Verify the AI analyst | ROGUE.exe's Inner Sanctum | AI verification | ROGUE.exe's corrupted home turf: warped geometry, glitching screens | M8.1-M8.3 built |
+| 9 | Boardroom final | The Boardroom Core (final boss) | SELECT framework | A grand boardroom turned battle arena | M9.1-M9.2 built |
 
 Each mission is a corrupted "terminal" inside its sector; solving it
 "purges" that terminal (a before/after treatment on the existing results
@@ -183,11 +183,14 @@ blocking everything on art that doesn't exist yet:
   applied to the single static sprite/illustration: glitch/flicker, slide,
   zoom, scanline sweep, typewriter text reveal. Used on sector transitions,
   ROGUE.exe appearances, and mission-complete beats. No new art required.
-- **Phase 2 (next, needs a few new static images, not frame sheets).**
-  Slideshow-style cutscenes: short sequences of multiple static panels
-  shown in order with text, visual-novel style, for bigger story beats
-  (Sector 8 ROGUE.exe's first appearance, the Sector 9 final confrontation,
-  campaign completion). Reuses Phase 1 CSS effects between panels.
+- **Phase 2 (shipped 2026-08-12).** Slideshow-style cutscenes: short
+  sequences of multiple static panels shown in order with text,
+  visual-novel style, for bigger story beats. Live as `sectorBeats[8]`
+  (ROGUE.exe's first direct appearance, plays once on entering Sector 8)
+  and a post-campaign finale beat (triggered from the last mission's
+  success screen) — see `docs/BACKLOG.md`'s design asset tracker, "Sector
+  8/9 confrontation cinematic" row, for the full wiring record. Reuses
+  Phase 1 CSS effects between panels, as planned.
 - **Phase 3 (later, blocked on new art).** True multi-frame sprite
   animation (walk cycles, action poses). Needs a frame-sheet art request
   through Claude Design that hasn't been sent yet — do not start building
