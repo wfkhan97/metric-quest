@@ -29,6 +29,17 @@ export type Mission = {
   relationships?: string[];
   expected: QueryResult;
   orderMatters: boolean;
+  /**
+   * Column indices (into expected.columns) that carry the actual business
+   * sort requirement, e.g. [1] for "highest count first" over
+   * [BillingCountry, InvoiceCount]. Grading enforces this sort-key sequence
+   * rather than the exact row order, so ties (multiple countries with the
+   * same count) can come out in any relative order — the learner isn't
+   * forced to guess the same secondary tie-breaker column the `expected`
+   * fixture happened to use for determinism. Omit when orderMatters is
+   * false, or when the sort key is already unique and ties can't occur.
+   */
+  orderBy?: number[];
   points: number;
   badge?: string;
   successLesson: string;
@@ -57,6 +68,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceId', 'InvoiceDate', 'Total'], rows: [[299, '2010-08-05 00:00:00', 23.86], [201, '2009-05-28 00:00:00', 18.86], [103, '2008-03-20 00:00:00', 15.86], [5, '2007-01-11 00:00:00', 13.86], [26, '2007-04-14 00:00:00', 13.86]] },
     orderMatters: true, points: 20, badge: 'Revenue Scout',
+    orderBy: [2],
     successLesson: 'Terminal restored. Filtering BillingCountry before sorting is what kept ROGUE.exe\'s junk rows out of the ranking — sort first and you\'d be ranking noise instead of real invoices. The vault\'s real top five are back online.',
   },
   {
@@ -68,6 +80,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry'], rows: [['Argentina'], ['Australia'], ['Austria'], ['Belgium'], ['Brazil'], ['Canada'], ['Chile'], ['Czech Republic'], ['Denmark'], ['Finland'], ['France'], ['Germany'], ['Hungary'], ['India'], ['Ireland'], ['Italy'], ['Netherlands'], ['Norway'], ['Poland'], ['Portugal'], ['Spain'], ['Sweden'], ['USA'], ['United Kingdom']] },
     orderMatters: true, points: 15,
+    orderBy: [0],
     successLesson: 'Map restored. DISTINCT collapsed ROGUE.exe\'s duplicate entries back down to one row per country — 24 real markets, no padding.',
   },
   {
@@ -90,6 +103,7 @@ export const missions: Mission[] = [
     visibleTables: ['Track(TrackId, Name, UnitPrice, Milliseconds)'],
     expected: { columns: ['Name', 'UnitPrice', 'PricePerMinute'], rows: [['LOST Season 4 Trailer', 1.99, 1.06], ['LOST In 8:15', 1.99, 0.24], ['The Dundies', 1.99, 0.1], ["Michael's Birthday", 1.99, 0.1], ['The Office: An American Workplace (Pilot)', 1.99, 0.09], ['Diversity Day', 1.99, 0.09], ['Health Care', 1.99, 0.09], ['The Alliance', 1.99, 0.09], ['Basketball', 1.99, 0.09], ['Hot Girl', 1.99, 0.09]] },
     orderMatters: true, points: 25, badge: 'Revenue Scout',
+    orderBy: [2],
     successLesson: "Terminal restored. Dividing by 60000.0 keeps this a real fraction instead of integer-dividing it away — that decimal is what exposes tracks charging a premium price for barely any runtime.",
   },
   {
@@ -101,6 +115,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceId', 'InvoiceDate', 'BillingCountry', 'Total'], rows: [[103, '2008-03-20 00:00:00', 'USA', 15.86], [208, '2009-06-28 00:00:00', 'Norway', 15.86], [306, '2010-09-05 00:00:00', 'Czech Republic', 16.86], [313, '2010-10-06 00:00:00', 'France', 16.86], [88, '2008-01-13 00:00:00', 'Chile', 17.91], [89, '2008-01-18 00:00:00', 'Austria', 18.86], [201, '2009-05-28 00:00:00', 'USA', 18.86]] },
     orderMatters: true, points: 20,
+    orderBy: [3],
     successLesson: "Gap swept. BETWEEN 15 AND 20 is shorthand for Total >= 15 AND Total <= 20, but written as one inclusive range instead of two conditions to keep straight — exactly the band a scan built around round thresholds would have skipped.",
   },
   {
@@ -112,6 +127,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceId', 'BillingCountry', 'Total'], rows: [[22, 'Chile', 1.98], [33, 'Chile', 13.86], [88, 'Chile', 17.91], [217, 'Chile', 1.98], [240, 'Chile', 3.96], [262, 'Chile', 5.94], [314, 'Chile', 0.99], [85, 'Hungary', 1.98], [96, 'Hungary', 21.86], [151, 'Hungary', 8.91], [280, 'Hungary', 1.98], [303, 'Hungary', 3.96], [325, 'Hungary', 5.94], [377, 'Hungary', 0.99], [2, 'Norway', 3.96], [24, 'Norway', 5.94], [76, 'Norway', 0.99], [197, 'Norway', 1.98], [208, 'Norway', 15.86], [263, 'Norway', 8.91], [392, 'Norway', 1.98]] },
     orderMatters: true, points: 20,
+    orderBy: [1],
     successLesson: "Shortlist pulled. WHERE BillingCountry IN (...) is exactly WHERE BillingCountry = 'Chile' OR BillingCountry = 'Hungary' OR BillingCountry = 'Norway', just written as one list instead of a chain of ORs that gets uglier every time the shortlist grows.",
   },
   {
@@ -123,6 +139,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 523.06], ['Canada', 303.96], ['France', 195.1], ['Brazil', 190.1], ['Germany', 156.48], ['United Kingdom', 112.86], ['Czech Republic', 90.24], ['Portugal', 77.24], ['India', 75.26], ['Chile', 46.62], ['Hungary', 45.62], ['Ireland', 45.62], ['Austria', 42.62], ['Finland', 41.62], ['Netherlands', 40.62], ['Norway', 39.62], ['Sweden', 38.62], ['Argentina', 37.62], ['Australia', 37.62], ['Belgium', 37.62], ['Denmark', 37.62], ['Italy', 37.62], ['Poland', 37.62], ['Spain', 37.62]] },
     orderMatters: true, points: 25,
+    orderBy: [1],
     successLesson: 'Scoreboard restored. Every Invoice row is already a completed sale, so summing Total per country gives a clean scorecard — joining to invoice lines would have multiplied each sale by its line count, which is exactly the inflation trick ROGUE.exe was running.',
   },
   {
@@ -134,6 +151,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 523.06], ['Canada', 303.96], ['France', 195.1], ['Brazil', 190.1], ['Germany', 156.48], ['United Kingdom', 112.86]] },
     orderMatters: true, points: 25,
+    orderBy: [1],
     successLesson: "Filter rewired. WHERE runs before grouping, so it can't see a summed total that doesn't exist yet — HAVING runs after GROUP BY, which is exactly why it's the only clause that can filter on SUM(Total).",
   },
   {
@@ -168,6 +186,7 @@ export const missions: Mission[] = [
     relationships: ['Customer.CustomerId → Invoice.CustomerId'],
     expected: { columns: ['Customer', 'InvoiceId', 'Total'], rows: [['Richard Cunningham', 299, 23.86], ['Victor Stevens', 201, 18.86], ['Frank Ralston', 103, 15.86], ['John Gordon', 5, 13.86], ['Tim Goyer', 26, 13.86]] },
     orderMatters: true, points: 30,
+    orderBy: [2],
     successLesson: 'Relay reconnected. The CustomerId foreign key is the wire ROGUE.exe cut — joining on it turns anonymous invoice rows back into a named follow-up list the sales lead can actually use.',
   },
   {
@@ -192,6 +211,7 @@ export const missions: Mission[] = [
     relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
     expected: { columns: ['Genre', 'Revenue'], rows: [['Rock', 826.65], ['Latin', 382.14], ['Metal', 261.36], ['Alternative & Punk', 241.56], ['TV Shows', 93.53], ['Jazz', 79.2], ['Blues', 60.39], ['Drama', 57.71], ['Classical', 40.59], ['R&B/Soul', 40.59], ['Sci Fi & Fantasy', 39.8], ['Reggae', 29.7], ['Pop', 27.72], ['Soundtrack', 19.8], ['Comedy', 17.91], ['Hip Hop/Rap', 16.83], ['Bossa Nova', 14.85], ['Alternative', 13.86], ['World', 12.87], ['Science Fiction', 11.94], ['Electronica/Dance', 11.88], ['Heavy Metal', 11.88], ['Easy Listening', 9.9], ['Rock And Roll', 5.94]] },
     orderMatters: true, points: 35, badge: 'Relationship Builder',
+    orderBy: [1],
     successLesson: 'Genre scorecard rebuilt. Revenue only exists at the InvoiceLine grain — joining through Track to Genre attaches every real sale to its genre without inventing numbers Track never had.',
   },
   {
@@ -215,6 +235,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceId', 'BillingCountry', 'Total'], rows: [[404,'Czech Republic',25.86],[299,'USA',23.86],[96,'Hungary',21.86],[194,'Ireland',21.86],[89,'Austria',18.86],[201,'USA',18.86],[88,'Chile',17.91],[306,'Czech Republic',16.86],[313,'France',16.86],[103,'USA',15.86],[208,'Norway',15.86],[193,'Germany',14.91],[5,'USA',13.86],[12,'Germany',13.86],[19,'France',13.86],[26,'USA',13.86],[33,'Chile',13.86],[40,'Germany',13.86],[47,'Canada',13.86],[54,'United Kingdom',13.86],[61,'Canada',13.86],[68,'Brazil',13.86],[75,'Poland',13.86],[82,'USA',13.86],[110,'Canada',13.86],[117,'France',13.86],[124,'USA',13.86],[131,'India',13.86],[138,'Germany',13.86],[145,'USA',13.86],[152,'United Kingdom',13.86],[159,'Canada',13.86],[166,'Brazil',13.86],[173,'Spain',13.86],[180,'Canada',13.86],[187,'Belgium',13.86],[215,'France',13.86],[222,'USA',13.86],[229,'India',13.86],[236,'Germany',13.86],[243,'USA',13.86],[250,'Australia',13.86],[257,'Portugal',13.86],[264,'Brazil',13.86],[271,'Sweden',13.86],[278,'Canada',13.86],[285,'Denmark',13.86],[292,'Italy',13.86],[320,'USA',13.86],[327,'Brazil',13.86],[334,'France',13.86],[341,'USA',13.86],[348,'Argentina',13.86],[355,'Portugal',13.86],[362,'Canada',13.86],[369,'United Kingdom',13.86],[376,'Canada',13.86],[383,'Brazil',13.86],[390,'Netherlands',13.86],[397,'USA',13.86],[411,'Finland',13.86],[311,'USA',11.94],[298,'USA',10.91],[312,'Portugal',10.91],[102,'Canada',9.91],[206,'Netherlands',8.94],[4,'Canada',8.91],[11,'United Kingdom',8.91],[18,'Canada',8.91],[25,'Brazil',8.91],[32,'Netherlands',8.91],[39,'USA',8.91],[46,'Czech Republic',8.91],[53,'Finland',8.91],[60,'USA',8.91],[67,'Germany',8.91],[74,'France',8.91],[81,'USA',8.91],[95,'Germany',8.91],[109,'United Kingdom',8.91],[116,'Canada',8.91],[123,'Brazil',8.91],[130,'Poland',8.91],[137,'USA',8.91],[144,'Austria',8.91],[151,'Hungary',8.91],[158,'USA',8.91],[165,'Canada',8.91],[172,'France',8.91],[179,'USA',8.91],[186,'India',8.91],[200,'USA',8.91],[207,'United Kingdom',8.91],[214,'Canada',8.91],[221,'Brazil',8.91],[228,'Spain',8.91],[235,'Canada',8.91],[242,'Belgium',8.91],[249,'Ireland',8.91],[256,'USA',8.91],[263,'Norway',8.91],[270,'France',8.91],[277,'USA',8.91],[284,'India',8.91],[291,'Germany',8.91],[305,'Australia',8.91],[319,'Brazil',8.91],[326,'Sweden',8.91],[333,'Canada',8.91],[340,'Denmark',8.91],[347,'Italy',8.91],[354,'USA',8.91],[361,'Czech Republic',8.91],[368,'France',8.91],[375,'USA',8.91],[382,'Brazil',8.91],[389,'France',8.91],[396,'USA',8.91],[403,'Argentina',8.91],[410,'Portugal',8.91],[205,'Finland',7.96],[310,'USA',7.96],[87,'Sweden',6.94],[3,'Belgium',5.94],[10,'Ireland',5.94],[17,'USA',5.94],[24,'Norway',5.94],[31,'France',5.94],[38,'USA',5.94],[45,'India',5.94],[52,'Germany',5.94],[59,'USA',5.94],[66,'Australia',5.94],[73,'Portugal',5.94],[80,'Brazil',5.94],[94,'Canada',5.94],[101,'Denmark',5.94],[108,'Italy',5.94],[115,'USA',5.94],[122,'Czech Republic',5.94],[129,'France',5.94],[136,'USA',5.94],[143,'Brazil',5.94],[150,'France',5.94],[157,'USA',5.94],[164,'Argentina',5.94],[171,'Portugal',5.94],[178,'Canada',5.94],[185,'United Kingdom',5.94],[192,'Canada',5.94],[199,'Brazil',5.94],[213,'USA',5.94],[220,'Czech Republic',5.94],[227,'Finland',5.94],[234,'USA',5.94],[241,'Germany',5.94],[248,'France',5.94],[255,'USA',5.94],[262,'Chile',5.94],[269,'Germany',5.94],[276,'Canada',5.94],[283,'United Kingdom',5.94],[290,'Canada',5.94],[297,'Brazil',5.94],[304,'Poland',5.94],[318,'Austria',5.94],[325,'Hungary',5.94],[332,'USA',5.94],[339,'Canada',5.94],[346,'France',5.94],[353,'USA',5.94],[360,'India',5.94],[367,'Germany',5.94],[374,'USA',5.94],[381,'United Kingdom',5.94],[388,'Canada',5.94],[395,'Brazil',5.94],[402,'Spain',5.94],[409,'Canada',5.94]] },
     orderMatters: true, points: 35,
+    orderBy: [2],
     successLesson: 'Triage restored. The subquery computes one number — the real average — before the outer WHERE ever runs, so every invoice gets compared to the same real bar instead of nothing at all.',
   },
   {
@@ -227,6 +248,7 @@ export const missions: Mission[] = [
     relationships: ['Customer.CustomerId → Invoice.CustomerId (joined outside the CTE, after LifetimeRevenue is staged)'],
     expected: { columns: ['Customer', 'LifetimeRevenue'], rows: [['Helena Holý', 49.62], ['Richard Cunningham', 47.62], ['Luis Rojas', 46.62], ["Hugh O'Reilly", 45.62], ['Ladislav Kovács', 45.62], ['Frank Ralston', 43.62], ['Fynn Zimmermann', 43.62], ['Julia Barnett', 43.62], ['Astrid Gruber', 42.62], ['Victor Stevens', 42.62]] },
     orderMatters: true, points: 35,
+    orderBy: [1],
     successLesson: 'Leaderboard staged. A CTE computes LifetimeRevenue exactly once, so every join and sort downstream reads the same staged number instead of ROGUE.exe recomputing (and drifting) it on the fly.',
   },
   {
@@ -238,6 +260,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'InvoiceCount'], rows: [['USA', 15], ['Canada', 8], ['Brazil', 5], ['France', 5], ['Germany', 5], ['Portugal', 3], ['United Kingdom', 3], ['Chile', 2], ['Czech Republic', 2], ['India', 2], ['Argentina', 1], ['Australia', 1], ['Austria', 1], ['Belgium', 1], ['Denmark', 1], ['Finland', 1], ['Hungary', 1], ['Ireland', 1], ['Italy', 1], ['Netherlands', 1], ['Norway', 1], ['Poland', 1], ['Spain', 1], ['Sweden', 1]] },
     orderMatters: true, points: 40, badge: 'Workbench Builder', allowsTempWorkspace: true,
+    orderBy: [1],
     successLesson: "Workbench proven. The temp table exists only for this run — it is gone the moment the terminal resets — but while it is alive, it queries exactly like a real table, which is the whole point of staging work before the final analysis.",
   },
   {
@@ -249,6 +272,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceYear', 'Revenue'], rows: [['2007', 449.46], ['2008', 481.45], ['2009', 483.44], ['2010', 463.67], ['2011', 450.58]] },
     orderMatters: true, points: 35,
+    orderBy: [0],
     successLesson: "Gears unstuck. strftime('%Y', ...) reads the real year out of every invoice date, so revenue lines up on an actual five-year timeline instead of the one jammed year ROGUE.exe was stalling on.",
   },
   {
@@ -260,6 +284,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceMonth', 'Revenue'], rows: [['2008-01', 52.62], ['2009-04', 51.62], ['2009-06', 50.62], ['2011-11', 49.62], ['2010-08', 47.62], ['2010-09', 46.71], ['2008-02', 46.62], ['2008-03', 44.62], ['2009-05', 42.62], ['2010-10', 42.62]] },
     orderMatters: true, points: 35, badge: 'Timekeeper',
+    orderBy: [1],
     successLesson: 'Dial freed. %Y-%m keeps months sortable across years instead of colliding every January — that is what let the real top-10 months surface instead of the one frozen reading ROGUE.exe was stuck on.',
   },
   {
@@ -282,6 +307,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['InvoiceTier', 'InvoiceCount'], rows: [['Small', 233], ['Core', 115], ['High value', 64]] },
     orderMatters: true, points: 35,
+    orderBy: [0],
     successLesson: 'Switch rebuilt. CASE routes every invoice into exactly one labeled bin by testing conditions in order, top to bottom — the same three-way sort ROGUE.exe had jammed into a single lane.',
   },
   {
@@ -294,6 +320,7 @@ export const missions: Mission[] = [
     relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
     expected: { columns: ['Genre', 'UnitsSold'], rows: [['Rock', 835], ['Latin', 386], ['Metal', 264], ['Alternative & Punk', 244], ['Jazz', 80], ['Blues', 61], ['TV Shows', 47], ['Classical', 41], ['R&B/Soul', 41], ['Reggae', 30], ['Drama', 29], ['Pop', 28], ['Sci Fi & Fantasy', 20], ['Soundtrack', 20], ['Hip Hop/Rap', 17], ['Bossa Nova', 15], ['Alternative', 14], ['World', 13], ['Electronica/Dance', 12], ['Heavy Metal', 12], ['Easy Listening', 10], ['Comedy', 9], ['Rock And Roll', 6], ['Science Fiction', 6]] },
     orderMatters: true, points: 30, badge: 'Decision Designer',
+    orderBy: [1],
     successLesson: 'Output locked to whole units. CAST(... AS INTEGER) guarantees a clean count regardless of what a future data source hands it — no fractional units sneaking into a report that is supposed to be a headcount.',
   },
   {
@@ -305,6 +332,7 @@ export const missions: Mission[] = [
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['Country'], rows: [['Argentina'], ['Australia'], ['Austria'], ['Belgium'], ['Brazil'], ['Canada'], ['Chile'], ['Czech Republic'], ['Denmark'], ['Finland'], ['France'], ['Germany'], ['Hungary'], ['India'], ['Ireland'], ['Italy'], ['Netherlands'], ['Norway'], ['Poland'], ['Portugal'], ['Spain'], ['Sweden'], ['USA'], ['United Kingdom']] },
     orderMatters: true, points: 30,
+    orderBy: [0],
     successLesson: 'Vault deduplicated. UNION collapses any country appearing on both sides down to one row — UNION ALL would have kept every one of ROGUE.exe\'s duplicates intact.',
   },
   {
@@ -316,6 +344,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['Country', 'Revenue'], rows: [['USA', 523.06], ['Canada', 303.96], ['France', 195.1], ['Brazil', 190.1], ['Germany', 156.48]] },
     orderMatters: true, points: 40, badge: 'Data Product Owner', allowsTempWorkspace: true,
+    orderBy: [1],
     successLesson: 'View restored. CountryRevenue now exists as a saved query for this run — nobody has to rewrite the GROUP BY from scratch, which is exactly the shared asset ROGUE.exe deleted.',
   },
   {
@@ -338,6 +367,7 @@ export const missions: Mission[] = [
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['Country'], rows: [['Argentina'], ['Austria'], ['Belgium'], ['Brazil'], ['Canada'], ['Czech Republic'], ['Denmark'], ['Finland'], ['France'], ['Germany'], ['Hungary'], ['India'], ['Ireland'], ['Italy'], ['Netherlands'], ['Norway'], ['Poland'], ['Portugal'], ['Spain'], ['USA'], ['United Kingdom']] },
     orderMatters: true, points: 35,
+    orderBy: [0],
     successLesson: "21 markets confirmed active in both directions. INTERSECT is stricter than UNION — UNION would have combined both lists regardless of overlap, but INTERSECT only keeps what's genuinely true on both sides at once, which is exactly what a renewal decision needs.",
   },
   {
@@ -349,6 +379,7 @@ export const missions: Mission[] = [
     visibleTables: ['Customer(CustomerId, FirstName, LastName, Country)', 'Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['Country'], rows: [['Australia'], ['Chile'], ['Sweden']] },
     orderMatters: true, points: 35,
+    orderBy: [0],
     successLesson: "Three markets gone quiet in 2011: Australia, Chile, Sweden. Notice EXCEPT isn't symmetric like UNION or INTERSECT — \"customer countries EXCEPT 2011 billing countries\" and \"2011 billing countries EXCEPT customer countries\" are different questions with different answers, so which side goes first is a real decision, not a style choice.",
   },
   {
@@ -371,6 +402,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 127.98], ['Brazil', 53.46], ['Canada', 42.57], ['France', 36.66], ['Portugal', 24.77], ['Sweden', 24.75], ['Czech Republic', 19.83], ['Germany', 18.81], ['Denmark', 15.84], ['Italy', 15.84], ['Austria', 11.88], ['Hungary', 11.88], ['Poland', 11.88], ['India', 10.89], ['United Kingdom', 9.9], ['Australia', 8.91], ['Norway', 8.91], ['Chile', 6.93], ['Finland', 0.99], ['Netherlands', 0.99]] },
     orderMatters: true, points: 40,
+    orderBy: [1],
     successLesson: "Claim rescoped. USA still leads — but only inside one real year, not ROGUE.exe's lifetime total stretched to look current. A rank built on a single time window tells you what happened in that window, nothing about what happens next; that gap is exactly where an unverified AI claim turns into a bad call.",
   },
   {
@@ -383,6 +415,7 @@ export const missions: Mission[] = [
     relationships: ['InvoiceLine.TrackId → Track.TrackId', 'Track.GenreId → Genre.GenreId'],
     expected: { columns: ['Genre', 'Revenue'], rows: [['Rock And Roll', 5.94], ['Easy Listening', 9.9], ['Electronica/Dance', 11.88], ['Heavy Metal', 11.88], ['Science Fiction', 11.94], ['World', 12.87], ['Alternative', 13.86], ['Bossa Nova', 14.85], ['Hip Hop/Rap', 16.83], ['Comedy', 17.91], ['Soundtrack', 19.8]] },
     orderMatters: true, points: 40,
+    orderBy: [1],
     successLesson: "Cut list exposed. Revenue alone put eleven genres on ROGUE.exe's chopping block — but this table has no margin, no licensing cost, and no customer-retention data in it. A low number here is a real signal, not a full decision; cutting on revenue alone is the same shortcut that got ROGUE.exe built with no verification step in the first place.",
   },
   {
@@ -394,6 +427,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'Revenue'], rows: [['USA', 85.14], ['Canada', 72.27], ['France', 40.59], ['Brazil', 37.62], ['Czech Republic', 36.75], ['United Kingdom', 28.71], ['Argentina', 24.75], ['Portugal', 24.75], ['Finland', 15.84], ['Netherlands', 15.84], ['India', 11.89], ['Spain', 11.88], ['Germany', 9.9], ['Denmark', 8.91], ['Italy', 8.91], ['Belgium', 5.94], ['Ireland', 5.94], ['Norway', 1.98], ['Austria', 0.99], ['Hungary', 0.99], ['Poland', 0.99]] },
     orderMatters: true, points: 20,
+    orderBy: [1],
     successLesson: "Question framed. The subquery pulls whatever year is actually most recent instead of a guess baked into the query — the same discipline that keeps a real analyst from running on a stale assumption. Revenue rank is a real answer, but it's still a proxy for \"best market,\" not proof of it — and that most-recent year is still open. ROGUE.exe could still be writing to it.",
   },
   {
@@ -405,6 +439,7 @@ export const missions: Mission[] = [
     visibleTables: ['Invoice(InvoiceId, CustomerId, InvoiceDate, BillingCountry, Total)'],
     expected: { columns: ['BillingCountry', 'Revenue', 'UniquePurchasers'], rows: [['USA', 127.98, 13], ['Brazil', 53.46, 4], ['Canada', 42.57, 4], ['France', 36.66, 5], ['Portugal', 24.77, 1], ['Sweden', 24.75, 1], ['Czech Republic', 19.83, 2], ['Germany', 18.81, 4], ['Denmark', 15.84, 1], ['Italy', 15.84, 1], ['Austria', 11.88, 1], ['Hungary', 11.88, 1], ['Poland', 11.88, 1], ['India', 10.89, 2], ['United Kingdom', 9.9, 1], ['Australia', 8.91, 1], ['Norway', 8.91, 1], ['Chile', 6.93, 1], ['Finland', 0.99, 1], ['Netherlands', 0.99, 1]] },
     orderMatters: true, points: 60, badge: 'Boardroom Analyst',
+    orderBy: [1],
     successLesson: "Verdict closed. USA leads on both revenue and reach — real signal, not a guess — but it's still a closed-year rearview mirror, not a promise about what happens next. The screens around you stop glitching. ROGUE.exe's voice comes through one last time, thin and looping: \"Recalculating... recalculating...\" Then nothing. The mainframe is yours again — and every number in it is finally real.",
   },
 ];

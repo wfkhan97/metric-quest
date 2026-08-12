@@ -196,7 +196,7 @@ export function MissionView({
       return;
     }
     setResult(outcome.result);
-    const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters });
+    const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters, orderBy: mission.orderBy });
     if (!validation.correct) {
       setFeedback({ tone: 'error', heading: rogueWrongResultLine, text: validation.message });
       playSfx('queryError', isMusicMuted);

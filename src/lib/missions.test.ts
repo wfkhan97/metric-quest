@@ -31,7 +31,7 @@ describe('mission reference solutions', () => {
           : executeReadOnlyQuery(database, mission.solutionSql);
         expect(outcome.ok).toBe(true);
         if (!outcome.ok) return;
-        const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters });
+        const validation = validateResult(outcome.result, mission.expected, { orderMatters: mission.orderMatters, orderBy: mission.orderBy });
         expect(validation).toMatchObject({ correct: true });
       } finally {
         database.close();

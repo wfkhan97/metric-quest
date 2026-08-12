@@ -11,6 +11,19 @@ export type ValidationResult =
 
 export type ValidationOptions = {
   orderMatters?: boolean;
+  /**
+   * Column indices (into expected.columns) that carry the actual business
+   * sort requirement, e.g. [1] for "highest count first" when InvoiceCount
+   * is expected.columns[1]. When set, order is graded by checking that this
+   * sort-key sequence matches rather than requiring every row's exact
+   * position — so rows tied on these columns may come out in any relative
+   * order. A mission's `expected` fixture is one hand-picked resolution of
+   * those ties (usually broken by a secondary column, purely for a
+   * deterministic fixture); without this option, that incidental tie-break
+   * would be enforced as if it were part of the business ask. Omit for
+   * order-sensitive missions with no real ties to relax.
+   */
+  orderBy?: number[];
 };
 
 /**
@@ -45,8 +58,13 @@ export function validateResult(
     return { correct: false, kind: 'values', message: 'The columns and row count match, but one or more values are different.' };
   }
 
-  if (options.orderMatters && !sameRowValues(rawRows(actual.rows), rawRows(expected.rows))) {
-    return { correct: false, kind: 'order', message: 'The right rows are present, but this business question requires the requested order.' };
+  if (options.orderMatters) {
+    const orderOk = options.orderBy && options.orderBy.length > 0
+      ? sameRowValues(sortKeys(actual.rows, options.orderBy), sortKeys(expected.rows, options.orderBy))
+      : sameRowValues(rawRows(actual.rows), rawRows(expected.rows));
+    if (!orderOk) {
+      return { correct: false, kind: 'order', message: 'The right rows are present, but this business question requires the requested order.' };
+    }
   }
 
   return { correct: true, message: 'Your executed result matches the mission target.' };
@@ -54,6 +72,10 @@ export function validateResult(
 
 function sameRowValues(actual: string[], expected: string[]): boolean {
   return actual.every((row, index) => row === expected[index]);
+}
+
+function sortKeys(rows: SqlValue[][], columns: number[]): string[] {
+  return rows.map((row) => JSON.stringify(columns.map((i) => normaliseValue(row[i]))));
 }
 
 function canonicalRows(rows: SqlValue[][]): string[] {
