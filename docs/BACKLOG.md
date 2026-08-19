@@ -222,35 +222,97 @@ scoped as its own item, phased behind the same approval gate as item 3.
 
 ---
 
-## 3. Player-connected AI subscriptions → in-game SQL tutor ("good AI" character)
+## 3. Moonshot API → in-game SQL tutor ("good AI" character)
 
-### Status: built and merged to `main`, but gated off for the current release (corrected 2026-08-12)
-Approved and built this session (see "Decision made" below). **Correction:**
-this line previously said "built, then paused... on branch
-`claude/monet-oauth-relay`, not merged" — that went stale. Verified
-directly: `claude/monet-oauth-relay` is an ancestor of `main`, and
-`api/chat.ts`, `api/oauth/*`, `api/_lib/monet.ts`, and
-`src/components/AiTutorPanel.tsx` all exist on `main` today, wired into
-`MissionView.tsx`. What's actually true: it's fully built and merged,
-but explicitly feature-flagged off for tonight's production release
-(`AI_TUTOR_ENABLED = false` in `MissionView.tsx`, plus `.vercelignore`
-excluding `api/` from the deploy entirely) because
-`MONET_CLIENT_ID`/`MONET_CLIENT_SECRET` aren't configured yet — see the
-"Gate the AI tutor off for tonight's release" commit. **Treat this as
-built-but-dormant, not active work:** flipping `AI_TUTOR_ENABLED` back
-on and un-ignoring `api/` needs those secrets configured and the smoke
-test re-run first — do not do either without a fresh explicit go-ahead.
+### Status: direction changed — planned, not re-enabled (2026-08-18)
+The product owner chose a **game-owned Moonshot API integration** in place
+of the previously built Monet.gg OAuth relay. The existing Monet code is
+still present on `main` as a dormant historical implementation
+(`api/oauth/*`, `api/chat.ts`, `api/_lib/monet.ts`, and
+`src/components/AiTutorPanel.tsx`); it must remain disabled
+(`AI_TUTOR_ENABLED = false` and `api/` excluded from Vercel) until the
+replacement is built, reviewed, and smoke-tested. Do not re-enable Monet
+or configure its credentials as a shortcut.
 
-This was the one idea that structurally conflicted with `AGENTS.md`'s "no
-accounts, servers, external AI calls... without explicit approval" rule.
-Product owner explicitly approved the exception this session, scoped as an
-**OAuth relay only**: a small Vercel serverless layer (`api/oauth/*`,
-`api/chat.ts`) holds the Monet `client_secret` and proxies chat calls;
-save/progress state stays exactly as it was (localStorage, no accounts).
-See "Decision made (2026-08-11)" below for the two open questions this
-section originally left unresolved.
+This remains the explicit, feature-specific exception to `AGENTS.md`'s
+"no accounts, servers, external AI calls" rule. The core game remains
+browser-local: SQL execution, grading, progress, and the course database
+do not change. The exception is now one small Vercel serverless chat route
+which holds the game's `MOONSHOT_API_KEY` and calls Moonshot directly;
+players do not connect an account, supply a key, or see a provider picker.
 
-### What Monet.gg is (researched 2026-08-06)
+### Replacement plan
+
+- **Teaching behavior and location:** retain the mission-scoped, opt-in
+  tutor in `MissionView`. It keeps the server-enforced hints-first policy;
+  a full query is supplied only when the player explicitly asks. It is not
+  a general chatbot and does not replace the zero-setup local diagnostic.
+- **Context and disclosure:** retain the approved helpful context: the
+  visible schema, current SQL, last executed result (maximum 25 rows), and
+  diagnostic label. Before the first request, the UI must clearly say that
+  this information is sent to Moonshot AI and that Metric Quest, rather
+  than the player, pays for the request. Never send the underlying database
+  file, hidden solution SQL, progress history, or unnecessary course data.
+- **Server boundary:** replace the Monet proxy/OAuth flow with a direct
+  `POST https://api.moonshot.ai/v1/chat/completions` call using a Vercel
+  Sensitive environment variable named `MOONSHOT_API_KEY`. The key never
+  reaches browser code, localStorage, logs, source control, or a `VITE_*`
+  variable. There is no OAuth callback, token cookie, connection status, or
+  player account state in the replacement.
+- **Cost and abuse controls:** the route must cap input history and output
+  length, use one response per request, rate-limit requests before calling
+  Moonshot, and return a clear retry message for rate limits or temporary
+  provider failures. Add a documented per-day spending/usage alert before
+  enabling it in Production. Moonshot's account-level rate limits are not a
+  substitute for application abuse protection.
+- **Model selection:** do not hard-code a model merely because it has the
+  lowest listed token price. Before implementation is enabled, run the same
+  representative tutor prompts from missions across the curriculum against
+  the economical `moonshot-v1-8k` cost floor and a higher-capability Kimi
+  candidate (currently `kimi-k2.6`), with the real bounded context and
+  response cap. Select the least expensive model that reliably gives
+  correct, hints-first, SQL-safe help; record the prompt set, quality
+  results, latency, token usage, model ID, and date in the implementation
+  handoff. Recheck the live model list and pricing at that gate because
+  provider availability and prices can change.
+
+### Implementation packet — after the model-selection gate
+
+1. Replace `api/_lib/monet.ts` with a provider-neutral/Moonshot helper and
+   update `api/chat.ts` to authenticate with `MOONSHOT_API_KEY`, build the
+   existing trusted system prompt server-side, use the selected model, and
+   enforce request bounds. Remove the Monet OAuth endpoints and cookie
+   helpers only in this reviewed migration; no user credential should
+   remain.
+2. Simplify `AiTutorPanel` and `src/lib/aiTutor.ts`: remove connection,
+   provider, and disconnect states; add the Moonshot data/cost disclosure
+   and a ready-to-chat opt-in. Preserve keyboard operation, focus handling,
+   visible errors, and the existing mission-context contract.
+3. Add mocked route/helper tests for no-key, malformed, capped-context,
+   provider-error, and hints-first behavior. Verify the tutor never changes
+   result-based grading or runs a query on the learner's behalf.
+4. Set only `MOONSHOT_API_KEY` as a Vercel Sensitive variable, remove
+   `api/` from `.vercelignore`, turn on `AI_TUTOR_ENABLED`, and complete
+   Preview then Production smoke tests for disclosure, request bounds,
+   rate limiting, failure handling, keyboard use, and a representative SQL
+   help exchange. This remains an explicit release approval gate.
+
+### Decision record — Monet.gg considered, then set aside (2026-08-18)
+Monet was considered because it could let learners use and pay through
+their own ChatGPT/Claude subscriptions, while Metric Quest avoided holding
+provider credentials. The team built that path and retained its useful
+teaching constraints, but it required a player OAuth/authorization flow,
+provider-specific connection state, callback configuration, and support
+surface. The product owner chose a simpler, single-provider Moonshot API
+path instead: Metric Quest owns the bounded API cost and can select the
+cheapest model that still meets the tutor's quality bar. This is a product
+direction change, not a claim that the Monet implementation was unsafe or
+incorrect.
+
+### Superseded option — Monet.gg (researched 2026-08-06)
+The following implementation notes are retained as a record of the option
+considered and built before the 2026-08-18 Moonshot decision above; they do
+not authorize resuming the Monet flow.
 Monet positions itself as "OAuth for AI subscriptions" — a service that
 lets a SaaS product integrate AI capabilities without owning the AI bill.
 Mechanically:
@@ -282,7 +344,7 @@ villainous — not yet requested from Claude Design (see tracker below).
 Text-only/placeholder chat UI can ship before that art exists, same
 pattern as every other not-yet-illustrated surface in this game.
 
-### Goals (for the prototype scoping, not final build)
+### Former goals (for the Monet prototype, not the current build)
 - Let a player who opts in connect their own AI subscription/API key via
   Monet, and get a chat-style tutor character available during missions.
 - The tutor should help players reason through *their own* stuck query —
@@ -312,7 +374,7 @@ judged acceptable.
   BYOK/subscription costs apply, they're between the player and their AI
   provider/Monet, never routed through the game.
 
-### Decision made (2026-08-11)
+### Former implementation decision (2026-08-11, superseded for provider choice)
 Per product direction, all of the open questions below are resolved:
 
 - **Approval:** granted. The external-AI-call/server exception is
@@ -351,7 +413,7 @@ Per product direction, all of the open questions below are resolved:
   query results, that usage counts against the player's own plan, and
   that access can be revoked any time.
 
-### Where it actually lives
+### Where the tutor UI lives
 The connect/chat UI is scoped to `MissionView`, not `HomeView` — it needs
 live mission context (schema, current SQL, last result) to be useful at
 all, which only exists inside an active mission.

@@ -501,11 +501,12 @@ gave the character its first-draft working name, **ECHO** (not locked
 in — one string to edit in `src/content/beats.ts` and
 `src/content/primers.ts` if you want it changed).
 
-It's also still the character `docs/BACKLOG.md` item 3 (the Monet.gg-
-connected in-game tutor) reserves this same slot for, should that ever
-get named/fronted by a character too — using this art there **does not
-approve or resume building item 3**, which stays gated per its own
-status line.
+It's also still the character `docs/BACKLOG.md` item 3 (the planned
+Moonshot API-backed in-game tutor) reserves this same slot for, should that
+ever get named/fronted by a character too — using this art there **does not
+approve or resume building item 3**, which stays gated by its model-
+selection and release gates. Monet.gg was the former provider plan and is
+recorded as superseded in that backlog item.
 
 The prompt below is kept as a record of what was actually requested and
 delivered, and stays reusable if a revised or alternate version is ever

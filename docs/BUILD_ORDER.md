@@ -493,24 +493,27 @@ landed and used.
 
 ---
 
-## Wave 3 — Standing research (backlog item 3)
+## Wave 3 — AI tutor replanning (backlog item 3)
 
-### P3.1 — AI tutor: built 2026-08-11, then paused — not a build packet right now
+### P3.1 — Moonshot tutor migration: planned, awaiting model-selection gate (2026-08-18)
 
-This section originally said "approval decision, not implementation" —
-superseded. The product owner granted the exception and a working
-prototype was built this session on `claude/monet-oauth-relay` (Vercel
-serverless OAuth relay + mission-context-aware tutor in `MissionView`;
-Monet's flow does need server-side code, resolving the question below
-that used to be open). All checks pass; it is not merged.
+The prior Monet OAuth relay is merged into `main` but dormant; it is a
+reference implementation, not the next build packet. Product direction now
+calls for one game-owned Moonshot API key in a small Vercel chat route, with
+no learner OAuth, BYOK, provider picker, callback URLs, or connection
+cookies. The existing mission context, hints-first behavior, accessibility,
+and result-based grading boundary remain required.
 
-The product owner then hit a recurring device-code authorization error
-trying to complete a live end-to-end test and paused the work rather
-than debug it live — see BACKLOG.md item 3's status line for the current
-state. **Until told otherwise, an agent's correct action on this item is
-the same as before, just for a different reason: don't resume building,
-testing, or merging it.** The code and its branch are saved; picking
-this back up needs an explicit go-ahead, not just an idle cycle.
+**Blocked on:** the short tutor-specific model-selection trial documented in
+`docs/BACKLOG.md` item 3, plus a fresh implementation/release go-ahead. The
+trial must choose the least expensive Moonshot model that passes the
+hints-first SQL-help quality bar using the actual capped prompt. Until then,
+do not re-enable the tutor, remove `api/` from `.vercelignore`, configure
+Monet or Moonshot secrets, or deploy a tutor route.
+
+**Then build:** complete item 3's four-step Moonshot migration packet in
+one branch: direct server-side chat call, no OAuth code or cookies, revised
+disclosure/UI, bounded-rate route tests, and Preview/Production smoke tests.
 
 ---
 
