@@ -1161,8 +1161,9 @@ improvements:
 
 - A backend, an account system, or a deployment bundle of course data —
   all gated on explicit approval.
-- Telemetry or analytics of any kind, including well-intentioned
-  "which missions do players fail most" instrumentation.
+- Telemetry or analytics beyond the narrow, anonymous Vercel Web Analytics
+  implementation approved by the product owner on 2026-08-18. That exception
+  must retain its no-SQL/no-results/no-save-data/no-durable-identifier boundary.
 - Agent-generated pixel art or character illustration. Explanatory
   CSS/SVG diagrams are in scope; sprites and illustrations come from the
   external design tool.

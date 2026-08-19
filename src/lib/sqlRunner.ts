@@ -15,7 +15,36 @@ let databaseBytesPromise: Promise<Uint8Array> | undefined;
 
 export type QueryRunResult =
   | { ok: true; result: QueryResult }
-  | { ok: false; message: string };
+  | { ok: false; code: QueryErrorCode; message: string };
+
+/** Safe, aggregate-only categories for recovery and analytics. */
+export type QueryErrorCode =
+  | 'dataset_load'
+  | 'empty_query'
+  | 'multiple_statements'
+  | 'write_blocked'
+  | 'read_only_required'
+  | 'temp_workspace'
+  | 'missing_result_table'
+  | 'syntax'
+  | 'table_not_found'
+  | 'column_not_found'
+  | 'query_runtime';
+
+function queryFailure(message: string): Extract<QueryRunResult, { ok: false }> {
+  let code: QueryErrorCode = 'query_runtime';
+  if (/could not start the local sqlite dataset/i.test(message)) code = 'dataset_load';
+  else if (/write a read-only select query/i.test(message)) code = 'empty_query';
+  else if (/at most two statements|setup statement/i.test(message)) code = 'temp_workspace';
+  else if (/multiple statements/i.test(message)) code = 'multiple_statements';
+  else if (/read-only mission/i.test(message)) code = 'write_blocked';
+  else if (/accepts read-only select queries/i.test(message)) code = 'read_only_required';
+  else if (/did not return a result table/i.test(message)) code = 'missing_result_table';
+  else if (/could not read that syntax/i.test(message)) code = 'syntax';
+  else if (/could not find that table/i.test(message)) code = 'table_not_found';
+  else if (/could not find that column/i.test(message)) code = 'column_not_found';
+  return { ok: false, code, message };
+}
 
 export type QueryRunOptions = {
   /**
@@ -38,15 +67,13 @@ export async function runMissionQuery(sql: string, options: QueryRunOptions = {}
     }
   } catch (error) {
     const detail = error instanceof Error ? error.message : 'Unknown loading error';
-    return { ok: false, message: `Metric Quest could not start its local SQLite dataset. ${detail}` };
+    return queryFailure(`Metric Quest could not start its local SQLite dataset. ${detail}`);
   }
 }
 
 export function executeReadOnlyQuery(database: Database, sql: string): QueryRunResult {
   const safetyError = readOnlySafetyError(sql);
-  if (safetyError) {
-    return { ok: false, message: safetyError };
-  }
+  if (safetyError) return queryFailure(safetyError);
 
   // database.exec() omits a result set entirely when a SELECT matches zero
   // rows, which would misreport a correct-but-empty query as invalid SQL.
@@ -55,13 +82,13 @@ export function executeReadOnlyQuery(database: Database, sql: string): QueryRunR
   try {
     statement = database.prepare(sql);
   } catch (error) {
-    return { ok: false, message: humaniseSqlError(error) };
+    return queryFailure(humaniseSqlError(error));
   }
 
   try {
     const columns = statement.getColumnNames();
     if (columns.length === 0) {
-      return { ok: false, message: 'Your query did not return a result table. Start with SELECT.' };
+      return queryFailure('Your query did not return a result table. Start with SELECT.');
     }
 
     const rows: SqlValue[][] = [];
@@ -71,7 +98,7 @@ export function executeReadOnlyQuery(database: Database, sql: string): QueryRunR
 
     return { ok: true, result: { columns, rows } };
   } catch (error) {
-    return { ok: false, message: humaniseSqlError(error) };
+    return queryFailure(humaniseSqlError(error));
   } finally {
     statement.free();
   }
@@ -92,7 +119,7 @@ const setupStatementPattern = /^CREATE\s+TEMP(?:ORARY)?\s+(?:TABLE|VIEW)\s+[A-Za
 
 export function executeTempWorkspaceQuery(database: Database, sql: string): QueryRunResult {
   if (!sql.trim()) {
-    return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+    return queryFailure('Write a read-only SELECT query before running it.');
   }
 
   // Statements must be prepared one at a time, in execution order: preparing
@@ -112,10 +139,10 @@ export function executeTempWorkspaceQuery(database: Database, sql: string): Quer
     try {
       first = iterator.next();
     } catch (error) {
-      return { ok: false, message: humaniseSqlError(error) };
+      return queryFailure(humaniseSqlError(error));
     }
     if (first.done) {
-      return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+      return queryFailure('Write a read-only SELECT query before running it.');
     }
     prepared.push(first.value);
 
@@ -124,32 +151,32 @@ export function executeTempWorkspaceQuery(database: Database, sql: string): Quer
 
     if (hasMore) {
       const setupError = setupStatementSafetyError(first.value.getSQL());
-      if (setupError) return { ok: false, message: setupError };
+      if (setupError) return queryFailure(setupError);
       first.value.step();
 
       let second;
       try {
         second = iterator.next();
       } catch (error) {
-        return { ok: false, message: humaniseSqlError(error) };
+        return queryFailure(humaniseSqlError(error));
       }
       if (second.done) {
-        return { ok: false, message: 'Write a read-only SELECT query before running it.' };
+        return queryFailure('Write a read-only SELECT query before running it.');
       }
       prepared.push(second.value);
       finalStatement = second.value;
 
       if (iterator.getRemainingSQL().trim().length > 0) {
-        return { ok: false, message: 'This mission accepts at most two statements: one setup statement, then one SELECT to grade.' };
+        return queryFailure('This mission accepts at most two statements: one setup statement, then one SELECT to grade.');
       }
     }
 
     const finalError = readOnlySafetyError(finalStatement.getSQL());
-    if (finalError) return { ok: false, message: finalError };
+    if (finalError) return queryFailure(finalError);
 
     const columns = finalStatement.getColumnNames();
     if (columns.length === 0) {
-      return { ok: false, message: 'Your query did not return a result table. Start with SELECT.' };
+      return queryFailure('Your query did not return a result table. Start with SELECT.');
     }
 
     const rows: SqlValue[][] = [];
@@ -159,7 +186,7 @@ export function executeTempWorkspaceQuery(database: Database, sql: string): Quer
 
     return { ok: true, result: { columns, rows } };
   } catch (error) {
-    return { ok: false, message: humaniseSqlError(error) };
+    return queryFailure(humaniseSqlError(error));
   } finally {
     for (const statement of prepared) statement.free();
   }
@@ -178,7 +205,12 @@ function setupStatementSafetyError(statementSql: string): string | undefined {
 }
 
 function loadSql(): Promise<SqlJsStatic> {
-  sqlPromise ??= initSqlJs({ locateFile: () => wasmUrl });
+  sqlPromise ??= initSqlJs({ locateFile: () => wasmUrl }).catch((error) => {
+    // Do not cache a transient asset/load failure forever. A later Run click
+    // can retry without asking the learner to reload and risk losing work.
+    sqlPromise = undefined;
+    throw error;
+  });
   return sqlPromise;
 }
 
@@ -189,6 +221,12 @@ function loadDatabaseBytes(): Promise<Uint8Array> {
         throw new Error(`Could not load the local course dataset (${response.status}).`);
       }
       return new Uint8Array(await response.arrayBuffer());
+    })
+    .catch((error) => {
+      // As above, retain successful bytes but let failed network/asset loads
+      // recover on the next attempt.
+      databaseBytesPromise = undefined;
+      throw error;
     });
   return databaseBytesPromise;
 }

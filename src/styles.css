@@ -176,6 +176,36 @@ pre,
   justify-self: center;
 }
 
+.privacy-notice {
+  color: var(--retro-muted);
+  font-size: 0.85rem;
+  margin: 1rem auto 0;
+  max-inline-size: 42rem;
+  text-align: start;
+}
+
+.privacy-notice summary {
+  color: var(--retro-text);
+  cursor: pointer;
+}
+
+.privacy-notice p {
+  line-height: 1.5;
+  margin: 0.5rem 0 0;
+}
+
+/* The title screen deliberately has no page-level scroll. On compact laptop
+   and mobile viewports, keep the optional disclosure fully reachable within
+   that shell instead of letting its expanded copy fall below the viewport. */
+@media (max-height: 650px) {
+  .title-screen .privacy-notice {
+    font-size: 0.75rem;
+    margin-top: 0.65rem;
+    max-block-size: 5rem;
+    overflow: auto;
+  }
+}
+
 .progress-storage-warning {
   background: var(--retro-panel-raised);
   border: 1px solid var(--retro-amber);

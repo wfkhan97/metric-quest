@@ -26,14 +26,22 @@ describe('executeReadOnlyQuery', () => {
 
   it('returns beginner-readable feedback for syntax errors', () => {
     const database = new SQL.Database();
-    expect(executeReadOnlyQuery(database, 'SELECT FROM')).toMatchObject({ ok: false, message: expect.stringContaining('SQLite could not read that syntax') });
+    expect(executeReadOnlyQuery(database, 'SELECT FROM')).toMatchObject({
+      ok: false,
+      code: 'syntax',
+      message: expect.stringContaining('SQLite could not read that syntax'),
+    });
     database.close();
   });
 
   it('blocks writes before SQLite executes them', () => {
     const database = new SQL.Database();
     database.run('CREATE TABLE Invoice (InvoiceId INTEGER); INSERT INTO Invoice VALUES (1);');
-    expect(executeReadOnlyQuery(database, 'DELETE FROM Invoice;')).toMatchObject({ ok: false, message: expect.stringContaining('read-only mission') });
+    expect(executeReadOnlyQuery(database, 'DELETE FROM Invoice;')).toMatchObject({
+      ok: false,
+      code: 'write_blocked',
+      message: expect.stringContaining('read-only mission'),
+    });
     expect(database.exec('SELECT * FROM Invoice')[0]?.values).toEqual([[1]]);
     database.close();
   });
