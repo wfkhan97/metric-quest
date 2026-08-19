@@ -2264,8 +2264,8 @@ tbody tr {
   margin: 0;
 }
 
-/* AI tutor panel (Monet OAuth relay). Reuses .glossary-panel/.glossary-backdrop
-   overlay mechanics, same as the save slot panel above. */
+/* AI tutor panel. Reuses .glossary-panel/.glossary-backdrop overlay
+   mechanics, same as the save slot panel above. */
 .ai-tutor-messages {
   display: grid;
   gap: 0.5rem;

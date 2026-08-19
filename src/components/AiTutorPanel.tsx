@@ -1,31 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  connectUrl,
-  disconnect,
-  fetchConnectionStatus,
-  sendTutorMessage,
-  type ConnectionStatus,
-  type TutorContext,
-  type TutorMessage,
-  type TutorProvider,
-} from '../lib/aiTutor';
+import { sendTutorMessage, type TutorContext, type TutorMessage } from '../lib/aiTutor';
 
 type AiTutorPanelProps = {
   onClose: () => void;
-  /** The active mission's schema, the player's current SQL, and their last
-   * result/diagnostic — sent to the tutor on every message so it can "fully
-   * help" rather than reason blind (product decision, 2026-08-11). */
+  /** The current schema, SQL, and last result are sent only after opt-in. */
   context: TutorContext;
 };
 
 const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea, input, select, summary, [tabindex]:not([tabindex="-1"])';
 
-const providerLabel: Record<TutorProvider, string> = { openai: 'ChatGPT', anthropic: 'Claude' };
-
 export function AiTutorPanel({ onClose, context }: AiTutorPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [status, setStatus] = useState<ConnectionStatus | 'loading'>('loading');
+  const [hasAcceptedDisclosure, setHasAcceptedDisclosure] = useState(false);
   const [messages, setMessages] = useState<TutorMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -33,12 +20,6 @@ export function AiTutorPanel({ onClose, context }: AiTutorPanelProps) {
 
   useEffect(() => {
     closeButtonRef.current?.focus();
-  }, []);
-
-  useEffect(() => {
-    fetchConnectionStatus()
-      .then(setStatus)
-      .catch(() => setStatus({ connected: false }));
   }, []);
 
   useEffect(() => {
@@ -63,13 +44,6 @@ export function AiTutorPanel({ onClose, context }: AiTutorPanelProps) {
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
-
-  async function handleDisconnect() {
-    await disconnect();
-    setStatus({ connected: false });
-    setMessages([]);
-    setError(null);
-  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -101,52 +75,39 @@ export function AiTutorPanel({ onClose, context }: AiTutorPanelProps) {
         <header className="glossary-header">
           <div>
             <p className="eyebrow">Aurora Music mainframe · off-the-record channel</p>
-            <h2 id="ai-tutor-title">Friendly AI tutor</h2>
+            <h2 id="ai-tutor-title">ECHO · friendly AI tutor</h2>
           </div>
           <button type="button" className="link-button" onClick={onClose} ref={closeButtonRef}>
             <span aria-hidden="true">✕ </span>Close
           </button>
         </header>
         <div className="glossary-body">
-          {status === 'loading' && <p className="subtle">Checking connection…</p>}
-
-          {status !== 'loading' && !status.connected && (
-            <section aria-labelledby="ai-tutor-connect-title">
-              <h3 id="ai-tutor-connect-title">Connect your own AI subscription</h3>
+          {!hasAcceptedDisclosure && (
+            <section aria-labelledby="ai-tutor-disclosure-title">
+              <h3 id="ai-tutor-disclosure-title">Before you ask ECHO</h3>
               <p>
-                This tutor runs on <strong>your</strong> ChatGPT Plus/Team or Claude Pro/Team subscription, connected
-                through Monet. Aurora Music never sees or stores your login — Monet vaults it and proxies each request.
+                ECHO is optional. To help with this mission, Metric Quest sends Moonshot AI the visible schema, your current SQL,
+                your most recent query result, and any local diagnostic shown here.
               </p>
               <p className="subtle">
-                To actually help, every message shares this mission&apos;s schema, your current SQL, and your last
-                query&apos;s real result with your connected AI — the same way it would if you pasted them in
-                yourself. Every question also counts against your own plan&apos;s usage. You can revoke access any
-                time from Monet or by disconnecting below.
+                Metric Quest pays for the request. Do not enter personal, sensitive, or unrelated information. ECHO can explain and
+                guide; it cannot run a query, change your score, or complete the mission for you.
               </p>
-              <div className="save-slot-actions">
-                <a className="start-button" href={connectUrl('openai')}>
-                  Connect ChatGPT
-                </a>
-                <a className="start-button" href={connectUrl('anthropic')}>
-                  Connect Claude
-                </a>
-              </div>
+              <button type="button" className="start-button" onClick={() => setHasAcceptedDisclosure(true)}>
+                I understand — start tutor
+              </button>
             </section>
           )}
 
-          {status !== 'loading' && status.connected && (
+          {hasAcceptedDisclosure && (
             <section aria-labelledby="ai-tutor-chat-title">
-              <h3 id="ai-tutor-chat-title">
-                Connected to {providerLabel[status.provider]}{' '}
-                <button type="button" className="link-button" onClick={handleDisconnect}>
-                  Disconnect
-                </button>
-              </h3>
+              <h3 id="ai-tutor-chat-title">Ask about this mission or your query</h3>
+              <p className="subtle">ECHO starts with hints. Ask explicitly if you want the full query.</p>
               <ul className="ai-tutor-messages" aria-live="polite">
-                {messages.length === 0 && <li className="subtle">Ask about this mission or your query.</li>}
+                {messages.length === 0 && <li className="subtle">What part of your query would you like to work through?</li>}
                 {messages.map((message, index) => (
                   <li key={index} className={`ai-tutor-message ai-tutor-message-${message.role}`}>
-                    <strong>{message.role === 'user' ? 'You' : providerLabel[status.provider]}:</strong> {message.content}
+                    <strong>{message.role === 'user' ? 'You' : 'ECHO'}:</strong> {message.content}
                   </li>
                 ))}
               </ul>

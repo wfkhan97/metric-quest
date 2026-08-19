@@ -91,3 +91,21 @@ by a "punch list" whose items are all long since closed. Current status
 for any of these lives in `docs/BACKLOG.md`, not here.
 
 <!-- Append new entries below this line, most recent last. -->
+
+### 2026-08-18 — AI tutor provider direction changed
+
+The product owner replaced the dormant Monet.gg OAuth plan with a planned
+game-owned Moonshot API integration. This is recorded as a considered-and-
+set-aside option, not an implementation failure, in `docs/BACKLOG.md` item
+3. The Moonshot route remains blocked on a tutor-specific quality/cost model
+selection and a new implementation/release go-ahead; leave the current tutor
+disabled and `api/` excluded from deployment until then.
+
+### 2026-08-18 — Moonshot tutor first code pass
+
+At the product owner's request, the OAuth implementation was replaced on
+`codex/moonshot-tutor-plan` with a first Moonshot implementation pass. It
+uses no credentials and makes no live request: the route remains excluded
+from deployment and the UI remains feature-flagged off. The remaining gate
+is a real-prompt quality/cost selection, followed by a request for the
+Moonshot API key and a separate Preview/Production approval.

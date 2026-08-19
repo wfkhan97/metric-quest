@@ -1,12 +1,8 @@
-export type TutorProvider = 'openai' | 'anthropic';
-
 export type TutorMessage = { role: 'user' | 'assistant'; content: string };
-
-export type ConnectionStatus = { connected: false } | { connected: true; provider: TutorProvider };
 
 export type TutorContextRow = (string | number | null)[];
 
-/** Mirrors api/_lib/monet.ts's TutorContext — kept in sync manually since client and api aren't a shared package. */
+/** Mirrors the server-only Moonshot tutor context without exposing its key. */
 export type TutorContext = {
   missionTitle: string;
   missionBrief: string;
@@ -17,21 +13,6 @@ export type TutorContext = {
   lastResult?: { columns: string[]; rows: TutorContextRow[] };
   diagnosticLabel?: string;
 };
-
-export function connectUrl(provider: TutorProvider): string {
-  return `/api/oauth/authorize?provider=${provider}`;
-}
-
-export async function fetchConnectionStatus(): Promise<ConnectionStatus> {
-  const response = await fetch('/api/oauth/status');
-  if (!response.ok) return { connected: false };
-  const body = (await response.json()) as ConnectionStatus;
-  return body.connected ? { connected: true, provider: body.provider } : { connected: false };
-}
-
-export async function disconnect(): Promise<void> {
-  await fetch('/api/oauth/disconnect', { method: 'POST' });
-}
 
 /** Throws with a message safe to show the player directly. */
 export async function sendTutorMessage(messages: TutorMessage[], context: TutorContext): Promise<string> {
