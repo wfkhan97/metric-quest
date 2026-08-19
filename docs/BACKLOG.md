@@ -184,9 +184,11 @@ scoped as its own item, phased behind the same approval gate as item 3.
 - Doesn't change the grading contract (`grading.ts` stays the source of
   truth for correct/incorrect) — this is an additive feedback layer, not a
   new pass/fail mechanism.
-- No telemetry/analytics collection about what mistakes players make
-  (per `AGENTS.md`'s no-telemetry rule) — pattern matching happens
-  client-side per-attempt and isn't logged anywhere beyond the session.
+- **Superseded by product-owner approval on 2026-08-18:** anonymous, aggregate
+  analytics may record only a pre-defined mistake-signature ID after a wrong
+  executed attempt. It must never include SQL text, query results, callsigns,
+  save data, or a durable player identifier; `grading.ts` remains the sole
+  correctness authority.
 
 ### Rough scope
 - A per-mission (or per-concept) list of "known mistake signatures" — each

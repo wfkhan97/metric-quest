@@ -21,6 +21,13 @@ import { completeMission, type Progress } from '../lib/progress';
 import { playSfx } from '../content/sfx';
 import { runMissionQuery } from '../lib/sqlRunner';
 import { useFocusTrap } from '../lib/useFocusTrap';
+import {
+  trackHintRevealed,
+  trackMissionCompleted,
+  trackMissionOpened,
+  trackQueryEvaluated,
+  trackSolutionRevealed,
+} from '../lib/analytics';
 
 // CodeMirror (via SqlEditor) is the single largest dependency in the main
 // bundle. Every other screen (Home, avatar creator, cutscenes) never needs
@@ -62,6 +69,12 @@ type MissionViewProps = {
   /** Called instead of onSelectMission when the just-completed mission was the campaign's last one (no nextMission exists). */
   onCampaignComplete?: () => void;
 };
+
+function attemptBucket(wrongAttemptCount: number): 'first' | 'second' | 'third_or_more' {
+  if (wrongAttemptCount <= 1) return 'first';
+  if (wrongAttemptCount === 2) return 'second';
+  return 'third_or_more';
+}
 
 export function MissionView({
   mission,
@@ -111,6 +124,10 @@ export function MissionView({
   }, [missions, mission.id]);
   const sectorTrack = sectorMusic[chapterNumber(mission)];
   const musicRef = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    trackMissionOpened(mission);
+  }, [mission]);
 
   // Same cold-start autoplay limitation as TitleScreen/CutsceneView: the
   // first play() on a page needs a user gesture in its own call stack, so
@@ -191,6 +208,7 @@ export function MissionView({
     const outcome = await runMissionQuery(sql, { allowsTempWorkspace: mission.allowsTempWorkspace });
     setIsRunning(false);
     if (!outcome.ok) {
+      trackQueryEvaluated(mission, 'query_error', { runnerErrorCode: outcome.code });
       setFeedback({ tone: 'error', heading: rogueInvalidQueryLine, text: outcome.message });
       playSfx('queryError', isMusicMuted);
       return;
@@ -202,14 +220,22 @@ export function MissionView({
       playSfx('queryError', isMusicMuted);
       const nextWrongAttemptCount = wrongAttemptCount + 1;
       setWrongAttemptCount(nextWrongAttemptCount);
+      const mistakeSignature = nextWrongAttemptCount >= 2 ? classifyAttempt(mission.id, sql, outcome.result) : undefined;
+      trackQueryEvaluated(mission, 'wrong', {
+        attemptBucket: attemptBucket(nextWrongAttemptCount),
+        validationKind: validation.kind,
+        mistakeSignatureId: mistakeSignature?.id,
+      });
       if (nextWrongAttemptCount >= 2) {
-        setDiagnostic(classifyAttempt(mission.id, sql, outcome.result));
+        setDiagnostic(mistakeSignature);
       }
       return;
     }
     const isNewCompletion = !completed;
     const newBadge = isNewCompletion && mission.badge && !progress.badges.includes(mission.badge) ? mission.badge : undefined;
     const nextProgress = completeMission(progress, mission.id, mission.points, mission.badge);
+    trackQueryEvaluated(mission, 'correct', { attemptBucket: attemptBucket(wrongAttemptCount + 1) });
+    if (isNewCompletion) trackMissionCompleted(mission);
     onProgressChange(nextProgress);
     const sectorMissions = missions.filter((candidate) => chapterNumber(candidate) === chapterNumber(mission));
     const sectorNowComplete = isNewCompletion && sectorMissions.every((candidate) => nextProgress.completedMissionIds.includes(candidate.id));
@@ -400,7 +426,10 @@ export function MissionView({
               </button>
               <button
                 type="button"
-                onClick={() => setHintCount((count) => Math.min(count + 1, mission.hints.length))}
+                onClick={() => {
+                  if (hintCount < mission.hints.length) trackHintRevealed(mission, hintCount + 1);
+                  setHintCount((count) => Math.min(count + 1, mission.hints.length));
+                }}
                 disabled={hintCount === mission.hints.length}
               >
                 {hintCount === mission.hints.length ? 'All hints shown' : `Show hint${hintCount ? ` ${hintCount + 1}` : ''}`}
@@ -418,7 +447,13 @@ export function MissionView({
                   available after 3 consecutive wrong attempts on this mission visit (reuses the
                   same wrongAttemptCount counter the mistake-aware diagnostic already gates at 2). */}
               {wrongAttemptCount >= 3 && (
-                <button type="button" onClick={() => setShowSolution((shown) => !shown)}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!showSolution) trackSolutionRevealed(mission);
+                    setShowSolution((shown) => !shown);
+                  }}
+                >
                   {showSolution ? 'Hide answer' : 'See answer'}
                 </button>
               )}

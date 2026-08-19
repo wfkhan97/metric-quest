@@ -96,6 +96,14 @@ export function TitleScreen({ progress, isMusicMuted, onToggleMusicMute, onResum
         <button type="button" className="link-button cutscene-mute-toggle" onClick={onToggleMusicMute}>
           {isMusicMuted ? 'Unmute music' : 'Mute music'}
         </button>
+        <details className="privacy-notice">
+          <summary>Privacy &amp; analytics</summary>
+          <p>
+            Your SQL, query results, callsign, and save data stay in this browser. Vercel counts anonymous visits. If anonymous
+            game-use analytics is enabled later, it will use only starts, mission progress, hints, and broad error categories —
+            never accounts, advertising tracking, or a lasting player identifier.
+          </p>
+        </details>
       </div>
     </main>
   );

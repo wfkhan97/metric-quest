@@ -13,6 +13,12 @@ npm run dev
 
 The app is a static React + TypeScript site. It runs entirely in the browser via `sql.js`; there is no backend, and no query text, results, or progress ever leaves the browser (progress is saved to `localStorage`).
 
+## Privacy and anonymous analytics
+
+Metric Quest keeps learner SQL, executed result tables, avatar callsigns, and save-slot progress in the learner's browser. Vercel Web Analytics records anonymous traffic metrics (visitors and page views). If the project later enables Vercel Custom Events, the production app is ready to send only anonymous, aggregate product events: game starts, mission opens/completions, query outcome categories, hint/solution use, browser-storage availability, and broad client-error categories. It never sends SQL text, result rows, callsigns, save data, a durable player identifier, or error text/stack traces.
+
+Vercel's visitor count is a daily anonymous measurement, not an account or cross-day identity. The app has no login, advertising tracking, or account system.
+
 ## Scripts
 
 ```bash

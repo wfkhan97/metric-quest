@@ -9,6 +9,9 @@ React UI -> mission definitions -> browser-local SQLite runner -> executed resul
                                               |                         |
                                               v                         v
                                         localStorage progress <- result-based validator
+                                              |
+                                              v
+                               anonymous aggregate Vercel Analytics events
 ```
 
 ## Grading contract
@@ -16,6 +19,8 @@ React UI -> mission definitions -> browser-local SQLite runner -> executed resul
 Mission validation receives a typed result table returned by the runner. It compares normalized column labels, values, numeric precision, and (unless a mission says otherwise) unordered rows to an expected table. It must not compare SQL text and it must not mark an unexecuted query correct.
 
 The runner allows one read-only `SELECT`, `WITH`, or `EXPLAIN SELECT` query by default and returns clear loading, syntax, schema, and runtime errors. Each query receives a new in-memory database created from cached source bytes, so no query state persists. A narrow, opt-in exception (`Mission['allowsTempWorkspace']`, `executeTempWorkspaceQuery` in `sqlRunner.ts`) additionally permits exactly one `CREATE TEMP TABLE|VIEW <name> AS SELECT ...` setup statement followed by one graded read-only statement, for the temp-table and view missions specifically — still no persistent `CREATE TABLE`, `INSERT`, `UPDATE`, `DELETE`, or `DROP`.
+
+When Vercel Custom Events are enabled for the project, `src/lib/analytics.ts` sends only fixed, anonymous aggregate event fields: game starts, mission IDs/sectors, query outcome categories, optional pre-defined mistake-signature IDs, hint/solution use, and broad recovery categories. It never sends SQL text, executed result tables, avatar callsigns, save-slot data, a durable player ID, error text, or stack traces. This instrumentation is observational only: it cannot affect query execution, grading, feedback, or progress.
 
 ## Progress contract
 

@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { AvatarCreatorView } from './components/AvatarCreatorView';
 import { CreditsButton } from './components/CreditsButton';
 import { CutsceneView } from './components/CutsceneView';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { trackGameStarted, trackStorageUnavailable } from './lib/analytics';
 import { HomeView } from './components/HomeView';
 import { MissionView } from './components/MissionView';
 import { SectorTransitionView } from './components/SectorTransitionView';
@@ -69,6 +71,13 @@ export function App() {
   const [isOnboardingChain, setIsOnboardingChain] = useState(false);
   const [avatarMode, setAvatarMode] = useState<'onboarding' | 'edit'>('onboarding');
   const [isMusicMuted, setIsMusicMuted] = useState(loadMusicMuted);
+  const storageTelemetrySentRef = useRef(false);
+
+  function reportStorageUnavailableOnce(): void {
+    if (storageTelemetrySentRef.current) return;
+    storageTelemetrySentRef.current = true;
+    trackStorageUnavailable();
+  }
 
   function toggleMusicMute() {
     setIsMusicMuted((current) => {
@@ -90,7 +99,9 @@ export function App() {
   function handleProgressChange(next: Progress) {
     saveProgress(next);
     setProgress(next);
-    setHasProgressStorageWarning(hasProgressPersistenceFailure());
+    const persistenceFailed = hasProgressPersistenceFailure();
+    setHasProgressStorageWarning(persistenceFailed);
+    if (persistenceFailed) reportStorageUnavailableOnce();
   }
 
   // P6.2: switching/creating/deleting a save slot already persists the new
@@ -98,7 +109,9 @@ export function App() {
   // lives here, without re-persisting (which would only bump timestamps).
   function handleActiveProgressChange(next: Progress) {
     setProgress(next);
-    setHasProgressStorageWarning(hasProgressPersistenceFailure());
+    const persistenceFailed = hasProgressPersistenceFailure();
+    setHasProgressStorageWarning(persistenceFailed);
+    if (persistenceFailed) reportStorageUnavailableOnce();
   }
 
   function enterMissionWithTransitionCheck(mission: Mission, progressSnapshot: Progress) {
@@ -313,10 +326,12 @@ export function App() {
   }
 
   function handleResumeGame() {
+    trackGameStarted('resume');
     setView('home');
   }
 
   function handleNewGame() {
+    trackGameStarted('new');
     const nextProgress = resetActiveSave();
     setProgress(nextProgress);
     setHasProgressStorageWarning(hasProgressPersistenceFailure());
@@ -456,14 +471,17 @@ export function App() {
   }
 
   return (
-    <ErrorBoundary>
-      {content}
-      {hasProgressStorageWarning && (
-        <p className="progress-storage-warning" role="status">
-          Progress is available for this session only — this browser is not saving it.
-        </p>
-      )}
-      <CreditsButton />
-    </ErrorBoundary>
+    <>
+      <ErrorBoundary>
+        {content}
+        {hasProgressStorageWarning && (
+          <p className="progress-storage-warning" role="status">
+            Progress is available for this session only — this browser is not saving it.
+          </p>
+        )}
+        <CreditsButton />
+      </ErrorBoundary>
+      <Analytics />
+    </>
   );
 }
