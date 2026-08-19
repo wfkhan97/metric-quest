@@ -7,7 +7,11 @@
  */
 
 export const MOONSHOT_CHAT_COMPLETIONS_URL = 'https://api.moonshot.ai/v1/chat/completions';
-export const DEFAULT_MOONSHOT_MODEL = 'moonshot-v1-8k';
+// moonshot-v1-8k (the model this planned as its cost-floor default) is on
+// Moonshot's "Moonshot V1" series, which is fully sunset 2026-08-31 — see
+// platform.kimi.ai/docs/pricing/chat. kimi-k3 is Moonshot's own current
+// "if you're not sure which model to choose" default (platform.kimi.ai/docs/api/quick-start).
+export const DEFAULT_MOONSHOT_MODEL = 'kimi-k3';
 export const MAX_TUTOR_HISTORY_MESSAGES = 12;
 export const MAX_TUTOR_MESSAGE_CHARACTERS = 2_000;
 export const MAX_TUTOR_OUTPUT_TOKENS = 450;

@@ -514,9 +514,11 @@ Monet or Moonshot secrets, or deploy a tutor route.
 **Current branch state:** the first migration pass replaces the Monet OAuth
 routes and connection UI with a direct, server-only Moonshot call, explicit
 learner disclosure, bounded chat history/output, a per-instance request
-guard, and mocked helper coverage. `moonshot-v1-8k` is a provisional
-configuration default only. No key has been supplied, no live API call has
-been made, and `AI_TUTOR_ENABLED` plus `.vercelignore` remain unchanged.
+guard, and mocked helper coverage. The code default is `kimi-k3` (corrected
+2026-08-19 from `moonshot-v1-8k`, which sunsets 2026-08-31 — see
+`docs/BACKLOG.md` item 3); it's a provisional configuration default only,
+not the trial's result. No key has been supplied, no live API call has been
+made, and `AI_TUTOR_ENABLED` plus `.vercelignore` remain unchanged.
 
 **Then build:** complete item 3's four-step Moonshot migration packet in
 one branch: direct server-side chat call, no OAuth code or cookies, revised

@@ -239,9 +239,15 @@ the OAuth code with a server-only Moonshot chat boundary, learner disclosure,
 bounded history/output, and a per-instance request guard. It is deliberately
 still feature-flagged off and excluded from deployment: no API key has been
 requested, no live provider call has been made, and the model-selection and
-Production abuse-control gates below remain open. `moonshot-v1-8k` is only
-the provisional code default; `MOONSHOT_MODEL` can override it during the
-planned trial and it is not yet the selected teaching model.
+Production abuse-control gates below remain open. **Correction (2026-08-19):**
+this originally defaulted to `moonshot-v1-8k`, but that model is on Moonshot's
+"Moonshot V1" series, confirmed fully sunset 2026-08-31
+(platform.kimi.ai/docs/pricing/chat) — too close to be a usable default. The
+code default is now `kimi-k3`, Moonshot's own current "if you're not sure"
+recommendation (platform.kimi.ai/docs/api/quick-start). `MOONSHOT_MODEL` can
+still override it during the planned trial, and `kimi-k3` is not itself the
+result of that trial — it's a safe placeholder that won't already be dead on
+arrival.
 
 This remains the explicit, feature-specific exception to `AGENTS.md`'s
 "no accounts, servers, external AI calls" rule. The core game remains
@@ -277,12 +283,15 @@ players do not connect an account, supply a key, or see a provider picker.
 - **Model selection:** do not hard-code a model merely because it has the
   lowest listed token price. Before implementation is enabled, run the same
   representative tutor prompts from missions across the curriculum against
-  the economical `moonshot-v1-8k` cost floor and a higher-capability Kimi
-  candidate (currently `kimi-k2.6`), with the real bounded context and
-  response cap. Select the least expensive model that reliably gives
-  correct, hints-first, SQL-safe help; record the prompt set, quality
-  results, latency, token usage, model ID, and date in the implementation
-  handoff. Recheck the live model list and pricing at that gate because
+  a cheaper candidate and a higher-capability one (the `moonshot-v1-8k` /
+  `kimi-k2.6` framing this section originally used is stale — see the
+  2026-08-19 correction above; check the live model list at
+  platform.kimi.ai/docs/models for current cheap/capable candidates), with
+  the real bounded context and response cap. Select the least expensive
+  model that reliably gives correct, hints-first, SQL-safe help; record the
+  prompt set, quality results, latency, token usage, model ID, and date in
+  the implementation handoff. Recheck the live model list and pricing at
+  that gate because
   provider availability and prices can change.
 
 ### Implementation packet — after the model-selection gate
