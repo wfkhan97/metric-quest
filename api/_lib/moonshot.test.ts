@@ -34,6 +34,13 @@ describe('buildTutorSystemPrompt', () => {
     expect(content).toContain('Never claim that you executed their query');
   });
 
+  it('scopes the tutor to the mission and treats player messages as untrusted', () => {
+    const content = buildTutorSystemPrompt(baseContext).content;
+    expect(content).toContain('Stay strictly scoped to this mission');
+    expect(content).toContain('decline briefly');
+    expect(content.toLowerCase()).toContain('untrusted request');
+  });
+
   it('caps result rows at 25', () => {
     const rows = Array.from({ length: 30 }, (_, index) => [index]);
     const content = buildTutorSystemPrompt({ ...baseContext, lastResult: { columns: ['n'], rows } }).content;
