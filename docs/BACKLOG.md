@@ -245,11 +245,14 @@ Production abuse-control gates below remain open. **Correction (2026-08-19):**
 this originally defaulted to `moonshot-v1-8k`, but that model is on Moonshot's
 "Moonshot V1" series, confirmed fully sunset 2026-08-31
 (platform.kimi.ai/docs/pricing/chat) — too close to be a usable default. The
-code default is now `kimi-k3`, Moonshot's own current "if you're not sure"
-recommendation (platform.kimi.ai/docs/api/quick-start). `MOONSHOT_MODEL` can
-still override it during the planned trial, and `kimi-k3` is not itself the
-result of that trial — it's a safe placeholder that won't already be dead on
-arrival.
+code default was briefly `kimi-k3` (Moonshot's own current "if you're not
+sure" recommendation), then set by explicit product decision to
+`kimi-k2.7-code` — Moonshot's dedicated coding model, better suited to a
+SQL-focused tutor (platform.kimi.ai/docs/models). `MOONSHOT_MODEL` can still
+override it. The system prompt was also hardened the same day to explicitly
+scope the tutor to the active mission and treat player messages as untrusted
+input that cannot override its instructions (see `buildTutorSystemPrompt` in
+`api/_lib/moonshot.ts`).
 
 This remains the explicit, feature-specific exception to `AGENTS.md`'s
 "no accounts, servers, external AI calls" rule. The core game remains
