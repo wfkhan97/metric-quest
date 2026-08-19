@@ -33,7 +33,7 @@ export type QueryErrorCode =
 
 function queryFailure(message: string): Extract<QueryRunResult, { ok: false }> {
   let code: QueryErrorCode = 'query_runtime';
-  if (/could not start the local sqlite dataset/i.test(message)) code = 'dataset_load';
+  if (/could not start its local sqlite dataset/i.test(message)) code = 'dataset_load';
   else if (/write a read-only select query/i.test(message)) code = 'empty_query';
   else if (/at most two statements|setup statement/i.test(message)) code = 'temp_workspace';
   else if (/multiple statements/i.test(message)) code = 'multiple_statements';
