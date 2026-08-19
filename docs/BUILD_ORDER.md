@@ -495,7 +495,7 @@ landed and used.
 
 ## Wave 3 — AI tutor replanning (backlog item 3)
 
-### P3.1 — Moonshot tutor migration: planned, awaiting model-selection gate (2026-08-18)
+### P3.1 — Moonshot tutor migration: first code pass complete, awaiting model-selection gate (2026-08-18)
 
 The prior Monet OAuth relay is merged into `main` but dormant; it is a
 reference implementation, not the next build packet. Product direction now
@@ -510,6 +510,13 @@ trial must choose the least expensive Moonshot model that passes the
 hints-first SQL-help quality bar using the actual capped prompt. Until then,
 do not re-enable the tutor, remove `api/` from `.vercelignore`, configure
 Monet or Moonshot secrets, or deploy a tutor route.
+
+**Current branch state:** the first migration pass replaces the Monet OAuth
+routes and connection UI with a direct, server-only Moonshot call, explicit
+learner disclosure, bounded chat history/output, a per-instance request
+guard, and mocked helper coverage. `moonshot-v1-8k` is a provisional
+configuration default only. No key has been supplied, no live API call has
+been made, and `AI_TUTOR_ENABLED` plus `.vercelignore` remain unchanged.
 
 **Then build:** complete item 3's four-step Moonshot migration packet in
 one branch: direct server-side chat call, no OAuth code or cookies, revised

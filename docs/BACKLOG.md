@@ -224,7 +224,7 @@ scoped as its own item, phased behind the same approval gate as item 3.
 
 ## 3. Moonshot API → in-game SQL tutor ("good AI" character)
 
-### Status: direction changed — planned, not re-enabled (2026-08-18)
+### Status: first Moonshot code pass built, not re-enabled (2026-08-18)
 The product owner chose a **game-owned Moonshot API integration** in place
 of the previously built Monet.gg OAuth relay. The existing Monet code is
 still present on `main` as a dormant historical implementation
@@ -233,6 +233,15 @@ still present on `main` as a dormant historical implementation
 (`AI_TUTOR_ENABLED = false` and `api/` excluded from Vercel) until the
 replacement is built, reviewed, and smoke-tested. Do not re-enable Monet
 or configure its credentials as a shortcut.
+
+The first implementation pass on `codex/moonshot-tutor-plan` now replaces
+the OAuth code with a server-only Moonshot chat boundary, learner disclosure,
+bounded history/output, and a per-instance request guard. It is deliberately
+still feature-flagged off and excluded from deployment: no API key has been
+requested, no live provider call has been made, and the model-selection and
+Production abuse-control gates below remain open. `moonshot-v1-8k` is only
+the provisional code default; `MOONSHOT_MODEL` can override it during the
+planned trial and it is not yet the selected teaching model.
 
 This remains the explicit, feature-specific exception to `AGENTS.md`'s
 "no accounts, servers, external AI calls" rule. The core game remains

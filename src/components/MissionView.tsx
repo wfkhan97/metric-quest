@@ -29,12 +29,10 @@ import { useFocusTrap } from '../lib/useFocusTrap';
 // props, same DOM shape once loaded.
 const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
-// Release plan (docs/RELEASE_2026-08-11.md), Track A: the tutor's api/
-// routes need MONET_CLIENT_ID/MONET_CLIENT_SECRET configured in Vercel,
-// which hasn't happened yet — a visible control with no working backend is
-// release-blocking. Flip this back on once those secrets are set and the
-// Track B smoke test has run (see BACKLOG.md item 3). No tutor code below
-// was removed, just gated off.
+// The Moonshot tutor remains off in the current release: api/ is excluded
+// from Vercel and no server key is configured. Do not enable this control
+// until BACKLOG.md item 3's model-selection, security, and release gates
+// have passed; a visible control with no working backend is release-blocking.
 const AI_TUTOR_ENABLED = false;
 
 type Feedback =

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { AvatarPreview } from './AvatarPreview';
 import { ChapterMap } from './ChapterMap';
 import { GlossaryPanel } from './GlossaryPanel';
@@ -56,17 +56,6 @@ export function HomeView({
   const progressSummaryButtonRef = useRef<HTMLButtonElement>(null);
   const primerReviewButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Monet's OAuth callback redirects back here with ?connected=<provider>
-  // once the connection is live (the tutor itself lives in MissionView, not
-  // Home — there's no mission context to chat about here). Just drop the
-  // query param so a page refresh doesn't leave it dangling.
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has('connected')) return;
-    params.delete('connected');
-    const nextSearch = params.toString();
-    window.history.replaceState(null, '', window.location.pathname + (nextSearch ? `?${nextSearch}` : ''));
-  }, []);
   const nextMission = missions.find((mission) => !progress.completedMissionIds.includes(mission.id));
   const allComplete = !nextMission;
   const ctaMission = nextMission ?? missions[0];

@@ -1,30 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import {
   buildTutorSystemPrompt,
-  callMonetChatCompletions,
-  isMonetProvider,
-  parseCookies,
-  PROVIDER_COOKIE,
-  TOKEN_COOKIE,
+  callMoonshotChatCompletions,
+  createFixedWindowRateLimiter,
+  normalizeTutorHistory,
+  selectedMoonshotModel,
   type ChatMessage,
   type TutorContext,
   type TutorContextRow,
-} from './_lib/monet';
+} from './_lib/moonshot';
 
-const MAX_MESSAGES = 40;
+const CHAT_RATE_LIMIT = createFixedWindowRateLimiter({ maxRequests: 8, windowMs: 60_000 });
 
 function parseMessages(body: unknown): ChatMessage[] | null {
   if (!body || typeof body !== 'object' || !Array.isArray((body as { messages?: unknown }).messages)) return null;
-  const messages = (body as { messages: unknown[] }).messages;
-  if (messages.length === 0 || messages.length > MAX_MESSAGES) return null;
   const parsed: ChatMessage[] = [];
-  for (const entry of messages) {
+  for (const entry of (body as { messages: unknown[] }).messages) {
     if (!entry || typeof entry !== 'object') return null;
     const { role, content } = entry as { role?: unknown; content?: unknown };
-    if (typeof role !== 'string' || typeof content !== 'string' || !content.trim()) return null;
+    if ((role !== 'user' && role !== 'assistant') || typeof content !== 'string') return null;
     parsed.push({ role, content });
   }
-  return parsed;
+  return normalizeTutorHistory(parsed);
 }
 
 function isStringArray(value: unknown): value is string[] {
@@ -47,11 +44,9 @@ function parseContext(body: unknown): TutorContext | null {
   const context = (body as { context?: unknown }).context;
   if (!context || typeof context !== 'object') return null;
   const candidate = context as Record<string, unknown>;
-
   const { missionTitle, missionBrief, concept, currentSql, visibleTables, relationships, diagnosticLabel } = candidate;
   if (typeof missionTitle !== 'string' || typeof missionBrief !== 'string') return null;
-  if (typeof concept !== 'string' || typeof currentSql !== 'string') return null;
-  if (!isStringArray(visibleTables)) return null;
+  if (typeof concept !== 'string' || typeof currentSql !== 'string' || !isStringArray(visibleTables)) return null;
 
   return {
     missionTitle,
@@ -65,17 +60,16 @@ function parseContext(body: unknown): TutorContext | null {
   };
 }
 
+function clientKey(req: VercelRequest): string {
+  const forwardedFor = req.headers['x-forwarded-for'];
+  const firstAddress = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor?.split(',')[0];
+  return firstAddress?.trim() || 'unknown-client';
+}
+
 /**
- * POST /api/chat — the only endpoint the tutor UI talks to for actual
- * messages. Reads the connection from httpOnly cookies (never from the
- * request body), so the browser never needs to see the Monet access token.
- *
- * The request also carries the current mission's context (schema, the
- * player's SQL, their last result, any diagnostic) so the tutor can "fully
- * help" per product decision (2026-08-11) rather than reason blind. That
- * context is turned into a system message here, server-side, so the
- * hints-first/full-answer-if-asked behavior can't be stripped by editing
- * client JS.
+ * POST /api/chat — the optional tutor's only server endpoint. Moonshot is
+ * called with a game-owned server secret; browsers never see an API key and
+ * no player account, OAuth callback, or connection cookie is involved.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   if (req.method !== 'POST') {
@@ -83,11 +77,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const cookies = parseCookies(req.headers.cookie);
-  const accessToken = cookies[TOKEN_COOKIE];
-  const provider = cookies[PROVIDER_COOKIE];
-  if (!accessToken || !isMonetProvider(provider)) {
-    res.status(401).json({ error: 'Not connected. Connect GPT or Claude first.' });
+  const apiKey = process.env.MOONSHOT_API_KEY;
+  if (!apiKey) {
+    res.status(503).json({ error: 'The AI tutor is not configured yet.' });
+    return;
+  }
+
+  if (!CHAT_RATE_LIMIT.check(clientKey(req))) {
+    res.status(429).json({ error: 'The AI tutor is taking a short break. Please try again in a minute.' });
     return;
   }
 
@@ -95,22 +92,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
   const context = parseContext(req.body);
   if (!messages || !context) {
     res.status(400).json({
-      error: 'Body must be { messages: [{ role, content }, ...], context: { missionTitle, missionBrief, concept, visibleTables, currentSql, ... } }.',
+      error: 'Body must include valid user/assistant messages and the active mission context.',
     });
     return;
   }
 
   try {
-    const completion = await callMonetChatCompletions({
-      accessToken,
-      provider,
+    const completion = await callMoonshotChatCompletions({
+      apiKey,
+      model: selectedMoonshotModel(),
       messages: [buildTutorSystemPrompt(context), ...messages],
     });
     res.status(200).json(completion);
   } catch (error) {
-    // Don't relay Monet's raw error text to the client — it could echo the
-    // Authorization header or other request internals back.
+    // Do not relay provider text: it could include request internals.
+    console.error('Moonshot tutor completion failed', error);
     res.status(502).json({ error: 'The AI tutor is unavailable right now. Try again in a moment.' });
-    console.error('Monet chat completion failed', error);
   }
 }
