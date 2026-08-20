@@ -1,6 +1,3 @@
-# The optional Moonshot AI tutor remains out of the release candidate.
-# Excluding api/ prevents any tutor route from being deployed while the UI
-# is separately gated in MissionView (AI_TUTOR_ENABLED). Remove this line
-# only after item 3's model-selection, security, and release gates pass and
-# MOONSHOT_API_KEY has been configured as a Vercel Sensitive variable.
-api
+# api/ is deployed: MOONSHOT_API_KEY is configured in Vercel and
+# AI_TUTOR_ENABLED is on (src/components/MissionView.tsx). See
+# docs/BACKLOG.md item 3 for the tutor's history and current model.

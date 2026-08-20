@@ -36,11 +36,10 @@ import {
 // props, same DOM shape once loaded.
 const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
-// The Moonshot tutor remains off in the current release: api/ is excluded
-// from Vercel and no server key is configured. Do not enable this control
-// until BACKLOG.md item 3's model-selection, security, and release gates
-// have passed; a visible control with no working backend is release-blocking.
-const AI_TUTOR_ENABLED = false;
+// Enabled 2026-08-19: MOONSHOT_API_KEY is configured in Vercel and api/ is
+// no longer excluded from the deploy (see .vercelignore). See BACKLOG.md
+// item 3 for the model choice and prompt-hardening history.
+const AI_TUTOR_ENABLED = true;
 
 type Feedback =
   | { tone: 'error'; heading: string; text: string }
