@@ -36,10 +36,13 @@ import {
 // props, same DOM shape once loaded.
 const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
-// Enabled 2026-08-19: MOONSHOT_API_KEY is configured in Vercel and api/ is
-// no longer excluded from the deploy (see .vercelignore). See BACKLOG.md
-// item 3 for the model choice and prompt-hardening history.
-const AI_TUTOR_ENABLED = true;
+// Re-disabled 2026-08-20: enabling this + un-excluding api/ (see
+// .vercelignore) made /api/chat fail on every request in production,
+// including a plain GET with no body — FUNCTION_INVOCATION_FAILED before
+// any handler code runs, so it's a deploy/bundling problem, not app logic.
+// Root cause not yet found (no Vercel log access from here). Do not
+// re-enable until that's diagnosed and a real request succeeds live.
+const AI_TUTOR_ENABLED = false;
 
 type Feedback =
   | { tone: 'error'; heading: string; text: string }
