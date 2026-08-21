@@ -1770,10 +1770,108 @@ above to remove any "not built yet" caveat that no longer applies.
   product-owner decision, for a future net-new-learner audience) — don't
   treat Part B entries as approved work the way items 1-11 are.
 - **Item 14 (first-run tutorial)** was implemented from its approved
-  scoping plan on `codex/tutorial-mode-implementation`; it awaits
-  product-owner approval to merge. Future changes should continue to use
+  scoping plan and is merged and live on `main` as
+  `terminalOrientationBeat` (`src/content/beats.ts`), wired into
+  `App.tsx` (**correction 2026-08-21**: this line previously said it was
+  awaiting merge approval — stale, verified directly against `main`).
+  Future changes should continue to use
   [`docs/TUTORIAL_MODE_PLAN.md`](TUTORIAL_MODE_PLAN.md) as the source of
   truth and keep the scope separate from item 13 Part B1's SQL primer.
+  See item 15 for the pre-Stellic-submission polish pass on this and the
+  opening cutscene.
 - Follow the existing git workflow (`docs/AI_WORKFLOW.md`): one branch
   per bounded change, summarize changed files/checks/risks, and get
   merge approval before touching `main`.
+
+---
+
+## 15. Pre-Stellic-submission onboarding & teaching polish pass
+
+### Status
+Opened 2026-08-21 (Thu, ~11:45pm), product owner request. Submission
+deadline is 2026-08-21, roughly 24 hours out at open. This is a
+judging-readiness polish pass, not new mechanics — two parallel packets,
+each independently branchable per `docs/AI_WORKFLOW.md`.
+
+### Why
+The game is feature-complete and the tutor (item 3) is live. What's left
+is first-impression friction: a judge (or anyone new) sits through a long
+pre-gameplay sequence before ever touching real SQL, and the in-mission
+teaching surfaces (hints, diagnostic messages, glossary) haven't had a
+copy/clarity pass with an outside, time-pressured viewer in mind the way
+the rest of the UI has.
+
+### Part A — Trim the opening cutscene, 13 panels → 8
+
+`mainframePullBeat` in `src/content/beats.ts` (the "pulled into the
+mainframe" sequence, between avatar confirm and `openingBeat`) is
+currently 13 panels. Approved consolidation, preserving every story beat
+and background/audio cue, cutting only redundant connective panels:
+
+1. Merge panel 1 ("Tuesday, 9:14 AM.") + panel 2 ("One more email.") —
+   panel 2 is almost fully redundant with panel 3's own heading (which
+   already restates the email subject); fold panel 2's "From: Chad
+   Renfro, CEO" line into panel 3 instead, drop panel 2 entirely.
+2. Panel 3 ("RE: RE: Exciting Update...") unchanged — the CEO email is
+   the load-bearing comedy/world-building beat, keep all six copy lines.
+3. Merge panel 4 ("Wait.") + panel 5 ("Nobody else looks up."). Panel 5's
+   `officeAlarm` background now carries panel 4's copy too — the calm→alarm
+   background swap lands right as "Wait." appears, which reads as a
+   dramatic beat rather than a loss.
+4. Panel 6 ("That door does not do that.") unchanged — keep the
+   `backgroundZoom` door beat as its own panel for pacing.
+5. Merge panel 7 ("So much for a quiet Tuesday.") + panel 8 ("Pulled
+   in."). Panel 7 is one connective line; fold it as a lead-in line on
+   panel 8, which keeps `avatarMotion: 'pulled'` and the glitch sfx.
+6. Panel 9 ("Nine doors.") unchanged — the 9-sector world-building beat.
+7. Merge panel 10 ("It just went through Sector 1.") + panel 11 ("First
+   day. Might as well."). Both already share the `corridorBreached`
+   background; combine ROGUE's dash-through with the player's decision to
+   follow into one panel.
+8. Merge panel 12 ("Through." / whiteout) into panel 13 (the boot
+   screen): apply `whiteoutTransition: true` directly to the boot panel
+   instead of spending a separate click-through panel on a pure
+   transition. Boot screen keeps `continueLabel: 'Enter Sector 1'`.
+
+Non-goals: do not rewrite the story, tone, or villain setup — this is a
+pacing cut, not a rewrite. Do not touch `openingBeat` (the single-panel
+"Login accepted" beat that plays after this one) or `sectorBeats`.
+
+### Part B — Re-evaluate and polish the first-run tutorial
+
+`terminalOrientationBeat` (`src/content/beats.ts`, 6 panels: brief →
+schema → editor → run → feedback → help) is structurally sound and
+already skippable — this is a copy-clarity and pacing review, not a
+rebuild. Read each panel as a first-time player under time pressure would
+(a judge with minutes, not a returning student) and tighten anything that
+reads slow, redundant, or unclear. Check that each panel's
+`tutorialFocus` actually highlights the right live UI region (schema
+explorer, editor, Run button, feedback panel, hint/glossary controls) —
+verify visually in the Browser pane, not just by reading the source.
+Also sanity-check `mentorIntroBeat` (the ECHO introduction that follows
+on a first playthrough) for length/redundancy with the tutorial it
+follows.
+
+### Part C — Apply the same bar to in-mission SQL teaching
+
+Same "clear and awesome to an outside, time-pressured viewer" standard,
+applied to the surfaces a player actually uses while stuck on a mission:
+hint copy and the "Show hint" progression in `MissionView.tsx`,
+diagnostic messages in `src/lib/diagnostics.ts` (mistake-signature
+labels shown after 2 wrong attempts), and `GlossaryPanel.tsx` /
+`src/content/glossary.ts`. Copy and UX clarity only — **do not** touch
+`grading.ts`, the result-based grading contract, `sqlRunner.ts`, or any
+diagnostic's actual classification logic. This is a wording/hierarchy
+pass, not a behavior change.
+
+### Acceptance criteria (all parts)
+- `npm run check` passes.
+- Verified live in the Browser pane (per this repo's UI-change norm),
+  not just read from source — click through the full onboarding chain
+  (Part A/B) and at least one mission's hint/diagnostic/glossary flow
+  (Part C).
+- No change to the grading contract, SQL execution, save/progress
+  schema, or the tutor.
+- Each part is its own branch/PR per `docs/AI_WORKFLOW.md`; summarize
+  changed files, checks run, and ask for merge approval — do not merge
+  to `main` directly.
