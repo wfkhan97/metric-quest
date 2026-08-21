@@ -28,8 +28,12 @@ function PreviewRegion({ id, focus, number, label, children }: PreviewRegionProp
   const isCurrent = id === focus;
   return (
     <section className={`tutorial-preview-region${isCurrent ? ' is-current' : ''}`}>
+      {/* The amber border/glow above already marks the current region visually;
+          a text suffix here ("· CURRENT") pushed these short, narrow-column
+          labels to a second line, which is exactly the internal scroll item
+          15's hard "no scrolling anywhere" bar rules out. */}
       <p className="tutorial-preview-label">
-        [{number}] {label}{isCurrent ? ' · CURRENT REGION' : ''}
+        [{number}] {label}
       </p>
       {children}
     </section>
@@ -41,27 +45,27 @@ function PreviewRegion({ id, focus, number, label, children }: PreviewRegionProp
 export function TutorialMissionPreview({ focus }: TutorialMissionPreviewProps) {
   return (
     <div className="tutorial-preview" aria-hidden="true">
-      <PreviewRegion id="brief" focus={focus} number={1} label="BUSINESS BRIEF">
+      <PreviewRegion id="brief" focus={focus} number={1} label="BRIEF">
         <h2>{orientationMission.title}</h2>
         <p>{orientationMission.brief}</p>
       </PreviewRegion>
 
-      <PreviewRegion id="schema" focus={focus} number={2} label="SCHEMA EXPLORER">
+      <PreviewRegion id="schema" focus={focus} number={2} label="SCHEMA">
         <p className="tutorial-preview-heading">Visible schema</p>
         <code>{orientationMission.visibleTables[0]}</code>
         <p className="tutorial-preview-note">Relationship lines appear here when a mission exposes connected tables.</p>
       </PreviewRegion>
 
-      <PreviewRegion id="editor" focus={focus} number={3} label="SQL EDITOR">
+      <PreviewRegion id="editor" focus={focus} number={3} label="EDITOR">
         <pre>{orientationMission.starterSql}</pre>
       </PreviewRegion>
 
-      <PreviewRegion id="run" focus={focus} number={4} label="RUN QUERY">
+      <PreviewRegion id="run" focus={focus} number={4} label="RUN">
         <span className="tutorial-preview-control">Run query</span>
         <p className="tutorial-preview-note">Cmd/Ctrl+Enter</p>
       </PreviewRegion>
 
-      <PreviewRegion id="feedback" focus={focus} number={5} label="FEEDBACK AND RESULTS">
+      <PreviewRegion id="feedback" focus={focus} number={5} label="FEEDBACK">
         <div className="tutorial-feedback-examples">
           <div className="tutorial-feedback-example error">
             <strong>Incorrect result</strong>
@@ -75,11 +79,11 @@ export function TutorialMissionPreview({ focus }: TutorialMissionPreviewProps) {
         <p className="tutorial-preview-result">Executed result table remains visible here.</p>
       </PreviewRegion>
 
-      <PreviewRegion id="help" focus={focus} number={6} label="RECOVERY CONTROLS">
+      <PreviewRegion id="help" focus={focus} number={6} label="RECOVERY">
         <div className="tutorial-preview-help">
           <span>Show hint</span>
           <span>Concept glossary</span>
-          <span>See answer · available after 3 wrong executed results</span>
+          <span>See answer · 3 tries</span>
         </div>
       </PreviewRegion>
     </div>
