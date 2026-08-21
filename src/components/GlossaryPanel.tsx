@@ -24,6 +24,12 @@ type GlossaryPanelProps = {
   initialEntryId?: string;
 };
 
+function formatSectorList(sectors: number[]): string {
+  const labeled = sectors.map((sector) => `Sector ${sector}`);
+  if (labeled.length === 1) return labeled[0];
+  return `${labeled.slice(0, -1).join(', ')} and ${labeled[labeled.length - 1]}`;
+}
+
 function groupBySector(entries: GlossaryEntry[]): Map<number, GlossaryEntry[]> {
   const groups = new Map<number, GlossaryEntry[]>();
   for (const entry of entries) {
@@ -99,7 +105,7 @@ export function GlossaryPanel({ onClose, initialEntryId }: GlossaryPanelProps) {
                         </pre>
                       </div>
                       {entry.sectors.length > 1 && (
-                        <p className="subtle">Also comes up in Sector {entry.sectors.slice(1).join(', Sector ')}.</p>
+                        <p className="subtle">Also comes up in {formatSectorList(entry.sectors.slice(1))}.</p>
                       )}
                     </details>
                   );

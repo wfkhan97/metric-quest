@@ -434,7 +434,7 @@ export function MissionView({
                 }}
                 disabled={hintCount === mission.hints.length}
               >
-                {hintCount === mission.hints.length ? 'All hints shown' : `Show hint${hintCount ? ` ${hintCount + 1}` : ''}`}
+                {hintCount === mission.hints.length ? 'All hints shown' : `Show hint (${hintCount + 1} of ${mission.hints.length})`}
               </button>
               <button type="button" className="link-button" onClick={(event) => openGlossary(undefined, event.currentTarget)}>
                 Concept glossary

@@ -157,7 +157,7 @@ export const glossary: GlossaryEntry[] = [
     summary: 'Three different questions, one keyword: rows, non-empty values, and unique values.',
     explanation: [
       'COUNT(*) counts rows — every row in the group, no exceptions, blanks included. COUNT(column) is stricter: it only counts rows where that specific column isn\'t NULL, which can come in lower than COUNT(*) the moment some rows have missing data there.',
-      'COUNT(DISTINCT column) counts unique values, collapsing repeats down to one. This is the one that catches a classic AI-generated-report trap: join two tables together and COUNT(*) counts a repeat customer once per matching row, not once per customer — COUNT(DISTINCT CustomerId) is what actually answers "how many different customers."',
+      'COUNT(DISTINCT column) counts unique values, collapsing repeats down to one. This is the one that catches a classic AI-generated-report trap: join two tables together, and COUNT(*) counts a repeat customer once per matching row — not once per customer. COUNT(DISTINCT CustomerId) is what actually answers "how many different customers."',
     ],
     example: {
       description: 'All three counts on the same table, showing how they diverge.',
@@ -358,7 +358,7 @@ export const glossary: GlossaryEntry[] = [
     summary: 'A saved query that behaves like a table — it reruns fresh every time you read from it.',
     explanation: [
       'CREATE VIEW name AS <query> saves a query under a name without saving its results — the underlying SELECT fires again every single time something reads from the view. That means a view always reflects current data, unlike a temp table, which is a one-time snapshot frozen at creation.',
-      'Views exist so a well-built, trusted query becomes a shared asset instead of something everyone rewrites from scratch. That\'s exactly the reuse a rogue process corrupting or deleting a view breaks — and exactly why restoring one matters.',
+      'Views exist so a well-built, trusted query becomes a shared asset instead of something everyone rewrites from scratch. That reuse is exactly what a rogue process corrupting or deleting a view breaks — and exactly why restoring one matters.',
     ],
     example: {
       description: 'Save country revenue as a view, then query it like a table.',
