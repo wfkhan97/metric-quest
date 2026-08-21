@@ -47,7 +47,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm1-1-missing-where',
       label: 'Missing the USA filter',
       explanation:
-        "This mission asks for the five highest-value invoices billed to the United States specifically — without a WHERE BillingCountry = 'USA' filter, the top 5 by Total pulls from every country instead.",
+        "Add a WHERE BillingCountry = 'USA' filter — without it, the top 5 by Total pulls from every country, not just the United States.",
       matches: (sql) => !hasKeyword(sql, /\busa\b/i),
     },
     {
@@ -90,7 +90,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm1-4-missing-where',
       label: 'Missing the price filter',
       explanation:
-        'This mission only wants tracks priced above $0.99 — without a WHERE UnitPrice > 0.99 filter, every track in the catalog gets included, not just the higher-priced ones.',
+        'Add a WHERE UnitPrice > 0.99 filter — without it, every track in the catalog gets included, not just the higher-priced ones.',
       matches: (sql) => !hasKeyword(sql, /0\.99/),
     },
     {
@@ -141,7 +141,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm2-1-joined-invoice-line',
       label: 'Joined to another table',
       explanation:
-        "Invoice.Total is already one row per completed sale — joining to InvoiceLine repeats that same Total once per line item on the invoice, which inflates the sum. This mission only needs the Invoice table; no join gets you a cleaner answer than a join does here.",
+        'Drop the join — this mission only needs the Invoice table. Invoice.Total is already one row per completed sale; joining to InvoiceLine repeats that same Total once per line item, which inflates the sum.',
       matches: (sql) => hasKeyword(sql, anyJoin),
     },
     {
@@ -178,14 +178,14 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm2-4-missing-min-or-max',
       label: 'Missing MIN or MAX',
       explanation:
-        'This mission wants both bounds in one row — leaving out either MIN(Total) or MAX(Total) reports only half the range instead of the smallest and largest side by side.',
+        'Select both MIN(Total) and MAX(Total) in the same row — leaving either one out reports only half the range instead of the smallest and largest side by side.',
       matches: (sql) => !(hasKeyword(sql, /\bmin\s*\(/i) && hasKeyword(sql, /\bmax\s*\(/i)),
     },
     {
       id: 'm2-4-unnecessary-group-by',
       label: 'Unnecessary GROUP BY',
       explanation:
-        'This mission wants one overall row for the whole table — adding a GROUP BY (e.g. by BillingCountry) splits MIN and MAX into one row per group instead of a single company-wide range.',
+        'Drop the GROUP BY — grouping (e.g. by BillingCountry) splits MIN and MAX into one row per group instead of the single company-wide range this mission wants.',
       matches: (sql) => hasKeyword(sql, noGroupBy),
     },
   ],
@@ -219,7 +219,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm3-2-missing-invoice-filter',
       label: 'Missing the invoice filter',
       explanation:
-        'This mission asks for what was purchased on one specific invoice (299) — without a WHERE InvoiceId = 299 filter, the query returns every line item on every invoice instead of just this one.',
+        'Add a WHERE InvoiceId = 299 filter — without it, the query returns every line item on every invoice instead of just this one.',
       matches: (sql) => !hasKeyword(sql, /\b299\b/),
     },
   ],
@@ -288,7 +288,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm4-3-missing-filter',
       label: 'Missing the $10 filter',
       explanation:
-        "The temp table is only supposed to hold invoices over $10 — without a WHERE Total > 10 filter on the CREATE TEMP TABLE statement, every invoice gets staged into it, not just the high-value ones.",
+        'Add a WHERE Total > 10 filter to the CREATE TEMP TABLE statement — without it, every invoice gets staged into the temp table, not just the high-value ones.',
       glossaryEntryId: 'temp-tables',
       matches: (sql) => !hasKeyword(sql, /total\s*>\s*10\b/i),
     },
@@ -477,7 +477,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm8-2-missing-year-filter',
       label: 'Missing the 2010 filter',
       explanation:
-        "This mission rescopes the claim to one real year, 2010 — without a WHERE strftime('%Y', InvoiceDate) = '2010' filter, the revenue is summed across ROGUE.exe's entire lifetime range instead, which is the same inflated-to-look-current trick the mission is calling out.",
+        "Add a WHERE strftime('%Y', InvoiceDate) = '2010' filter — without it, revenue sums across ROGUE.exe's entire lifetime range instead of the one real year, 2010, which is the same inflated-to-look-current trick this mission is calling out.",
       glossaryEntryId: 'dates-strftime',
       matches: (sql) => !hasKeyword(sql, /2010/),
     },
@@ -529,7 +529,7 @@ const signaturesByMission: Partial<Record<Mission['id'], MistakeSignature[]>> = 
       id: 'm9-2-missing-year-filter',
       label: 'Missing the 2010 filter',
       explanation:
-        "This verdict is deliberately pinned to 2010, the last full closed year — without a WHERE strftime('%Y', InvoiceDate) = '2010' filter, both the revenue and the purchaser count get computed across ROGUE.exe's entire lifetime range instead of that one closed year.",
+        "Add a WHERE strftime('%Y', InvoiceDate) = '2010' filter — without it, both the revenue and purchaser count get computed across ROGUE.exe's entire lifetime range instead of that one closed year, 2010.",
       glossaryEntryId: 'dates-strftime',
       matches: (sql) => !hasKeyword(sql, /2010/),
     },
