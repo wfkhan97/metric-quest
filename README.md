@@ -1,8 +1,14 @@
 # Metric Quest
 
+**Live demo: [metric-quest.vercel.app](https://metric-quest.vercel.app)** — runs entirely in your browser, no account or install needed.
+
 Metric Quest is a browser-only SQL game for Tech MBA students. On day one at Aurora Music, the player gets pulled into the company mainframe: a rogue analyst AI has corrupted the database, and the only way out is to restore it sector by sector by writing real SQL. Learners read a mission brief, write a read-only SQL query, run it locally against a bundled SQLite dataset, and get feedback based on the executed result — never on the SQL text itself.
 
-This is a presentation layer over a real SQL curriculum, not a re-skinned quiz: every "battle" is a genuine business question, graded on the real executed result. See [docs/GAME_DESIGN_BRIEF.md](docs/GAME_DESIGN_BRIEF.md) for the full narrative, world, and visual-asset brief. [METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md](METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md) is the original three-week build playbook (all 16 of its prompts are now marked done); for current "what's built vs. what's next" status, see [docs/CONTEXT.md](docs/CONTEXT.md), which routes to the live backlog.
+This is a presentation layer over a real SQL curriculum, not a re-skinned quiz: every "battle" is a genuine business question, graded on the real executed result. The game covers 25 missions spanning the full SQL curriculum arc, from basic `SELECT`s through joins, aggregation, and subqueries, wrapped in a sci-fi narrative that gives each concept a story reason to matter. See [docs/GAME_DESIGN_BRIEF.md](docs/GAME_DESIGN_BRIEF.md) for the full narrative, world, and visual-asset brief.
+
+No backend, no server-side data, no accounts: the app is a static site that loads a SQLite database client-side via `sql.js` and keeps all learner queries, results, and progress in the browser (see [Privacy and anonymous analytics](#privacy-and-anonymous-analytics) below).
+
+[METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md](METRIC_QUEST_CODEX_CLAUDE_PLAYBOOK.md) is the original three-week build playbook (all 16 of its prompts are now marked done); for current "what's built vs. what's next" status, see [docs/CONTEXT.md](docs/CONTEXT.md), which routes to the live backlog.
 
 ## Quick start
 
