@@ -36,13 +36,13 @@ import {
 // props, same DOM shape once loaded.
 const SqlEditor = lazy(() => import('./SqlEditor').then((module) => ({ default: module.SqlEditor })));
 
-// Re-disabled 2026-08-20: enabling this + un-excluding api/ (see
-// .vercelignore) made /api/chat fail on every request in production,
-// including a plain GET with no body — FUNCTION_INVOCATION_FAILED before
-// any handler code runs, so it's a deploy/bundling problem, not app logic.
-// Root cause not yet found (no Vercel log access from here). Do not
-// re-enable until that's diagnosed and a real request succeeds live.
-const AI_TUTOR_ENABLED = false;
+// Re-enabled 2026-08-21: root cause of the prior FUNCTION_INVOCATION_FAILED
+// found via Vercel runtime logs -- ERR_MODULE_NOT_FOUND, because
+// api/chat.ts imported './_lib/moonshot' without an extension, which
+// Node's native ESM loader (package.json has "type": "module") won't
+// resolve. Fixed by importing './_lib/moonshot.js' instead. Verify a real
+// request succeeds live before trusting this comment over the code.
+const AI_TUTOR_ENABLED = true;
 
 type Feedback =
   | { tone: 'error'; heading: string; text: string }

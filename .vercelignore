@@ -1,7 +1,5 @@
-# Re-excluded 2026-08-20: deploying api/ made /api/chat crash on every
-# request (FUNCTION_INVOCATION_FAILED even on a bare GET — an
-# import/bundling failure, not application logic). AI_TUTOR_ENABLED is off
-# in src/components/MissionView.tsx to match. See docs/BACKLOG.md item 3.
-# Root cause not yet diagnosed; do not remove this line until a live
-# request to /api/chat succeeds against a real deployment.
-api
+# api/ is deployed: MOONSHOT_API_KEY is configured in Vercel and
+# AI_TUTOR_ENABLED is on (src/components/MissionView.tsx). Re-enabled
+# 2026-08-21 after fixing the extensionless-import ERR_MODULE_NOT_FOUND
+# that caused the 2026-08-20 incident (see api/chat.ts). See
+# docs/BACKLOG.md item 3 for the tutor's history and current model.

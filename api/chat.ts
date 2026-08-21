@@ -8,7 +8,7 @@ import {
   type ChatMessage,
   type TutorContext,
   type TutorContextRow,
-} from './_lib/moonshot';
+} from './_lib/moonshot.js';
 
 const CHAT_RATE_LIMIT = createFixedWindowRateLimiter({ maxRequests: 8, windowMs: 60_000 });
 
