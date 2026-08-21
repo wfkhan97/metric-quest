@@ -151,6 +151,7 @@ export function CutsceneView({ beat, avatar, skippable, isMusicMuted, onToggleMu
         <h1 id="cutscene-boot-title" className="sr-only">
           Terminal boot sequence
         </h1>
+        {panel.whiteoutTransition && <div className="cutscene-whiteout" aria-hidden="true" />}
         {hasAnyAudio && <audio ref={audioRef} muted={isMusicMuted} aria-hidden="true" />}
         <div key={panelIndex} className="cutscene-boot-lines">
           {panel.copy.map((line, index) => (
