@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings=0",
     "build": "tsc --noEmit && vite build",
-    "check": "eslint . --max-warnings=0 && vitest run && tsc --noEmit && vite build"
+    "check": "eslint . --max-warnings=0 && vitest run && tsc --noEmit && vite build",
+    "gen:reference": "node scripts/gen-reference.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "6.10.4",

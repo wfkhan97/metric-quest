@@ -18,6 +18,7 @@ import { classifyAttempt, type MistakeSignature } from '../lib/diagnostics';
 import { validateResult, type QueryResult } from '../lib/grading';
 import { rogueInvalidQueryLine, rogueWrongResultLine, type Mission } from '../lib/missions';
 import { completeMission, type Progress } from '../lib/progress';
+import { teachingNotes } from '../lib/teachingNotes.generated';
 import { playSfx } from '../content/sfx';
 import { runMissionQuery } from '../lib/sqlRunner';
 import { useFocusTrap } from '../lib/useFocusTrap';
@@ -169,6 +170,7 @@ export function MissionView({
       currentSql: sql,
       lastResult: result,
       diagnosticLabel: diagnostic?.label,
+      teachingNote: teachingNotes[mission.id],
     }),
     [mission, sql, result, diagnostic],
   );

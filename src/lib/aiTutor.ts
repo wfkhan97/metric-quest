@@ -12,6 +12,7 @@ export type TutorContext = {
   currentSql: string;
   lastResult?: { columns: string[]; rows: TutorContextRow[] };
   diagnosticLabel?: string;
+  teachingNote?: string;
 };
 
 /** Throws with a message safe to show the player directly. */

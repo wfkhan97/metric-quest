@@ -8,6 +8,7 @@ One line per file: what it is, and when to actually read it. Check here before o
 ## Reference (load only when the task touches it)
 - [`architecture.md`](architecture.md) — product boundary, grading contract, data flow. Read before touching SQL execution, grading, or data files.
 - [`GAME_DESIGN_BRIEF.md`](GAME_DESIGN_BRIEF.md) — tone/world/copy source of truth. Read before writing mission or UI copy, or building a new screen.
+- [`reference/INDEX.md`](reference/INDEX.md) — per-mission and per-beat lookup (facts + common mistakes + key insight). Read this instead of grepping `missions.ts`/`diagnostics.ts`/`beats.ts` when editing or explaining one mission or cutscene beat.
 
 ## Living planning docs (large — grep for the relevant item, don't read cover to cover)
 - [`BACKLOG.md`](BACKLOG.md) — feature backlog, status per item.

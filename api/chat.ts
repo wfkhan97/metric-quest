@@ -44,7 +44,7 @@ function parseContext(body: unknown): TutorContext | null {
   const context = (body as { context?: unknown }).context;
   if (!context || typeof context !== 'object') return null;
   const candidate = context as Record<string, unknown>;
-  const { missionTitle, missionBrief, concept, currentSql, visibleTables, relationships, diagnosticLabel } = candidate;
+  const { missionTitle, missionBrief, concept, currentSql, visibleTables, relationships, diagnosticLabel, teachingNote } = candidate;
   if (typeof missionTitle !== 'string' || typeof missionBrief !== 'string') return null;
   if (typeof concept !== 'string' || typeof currentSql !== 'string' || !isStringArray(visibleTables)) return null;
 
@@ -57,6 +57,7 @@ function parseContext(body: unknown): TutorContext | null {
     relationships: isStringArray(relationships) ? relationships : undefined,
     lastResult: parseLastResult(candidate.lastResult),
     diagnosticLabel: typeof diagnosticLabel === 'string' ? diagnosticLabel : undefined,
+    teachingNote: typeof teachingNote === 'string' ? teachingNote : undefined,
   };
 }
 

@@ -29,6 +29,13 @@ export type TutorContext = {
   currentSql: string;
   lastResult?: { columns: string[]; rows: TutorContextRow[] };
   diagnosticLabel?: string;
+  /**
+   * Optional 1-3 sentence teaching note for this mission (docs/reference/missions/<id>.md's
+   * "Common mistakes"/"Key insight", extracted by scripts/gen-reference.mjs into
+   * src/lib/teachingNotes.generated.ts). Additive only — omitted entirely when absent,
+   * so existing tutor behavior is unchanged for missions without one.
+   */
+  teachingNote?: string;
 };
 
 /** Row cap prevents one broad result set from dominating a tutor prompt. */
@@ -96,6 +103,10 @@ export function buildTutorSystemPrompt(context: TutorContext): ChatMessage {
 
   if (context.diagnosticLabel) {
     lines.push('', `Automated diagnostic on their last wrong attempt: ${context.diagnosticLabel}`);
+  }
+
+  if (context.teachingNote) {
+    lines.push('', `Teaching note for this mission: ${context.teachingNote}`);
   }
 
   return { role: 'system', content: lines.join('\n') };

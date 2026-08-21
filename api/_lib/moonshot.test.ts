@@ -47,6 +47,19 @@ describe('buildTutorSystemPrompt', () => {
     expect(content).toContain('… (5 more row(s) truncated)');
     expect(content).not.toContain('[29]');
   });
+
+  it('omits the teaching note entirely when absent, leaving existing behavior unchanged', () => {
+    const content = buildTutorSystemPrompt(baseContext).content;
+    expect(content).not.toContain('Teaching note');
+  });
+
+  it('includes the teaching note when present, additive to the rest of the prompt', () => {
+    const content = buildTutorSystemPrompt({
+      ...baseContext,
+      teachingNote: 'Common mistake: missing the USA filter. Filter before you sort.',
+    }).content;
+    expect(content).toContain('Teaching note for this mission: Common mistake: missing the USA filter. Filter before you sort.');
+  });
 });
 
 describe('normalizeTutorHistory', () => {

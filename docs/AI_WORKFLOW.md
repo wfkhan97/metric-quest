@@ -17,6 +17,12 @@ This repository is shared between Codex and Claude Code sessions, so branch disc
 3. When the work is ready, do not merge or push to `main` yourself. Summarize what happened — changed files, checks run and their results, checks that could not run and why, user-visible behavior, and remaining risks or placeholders — and explicitly ask the user to approve the merge.
 4. Only merge (or push to `main`) after the user gives that approval.
 
+## Mission/beat reference layer
+
+`docs/reference/` (routed from [`docs/CONTEXT.md`](CONTEXT.md)) holds one short file per mission (`docs/reference/missions/<id>.md`) and per cutscene beat (`docs/reference/beats/<slug>.md`), each with a generated facts block (id, sector, points, source pointers) plus hand-authored "Common mistakes"/"Key insight" or "Plays when"/"Arc-tone" prose. The facts block, `docs/reference/INDEX.md`, and `src/lib/teachingNotes.generated.ts` (the live AI tutor's per-mission teaching note, wired into `buildTutorSystemPrompt` in `api/_lib/moonshot.ts`) are all generated from `src/lib/missions.ts`, `src/lib/diagnostics.ts`, and `src/content/beats.ts` by `scripts/gen-reference.mjs`.
+
+Rerun `npm run gen:reference` whenever `missions.ts` or `beats.ts` structurally changes: a mission or beat is added/removed/renamed, a mission's chapter/title/concept/points changes, or panels are added/removed from an existing beat. It is safe to rerun any time — hand-authored prose in each file is preserved verbatim; only the facts block above it (plus `INDEX.md` and `teachingNotes.generated.ts`) is rewritten. Routine prose edits (mission briefs/hints/successLesson wording, beat copy wording) do not require a rerun.
+
 ## Required project checks
 
 After dependencies are installed, run these from the repository root:
